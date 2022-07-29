@@ -888,6 +888,8 @@ namespace Graphics {
 			glfwDestroyWindow(window);
 
 			glfwTerminate();
+
+			printf("Cleaned up\n");
 		}
 
 		//Swapchain
