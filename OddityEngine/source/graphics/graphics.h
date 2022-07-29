@@ -1,5 +1,8 @@
 #pragma once
 
+#include <string>
+#include <optional>
+
 #define VK_USEPLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #define GLFW_EXPOSED_NATIVE_WIN32
@@ -17,8 +20,10 @@
 #define VALIDATE true
 
 
-struct UniformBufferObject {
-	glm::mat4 model;
-	glm::mat4 view;
-	glm::mat4 proj;
-};
+namespace Graphics {
+	struct UniformBufferObject {
+		glm::mat4 model;
+		glm::mat4 view;
+		glm::mat4 proj;
+	};
+}
