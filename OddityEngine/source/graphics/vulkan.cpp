@@ -11,6 +11,7 @@
 
 #include "graphics.h"
 #include "../checks/checks.h"
+#include "../character/movement.h"
 
 #include "vulkan_helper.h"
 
@@ -92,6 +93,7 @@ namespace Graphics {
 			0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1
 		};
 
+		Movement movement;
 
 		size_t currentFrame = 0;
 
@@ -122,7 +124,8 @@ namespace Graphics {
 			createSyncObjects();
 		}
 
-		void update(bool *framebufferResized) {
+		void update(bool *framebufferResized, Movement movement) {
+			this->movement = movement;
 			drawFrame(framebufferResized);
 		}
 
@@ -846,10 +849,16 @@ namespace Graphics {
 			auto currentTime = std::chrono::high_resolution_clock::now();
 			float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
+			glm::mat4 rotMat = glm::lookAt(movement.pos, movement.pos + movement.dir, glm::vec3(0.0f, 1.0f, 0.0f));//glm::mat4(1.0f);
+
+			//rotMat = glm::rotate(rotMat, viewRot.x, glm::vec3(1.0f, 0.0f, 0.0f));
+			//rotMat = glm::rotate(rotMat, viewRot.y, glm::vec3(0.0f, 1.0f, 0.0f));
+			//rotMat = glm::rotate(rotMat, viewRot.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
 			UniformBufferObject ubo{
-				.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-				.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
-				.proj = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 10.0f),
+				.model = glm::mat4(1.0f), //glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+				.view = rotMat,//glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),//glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), viewRot),
+				.proj = glm::perspective(glm::radians(90.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 10.0f),
 			};
 			ubo.proj[1][1] *= -1;
 

@@ -8,6 +8,7 @@
 
 
 #include "vulkan.cpp"
+#include "../character/movement.h"
 
 
 namespace Graphics {
@@ -41,9 +42,9 @@ namespace Graphics {
 			vulkan.stop();
 		}
 
-		bool update() {
+		bool update(Movement movement) {
 			glfwPollEvents();
-			vulkan.update(&framebufferResized);
+			vulkan.update(&framebufferResized, movement);
 			return !glfwWindowShouldClose(window);
 		}
 
@@ -65,6 +66,14 @@ namespace Graphics {
 
 		void setKeyCallback(GLFWkeyfun callback) {
 			glfwSetKeyCallback(window, callback);
+		}
+
+		void setCursorPositionCallback(GLFWcursorposfun callback) {
+			glfwSetCursorPosCallback(window, callback);
+		}
+
+		void setMouseButtonCallback(GLFWmousebuttonfun callback) {
+			glfwSetMouseButtonCallback(window, callback);
 		}
 
 		void add() {

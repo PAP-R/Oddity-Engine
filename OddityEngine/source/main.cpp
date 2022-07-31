@@ -1,30 +1,32 @@
 #include "graphics/graphics.cpp"
+#include "character/movement.h"
+#include "character/character.cpp"
+#include "input/input.h"
 
 Graphics::Engine graphics;
+Character character;
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-
-	switch (key) {
-	case 300:
-		if (action == 1) {
-			graphics.fullScreen();
-		}
-		break;
-	}
-
-	printf("%d | %d | %d | %d\n", key, scancode, action, mods);
+void fullscreen() {
+	graphics.fullScreen();
 }
 
 int main(int* argc, char ** argv) {
 
 	graphics.start(400, 400, "Hallo");
 
-	graphics.setKeyCallback(keyCallback);
+	Input::setup(&fullscreen, &character);
+
+	graphics.setKeyCallback(Input::keyCallback);
+	graphics.setCursorPositionCallback(Input::cursorCallback);
+	graphics.setMouseButtonCallback(Input::mouseButtonCallback);
+
+	character.setPos(2.0f, 2.0f, 2.0f);
 
 	bool windowOpen = true;
 
 	do {
-		windowOpen = graphics.update();
+		character.update();
+		windowOpen = graphics.update(character.getMovement());
 	} while (windowOpen);
 
 	graphics.stop();

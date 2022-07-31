@@ -147,16 +147,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\character\character.cpp" />
     <ClCompile Include="source\checks\checks.cpp" />
     <ClCompile Include="source\graphics\graphics.cpp" />
     <ClCompile Include="source\graphics\vulkan.cpp" />
     <ClCompile Include="source\graphics\vulkan_helper.cpp" />
+    <ClCompile Include="source\input\input.cpp" />
     <ClCompile Include="source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\character\movement.h" />
     <ClInclude Include="source\checks\checks.h" />
     <ClInclude Include="source\graphics\graphics.h" />
     <ClInclude Include="source\graphics\vulkan_helper.h" />
+    <ClInclude Include="source\input\input.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

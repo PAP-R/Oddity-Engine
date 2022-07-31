@@ -9,11 +9,15 @@
 
 #define GLM_FORCE_RADIANS
 
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <glm/ext.hpp>
 
 
 #define MAX_FRAMES_IN_FLIGHT 2
