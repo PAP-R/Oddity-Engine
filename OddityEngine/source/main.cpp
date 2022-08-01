@@ -19,8 +19,10 @@ int main(int* argc, char ** argv) {
 	graphics.setKeyCallback(Input::keyCallback);
 	graphics.setCursorPositionCallback(Input::cursorCallback);
 	graphics.setMouseButtonCallback(Input::mouseButtonCallback);
+	graphics.setScrollCallback(Input::scrollCallback);
 
 	character.setPos(2.0f, 2.0f, 2.0f);
+	character.setVelocity(2.0f, 2.0f, 2.0f);
 
 	bool windowOpen = true;
 

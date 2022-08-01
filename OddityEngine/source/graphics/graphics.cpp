@@ -76,6 +76,10 @@ namespace Graphics {
 			glfwSetMouseButtonCallback(window, callback);
 		}
 
+		void setScrollCallback(GLFWscrollfun callback) {
+			glfwSetScrollCallback(window, callback);
+		}
+
 		void add() {
 
 		}

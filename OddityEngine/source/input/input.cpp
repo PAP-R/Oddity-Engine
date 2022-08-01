@@ -1,4 +1,5 @@
 #pragma once
+#include "input.h"
 
 #define VK_USEPLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
@@ -8,45 +9,44 @@
 #include <GLFW/glfw3native.h>
 
 #include <stdio.h>
+#include <vector>
 
 #include "../character/character.cpp"
 #include "../character/movement.h"
 
 namespace Input {
 
+	std::vector<KeyFunctions> keymap;
+
 	void (*fullscreenFunc)();
 	Character* _character;
 
-	float speed = 0.1f;
+	double speed = 1.0;
 
 	void setup(void (*fullscreen)(), Character* character) {
 		fullscreenFunc = fullscreen;
 		_character = character;
+
+
+		keymap.resize(GLFW_KEY_LAST);
+
+		keymap[GLFW_KEY_F11] = (KeyFunctions{fullscreen, nullptr});
+
+		keymap[GLFW_KEY_W] = (KeyFunctions{ []() { _character->setAccelerationX(speed); }, []() { _character->setAccelerationX(0.0); } });
+		keymap[GLFW_KEY_S] = (KeyFunctions{ []() { _character->setAccelerationX(-speed); }, []() { _character->setAccelerationX(0.0); } });
+		keymap[GLFW_KEY_A] = (KeyFunctions{ []() { _character->setAccelerationZ(-speed); }, []() { _character->setAccelerationZ(0.0); } });
+		keymap[GLFW_KEY_D] = (KeyFunctions{ []() { _character->setAccelerationZ(speed); }, []() { _character->setAccelerationZ(0.0); } });
 	}
 
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-
-		if (action == GLFW_PRESS) {
-			switch (key) {
-			case 300:
-				(*fullscreenFunc)();
-				break;
-			case 'W':
-				_character->setVelocity(0.0f, speed, 0.0f);
-				break;
-			case 'A':
-				_character->setVelocity(-speed, 0.0f, 0.0f);
-				break;
-			case 'S':
-				_character->setVelocity(0.0f, -speed, 0.0f);
-				break;
-			case 'D':
-				_character->setVelocity(speed, 0.0f, 0.0f);
-				break;
-			}
+		switch (action) {
+		case GLFW_PRESS:
+			if (keymap[key].activate) (*keymap[key].activate)();
+			break;
+		case GLFW_RELEASE:
+			if (keymap[key].deactivate) (*keymap[key].deactivate)();
+			break;
 		}
-
-		printf("%d | %d | %d | %d\n", key, scancode, action, mods);
 	}
 
 	int rotationX = 0, rotationY = 0;
@@ -67,7 +67,6 @@ namespace Input {
 	}
 
 	void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-		printf("%d | %d | %d\n", button, action, mods);
 		if (action == GLFW_PRESS) {
 			switch (button) {
 			case 3:
@@ -77,7 +76,10 @@ namespace Input {
 				sens = sens + 1;
 				break;
 			}
-			printf("%f\n", sens);
 		}
+	}
+
+	void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+		speed = speed + yoffset;
 	}
 }

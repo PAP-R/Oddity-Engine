@@ -12,6 +12,11 @@
 #include "../character/character.cpp"
 
 namespace Input {
+	typedef struct {
+		void (*activate)();
+		void (*deactivate)();
+	} KeyFunctions;
+
 	void setup(void (*fullscreen)(), Character* character);
 
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -19,4 +24,6 @@ namespace Input {
 	void cursorCallback(GLFWwindow* window, double xpos, double ypos);
 
 	void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+
+	void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 }
