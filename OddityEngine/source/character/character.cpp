@@ -117,18 +117,36 @@ public:
 		return movement.acceleration;
 	}
 
+	void pushX(double x) {
+		movement.push.x = x;
+	}
+
+	void pushY(double y) {
+		movement.push.y = y;
+	}
+
+	void pushZ(double z) {
+		movement.push.z = z;
+	}
+
 	void update() {
 		currentTime = std::chrono::high_resolution_clock::now();
 		time = std::chrono::duration<double, std::chrono::seconds::period>(currentTime - startTime).count();
 
-		movement.velocity = movement.velocity + movement.acceleration * time;
-		glm::vec3 moveDir = glm::vec3((movement.velocity.x * movement.dir.x + movement.velocity.z * movement.dirN.x), 0.0f, (movement.velocity.x * movement.dir.z + movement.velocity.z * movement.dirN.z));
+		movement.velocity = movement.velocity + (movement.acceleration + movement.push) * time;
+		glm::vec3 moveDir = glm::vec3((movement.velocity.x * movement.dir.x + movement.velocity.z * movement.dirN.x), movement.velocity.y, (movement.velocity.x * movement.dir.z + movement.velocity.z * movement.dirN.z));
 
-		movement.pos.x = movement.pos.x + moveDir.x * time;
-		movement.pos.z = movement.pos.z + moveDir.z * time;
+		movement.pos = movement.pos + moveDir * time;
 
-		//movement.acceleration = lint(movement.acceleration, glm::vec3(0.0f), 10.0, time);
-		movement.velocity = lint(movement.velocity, glm::vec3(0.0f), 10.0, time);
+		movement.acceleration = lint(movement.acceleration, glm::vec3(0.0, -9.81, 0.0), 10.0, time);
+		movement.velocity = lint(movement.velocity, glm::vec3(0.0, movement.velocity.y, 0.0), 10.0, time);
+
+		if (movement.pos.y < 0) {
+			movement.pos.y = 0;
+			movement.velocity.y = 0;
+		}
+
+		//printf("V: %f | A: %f\n", movement.velocity.y, movement.acceleration.y);
 
 		//std::cout << glm::to_string(movement.velocity) << std::endl;
 

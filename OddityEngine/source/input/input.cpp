@@ -22,6 +22,7 @@ namespace Input {
 	Character* _character;
 
 	double speed = 1.0;
+	double jump = 1.0;
 
 	void setup(void (*fullscreen)(), Character* character) {
 		fullscreenFunc = fullscreen;
@@ -32,10 +33,11 @@ namespace Input {
 
 		keymap[GLFW_KEY_F11] = (KeyFunctions{fullscreen, nullptr});
 
-		keymap[GLFW_KEY_W] = (KeyFunctions{ []() { _character->setAccelerationX(speed); }, []() { _character->setAccelerationX(0.0); } });
-		keymap[GLFW_KEY_S] = (KeyFunctions{ []() { _character->setAccelerationX(-speed); }, []() { _character->setAccelerationX(0.0); } });
-		keymap[GLFW_KEY_A] = (KeyFunctions{ []() { _character->setAccelerationZ(-speed); }, []() { _character->setAccelerationZ(0.0); } });
-		keymap[GLFW_KEY_D] = (KeyFunctions{ []() { _character->setAccelerationZ(speed); }, []() { _character->setAccelerationZ(0.0); } });
+		keymap[GLFW_KEY_W] = (KeyFunctions{ []() { _character->pushX(speed); }, []() { _character->pushX(0.0); } });
+		keymap[GLFW_KEY_S] = (KeyFunctions{ []() { _character->pushX(-speed); }, []() { _character->pushX(0.0); } });
+		keymap[GLFW_KEY_A] = (KeyFunctions{ []() { _character->pushZ(-speed); }, []() { _character->pushZ(0.0); } });
+		keymap[GLFW_KEY_D] = (KeyFunctions{ []() { _character->pushZ(speed); }, []() { _character->pushZ(0.0); } });
+		keymap[GLFW_KEY_SPACE] = (KeyFunctions{ []() { _character->setVelocityY(jump); }, []() { _character->setVelocityY(0.0); } });
 	}
 
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -81,5 +83,8 @@ namespace Input {
 
 	void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 		speed = speed + yoffset;
+		jump = jump + xoffset;
+
+		printf("Jump : %f | Speed : %f\n", jump, speed);
 	}
 }

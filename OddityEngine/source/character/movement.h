@@ -18,4 +18,5 @@ struct Movement {
 	glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 acceleration = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 push = glm::vec3(0.0f, 0.0f, 0.0f);
 };
