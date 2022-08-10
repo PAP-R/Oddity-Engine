@@ -90,8 +90,14 @@ VkShaderModule createShaderModule(const std::vector<char>& code, VkDevice device
 
 void createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
+void resizeBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize prevSize, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, VkCommandPool commandPool, VkQueue graphicsQueue);
+
 uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-void copyBuffer(VkDevice device, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandPool commandPool, VkQueue graphicsQueue);
+void copyBuffer(VkDevice device, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandPool commandPool, VkQueue graphicsQueue, size_t srcOffset = 0, size_t dstOffset = 0);
+
+void addToBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkBuffer dstBuffer, VkDeviceMemory dstMemory, void* srcData, VkDeviceSize size, VkCommandPool commandPool, VkQueue graphicsQueue, size_t srcOffset = 0, size_t dstOffset = 0);
 
 float degreeToRadian(int rot);
+
+size_t sizeToBlock(size_t size, size_t blockSize);

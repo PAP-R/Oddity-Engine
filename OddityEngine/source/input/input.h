@@ -17,7 +17,7 @@ namespace Input {
 		void (*deactivate)();
 	} KeyFunctions;
 
-	void setup(void (*fullscreen)(), Character* character);
+	void setup(void (*fullscreen)(), Character* character, void (*addVertex)());
 
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 

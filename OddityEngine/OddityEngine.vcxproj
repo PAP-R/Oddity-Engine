@@ -162,6 +162,9 @@
     <ClInclude Include="source\graphics\vulkan_helper.h" />
     <ClInclude Include="source\input\input.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -16,7 +16,6 @@ namespace Graphics {
 	private:
 		GLFWwindow* window;
 		GLFWmonitor* monitor;
-		Vulkan vulkan;
 
 		const GLFWvidmode* standardmode;
 
@@ -32,6 +31,8 @@ namespace Graphics {
 
 
 	public:
+		Vulkan vulkan;
+
 		void start(int width, int height, std::string title) {
 			Engine::framebufferResized = false;
 			initWindow(width, height, title);
@@ -78,14 +79,6 @@ namespace Graphics {
 
 		void setScrollCallback(GLFWscrollfun callback) {
 			glfwSetScrollCallback(window, callback);
-		}
-
-		void add() {
-
-		}
-
-		void remove() {
-
 		}
 
 	private:

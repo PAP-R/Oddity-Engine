@@ -14,6 +14,8 @@
 #include "../character/character.cpp"
 #include "../character/movement.h"
 
+#define MOUSE_OFFSET GLFW_KEY_LAST + 1
+
 namespace Input {
 
 	std::vector<KeyFunctions> keymap;
@@ -23,21 +25,25 @@ namespace Input {
 
 	double speed = 1.0;
 	double jump = 1.0;
+	float sens = 10;
 
-	void setup(void (*fullscreen)(), Character* character) {
+	void setup(void (*fullscreen)(), Character* character, void (*addVertex)()) {
 		fullscreenFunc = fullscreen;
 		_character = character;
 
 
-		keymap.resize(GLFW_KEY_LAST);
+		keymap.resize(GLFW_KEY_LAST + GLFW_MOUSE_BUTTON_LAST + 2);
 
 		keymap[GLFW_KEY_F11] = (KeyFunctions{fullscreen, nullptr});
 
-		keymap[GLFW_KEY_W] = (KeyFunctions{ []() { _character->pushX(speed); }, []() { _character->pushX(0.0); } });
-		keymap[GLFW_KEY_S] = (KeyFunctions{ []() { _character->pushX(-speed); }, []() { _character->pushX(0.0); } });
-		keymap[GLFW_KEY_A] = (KeyFunctions{ []() { _character->pushZ(-speed); }, []() { _character->pushZ(0.0); } });
-		keymap[GLFW_KEY_D] = (KeyFunctions{ []() { _character->pushZ(speed); }, []() { _character->pushZ(0.0); } });
-		keymap[GLFW_KEY_SPACE] = (KeyFunctions{ []() { _character->setVelocityY(jump); }, []() { _character->setVelocityY(0.0); } });
+		keymap[GLFW_KEY_W] = (KeyFunctions{ []() { _character->moveX(speed); }, []() { _character->moveX(0.0); } });
+		keymap[GLFW_KEY_S] = (KeyFunctions{ []() { _character->moveX(-speed); }, []() { _character->moveX(0.0); } });
+		keymap[GLFW_KEY_A] = (KeyFunctions{ []() { _character->moveZ(-speed); }, []() { _character->moveZ(0.0); } });
+		keymap[GLFW_KEY_D] = (KeyFunctions{ []() { _character->moveZ(speed); }, []() { _character->moveZ(0.0); } });
+		keymap[GLFW_KEY_SPACE] = (KeyFunctions{ []() { _character->pushY(jump); }, []() { _character->pushY(0.0); } });
+		keymap[MOUSE_OFFSET + GLFW_MOUSE_BUTTON_LEFT] = (KeyFunctions{ addVertex, []() {printf("Mouse button released\n"); }});
+		keymap[MOUSE_OFFSET + GLFW_MOUSE_BUTTON_3] = (KeyFunctions{ []() { sens = sens > 1 ? sens - 1 : sens; }, []() { ; } });
+		keymap[MOUSE_OFFSET + GLFW_MOUSE_BUTTON_4] = (KeyFunctions{ []() { sens = sens + 1; }, []() { ; } });
 	}
 
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -53,7 +59,6 @@ namespace Input {
 
 	int rotationX = 0, rotationY = 0;
 
-	float sens = 10;
 
 	int positve_modulo(int i, int n) {
 		return (i % n + n) % n;
@@ -69,15 +74,13 @@ namespace Input {
 	}
 
 	void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-		if (action == GLFW_PRESS) {
-			switch (button) {
-			case 3:
-				sens = sens > 1 ? sens - 1 : sens;
-				break;
-			case 4:
-				sens = sens + 1;
-				break;
-			}
+		switch (action) {
+		case GLFW_PRESS:
+			if (keymap[button + MOUSE_OFFSET].activate) (*keymap[button + MOUSE_OFFSET].activate)();
+			break;
+		case GLFW_RELEASE:
+			if (keymap[button + MOUSE_OFFSET].deactivate) (*keymap[button + MOUSE_OFFSET].deactivate)();
+			break;
 		}
 	}
 

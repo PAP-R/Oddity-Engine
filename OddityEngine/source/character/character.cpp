@@ -39,22 +39,14 @@ public:
 		return movement.pos;
 	}
 
-	void setDir(double x, double y) {
+	void setDir(double x, double y, double z = 0.0) {
 		movement.dir.x = glm::cos(glm::radians(x));
 		movement.dir.y = glm::sin(glm::radians(y));
 		movement.dir.z = glm::sin(glm::radians(x));
-		movement.dirN.x = -glm::sin(glm::radians(x));
-		movement.dirN.y = glm::sin(glm::radians(y));
-		movement.dirN.z = glm::cos(glm::radians(x));
-	}
 
-	void setDir(double x, double y, double z) {
-		movement.dir.x = glm::cos(glm::radians(x));
-		movement.dir.y = glm::sin(glm::radians(y));
-		movement.dir.z = glm::sin(glm::radians(x));
-		movement.dirN.x = -glm::sin(glm::radians(x));
-		movement.dirN.y = glm::sin(glm::radians(y));
-		movement.dirN.z = glm::cos(glm::radians(x));
+		movement.dirN.x = -movement.dir.z;
+		movement.dirN.y = movement.dir.y;
+		movement.dirN.z = movement.dir.x;
 	}
 
 	glm::vec3 getDir() {
@@ -129,15 +121,29 @@ public:
 		movement.push.z = z;
 	}
 
+	void moveX(double x) {
+		movement.move.x = x;
+	}
+
+	void moveY(double y) {
+		movement.move.y = y;
+	}
+
+	void moveZ(double z) {
+		movement.move.z = z;
+	}
+
 	void update() {
 		currentTime = std::chrono::high_resolution_clock::now();
 		time = std::chrono::duration<double, std::chrono::seconds::period>(currentTime - startTime).count();
 
 		movement.velocity = movement.velocity + (movement.acceleration + movement.push) * time;
-		glm::vec3 moveDir = glm::vec3((movement.velocity.x * movement.dir.x + movement.velocity.z * movement.dirN.x), movement.velocity.y, (movement.velocity.x * movement.dir.z + movement.velocity.z * movement.dirN.z));
+		glm::vec3 velocity = movement.velocity + movement.move;
+		glm::vec3 moveDir = glm::vec3((velocity.x * movement.dir.x + velocity.z * movement.dirN.x), velocity.y, (velocity.x * movement.dir.z + velocity.z * movement.dirN.z));
 
 		movement.pos = movement.pos + moveDir * time;
 
+		movement.push = lint(movement.push, glm::vec3(0.0, 0.0, 0.0), 25.0, time);
 		movement.acceleration = lint(movement.acceleration, glm::vec3(0.0, -9.81, 0.0), 10.0, time);
 		movement.velocity = lint(movement.velocity, glm::vec3(0.0, movement.velocity.y, 0.0), 10.0, time);
 

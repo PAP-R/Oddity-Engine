@@ -1,5 +1,10 @@
 #pragma once
 
+#define VMA_IMPLEMENTATION
+#define VMA_STATIC_VULKAN_FUNCTIONS 0
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
+//#include <vk_mem_alloc.h>
+
 #include <vector>
 #include <map>
 #include <set>
@@ -65,10 +70,18 @@ namespace Graphics {
 
 
 		//Buffer
-		VkBuffer vertexBuffer;
+		size_t vertexBlockSize = 1024;
+		size_t vertexSize = vertexBlockSize;
+		size_t vertexOffset = 0;
+		VkBuffer vertexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory vertexBufferMemory;
-		VkBuffer indexBuffer;
+		size_t indexBlockSize = 1024;
+		size_t indexSize = indexBlockSize;
+		size_t indexCount = 0;
+		size_t indexOffset = 0;
+		VkBuffer indexBuffer = VK_NULL_HANDLE;
 		VkDeviceMemory indexBufferMemory;
+
 		std::vector<VkBuffer> uniformBuffers;
 		std::vector<VkDeviceMemory> uniformBuffersMemory;
 		std::vector<VkCommandBuffer> commandBuffers;
@@ -81,22 +94,23 @@ namespace Graphics {
 		std::vector<VkFence> imagesInFlight;
 
 		//Vertices
-		std::vector<Vertex> vertices = {
-			{{0.0f, 0.0f, 0.5f}, {0.5f, 0.5f, 0.5f}},
+		std::vector<Vertex> baseVertices = {
 			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
 			{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
 			{{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-			{{-0.5f, 0.5f, 0.0f}, {0.5f, 0.5f, 0.5f}}
 		};
 
-		std::vector<uint32_t> indices = {
-			0, 1, 2, 0, 2, 3, 0, 3, 4, 0, 4, 1
+		std::vector<uint32_t> baseIndices = {
+			0, 1, 2
 		};
 
 		Movement movement;
 
 		size_t currentFrame = 0;
 
+		//VmaAllocator allocator;
+
+		VkClearValue clearColor = { {{0.2f, 0.2f, 0.2f, 1.0f}} };
 
 	public:
 		void start(GLFWwindow* window) {
@@ -107,6 +121,9 @@ namespace Graphics {
 			createSurface();
 			physicalDevice = pickPhysicalDevice(instance, surface);
 			createLogicalDevice(physicalDevice);
+
+			//createVmaAllocator();
+
 			createSwapChain();
 			createImageViews();
 			createRenderPass();
@@ -115,12 +132,14 @@ namespace Graphics {
 			createFrameBuffer();
 			createCommandPool();
 			//createTextureImage();
-			createVertexBuffer();
-			createIndexBuffer();
+			createVertexBuffer(vertexSize);
+			createIndexBuffer(indexSize);
 			createUniformBuffers();
 			createDescriptorPool();
 			createDiscriptorSets();
 			createCommandBuffers();
+			addVertex(baseVertices);
+			addIndex(baseIndices);
 			createSyncObjects();
 		}
 
@@ -132,6 +151,51 @@ namespace Graphics {
 		void stop() {
 			cleanup();
 		}
+
+		void add(std::vector<Vertex> vertices, std::vector<uint32_t> indices) {
+			addVertex(vertices);
+			addIndex(indices);
+			recreateSwapChain();
+		}
+
+		void addVertex(std::vector<Vertex> vertices) {
+			size_t size = sizeof(vertices[0]) * vertices.size();
+			VkDeviceSize bufferSize = sizeToBlock(size + vertexOffset, vertexBlockSize);
+
+			if (bufferSize > vertexSize) {
+				createVertexBuffer(bufferSize, vertexSize); 
+				vertexSize = bufferSize;
+			}
+
+			addToBuffer(device, physicalDevice, vertexBuffer, vertexBufferMemory, vertices.data(), size, commandPool, graphicsQueue, 0, vertexOffset);
+			vertexOffset += sizeof(vertices[0]) * vertices.size();
+			printf("Added Triangle Vertices\n");
+		}
+
+		void readVertex() {
+			VkDeviceSize size = sizeToBlock(vertexOffset, vertexBlockSize);
+			void* data;
+			vkMapMemory(device, vertexBufferMemory, 0, size, 0, &data);
+			std::cout << data << std::endl;
+			vkUnmapMemory(device, vertexBufferMemory);
+		}
+
+		void addIndex(std::vector<uint32_t> indices) {
+			size_t size = sizeof(indices[0]) * indices.size();
+			VkDeviceSize bufferSize = sizeToBlock(size + indexOffset, indexBlockSize);
+
+			if (bufferSize > indexSize) {
+				createIndexBuffer(bufferSize, indexSize);
+				indexSize = bufferSize;
+			}
+
+			addToBuffer(device, physicalDevice, indexBuffer, indexBufferMemory, indices.data(), size, commandPool, graphicsQueue, 0, indexOffset);
+			indexOffset += sizeof(indices[0]) * indices.size();
+			printf("Added Triangle Indices\n");
+
+			indexCount += indices.size();
+		}
+
 
 	private:
 		//Creation
@@ -213,7 +277,24 @@ namespace Graphics {
 			vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 			vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 		}
+		/*
+		void createVmaAllocator() {
+			VmaVulkanFunctions vulkanFunctions = {
+				.vkGetInstanceProcAddr = &vkGetInstanceProcAddr,
+				.vkGetDeviceProcAddr = &vkGetDeviceProcAddr
+			};
 
+			VmaAllocatorCreateInfo createInfo = {
+				.physicalDevice = physicalDevice,
+				.device = device,
+				.pVulkanFunctions = &vulkanFunctions,
+				.instance = instance,
+				.vulkanApiVersion = VK_API_VERSION_1_3,
+			};
+
+			vmaCreateAllocator(&createInfo, &allocator);
+		}
+		*/
 		void createSwapChain() {
 			SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice, surface);
 			VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -519,51 +600,19 @@ namespace Graphics {
 
 			VkCommandPoolCreateInfo poolInfo{
 				.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-				.flags = 0,
+				.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
 				.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value()
 			};
 
 			check(vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS, "Failed to create command pool");
 		}
 
-		void createVertexBuffer() {
-			VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-
-			VkBuffer stagingBuffer;
-			VkDeviceMemory stagingBufferMemory;
-			createBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-			void* data;
-			vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-			memcpy(data, vertices.data(), (size_t)bufferSize);
-			vkUnmapMemory(device, stagingBufferMemory);
-
-			createBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-
-			copyBuffer(device, stagingBuffer, vertexBuffer, bufferSize, commandPool, graphicsQueue);
-
-			vkDestroyBuffer(device, stagingBuffer, nullptr);
-			vkFreeMemory(device, stagingBufferMemory, nullptr);
+		void createVertexBuffer(VkDeviceSize size, VkDeviceSize prevSize = 0) {
+			resizeBuffer(device, physicalDevice, prevSize, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory, commandPool, graphicsQueue);
 		}
 
-		void createIndexBuffer() {
-			VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
-
-			VkBuffer stagingBuffer;
-			VkDeviceMemory stagingBufferMemory;
-			createBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-			void* data;
-			vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-			memcpy(data, indices.data(), (size_t)bufferSize);
-			vkUnmapMemory(device, stagingBufferMemory);
-
-			createBuffer(device, physicalDevice, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-
-			copyBuffer(device, stagingBuffer, indexBuffer, bufferSize, commandPool, graphicsQueue);
-
-			vkDestroyBuffer(device, stagingBuffer, nullptr);
-			vkFreeMemory(device, stagingBufferMemory, nullptr);
+		void createIndexBuffer(VkDeviceSize size, VkDeviceSize prevSize = 0) {
+			resizeBuffer(device, physicalDevice, prevSize, size, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory, commandPool, graphicsQueue);
 		}
 
 		void createUniformBuffers() {
@@ -634,6 +683,10 @@ namespace Graphics {
 		void createCommandBuffers() {
 			commandBuffers.resize(swapchainFramebuffers.size());
 
+			updateCommandBuffer();
+		}
+
+		void updateCommandBuffer() {
 			VkCommandBufferAllocateInfo allocInfo{
 				.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 				.commandPool = commandPool,
@@ -644,6 +697,8 @@ namespace Graphics {
 			check(vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS, "Failed to create command buffers");
 
 			for (size_t i = 0; i < commandBuffers.size(); i++) {
+				vkResetCommandBuffer(commandBuffers[i], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+
 				VkCommandBufferBeginInfo beginInfo{
 					.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
 					.flags = 0,
@@ -652,7 +707,6 @@ namespace Graphics {
 
 				check(vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS, "Failed to begin command buffer recording");
 
-				VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 
 				VkRenderPassBeginInfo renderPassInfo{
 					.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -675,7 +729,7 @@ namespace Graphics {
 
 				vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
 
-				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);//Error
+				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indexCount), 1, 0, 0, 0);//Error
 
 				vkCmdEndRenderPass(commandBuffers[i]);
 
@@ -858,7 +912,7 @@ namespace Graphics {
 			UniformBufferObject ubo{
 				.model = glm::mat4(1.0f), //glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
 				.view = rotMat,//glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),//glm::rotate(glm::mat4(1.0f), time * glm::radians(30.0f), viewRot),
-				.proj = glm::perspective(glm::radians(90.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.1f, 10.0f),
+				.proj = glm::perspective(glm::radians(90.0f), swapchainExtent.width / (float)swapchainExtent.height, 0.0f, 10.0f),
 			};
 			ubo.proj[1][1] *= -1;
 

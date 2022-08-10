@@ -222,10 +222,30 @@ void createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize
 		.allocationSize = memRequirements.size,
 		.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties)
 	};
-
+	
 	check(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS, "Failed to allocate vertyex buffer memory");
-
+	
 	vkBindBufferMemory(device, buffer, bufferMemory, 0);
+}
+
+void resizeBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize prevSize, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, VkCommandPool commandPool, VkQueue graphicsQueue) {
+	if (buffer != VK_NULL_HANDLE) {
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingBufferMemory;
+		createBuffer(device, physicalDevice, prevSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+		copyBuffer(device, buffer, stagingBuffer, prevSize, commandPool, graphicsQueue);
+
+		createBuffer(device, physicalDevice, size, usage, properties, buffer, bufferMemory);
+
+		copyBuffer(device, stagingBuffer, buffer, prevSize, commandPool, graphicsQueue);
+
+		vkDestroyBuffer(device, stagingBuffer, nullptr);
+		vkFreeMemory(device, stagingBufferMemory, nullptr);
+	}
+	else {
+		createBuffer(device, physicalDevice, size, usage, properties, buffer, bufferMemory);
+	}
 }
 
 uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
@@ -241,7 +261,7 @@ uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, Vk
 	throw std::runtime_error("Failed to find suitable memory type");
 }
 
-void copyBuffer(VkDevice device, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandPool commandPool, VkQueue graphicsQueue) {
+void copyBuffer(VkDevice device, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkCommandPool commandPool, VkQueue graphicsQueue, size_t srcOffset, size_t dstOffset) {
 	VkCommandBufferAllocateInfo allocInfo{
 		.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
 		.commandPool = commandPool,
@@ -260,8 +280,8 @@ void copyBuffer(VkDevice device, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDevic
 	vkBeginCommandBuffer(commandBuffer, &beginInfo);
 
 	VkBufferCopy copyRegion{
-		.srcOffset = 0,
-		.dstOffset = 0,
+		.srcOffset = srcOffset,
+		.dstOffset = dstOffset,
 		.size = size
 	};
 	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
@@ -278,4 +298,24 @@ void copyBuffer(VkDevice device, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDevic
 	vkQueueWaitIdle(graphicsQueue);
 
 	vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+}
+
+void addToBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkBuffer dstBuffer, VkDeviceMemory dstMemory, void* srcData, VkDeviceSize size, VkCommandPool commandPool, VkQueue graphicsQueue, size_t srcOffset, size_t dstOffset) {
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer(device, physicalDevice, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(device, stagingBufferMemory, 0, size, 0, &data);
+	memcpy(data, srcData, (size_t)size);
+	vkUnmapMemory(device, stagingBufferMemory);
+
+	copyBuffer(device, stagingBuffer, dstBuffer, size, commandPool, graphicsQueue, srcOffset, dstOffset);
+
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+	vkFreeMemory(device, stagingBufferMemory, nullptr);
+}
+
+size_t sizeToBlock(size_t size, size_t blockSize) {
+	return (size / blockSize + 1) * blockSize;
 }
