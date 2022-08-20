@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.23)
+project(OddityEngineCmake)
+
+set(CMAKE_CXX_STANDARD 23)
+SET( CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "/NODEFAULTLIB:library" )
+set( CMAKE_STATIC_LINKER_FLAGS ${CMAKE_STATIC_LINKER_FLAGS} "/NODEFAULTLIB:library" )
+add_subdirectory(source)

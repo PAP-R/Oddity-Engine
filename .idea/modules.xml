@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/OddityEngine.iml" filepath="$PROJECT_DIR$/.idea/OddityEngine.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/OddityEngineCmake.iml" filepath="$PROJECT_DIR$/.idea/OddityEngineCmake.iml" />
     </modules>
   </component>
 </project>
