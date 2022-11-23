@@ -1,4 +1,6 @@
-#include "graphics/graphics.cpp"
+#pragma once
+
+#include "graphics/graphics.h"
 #include "character/movement.h"
 #include "character/character.cpp"
 #include "input/input.h"
@@ -10,7 +12,7 @@ void fullscreen() {
 	graphics.fullScreen();
 }
 
-std::vector<Vertex> tempVertices(3);
+std::vector<Graphics::Vertex> tempVertices(3);
 uint32_t tvertex = 0;
 std::vector<uint32_t> tempIndices(3);
 uint32_t tindex = 0;
@@ -29,7 +31,7 @@ void addVertex() {
 
 	index++;
 
-	graphics.vulkan.add(tempVertices, tempIndices);
+	graphics.vk.add(tempVertices, tempIndices);
 
 	/*
 	Vertex vertex;
@@ -41,8 +43,8 @@ void addVertex() {
 	std::cout << glm::to_string(vertex.pos) << std::endl;
 
 	if (index++ >= 2) {
-		graphics.vulkan.addVertex(tempVertices);
-		graphics.vulkan.addIndex(tempIndices);
+		graphics.vk.addVertex(tempVertices);
+		graphics.vk.addIndex(tempIndices);
 		index = 0;
 		printf("Added Triangle\n");
 	}

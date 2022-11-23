@@ -7,110 +7,87 @@
 #include <chrono>
 
 
-#include "vulkan.cpp"
+#include "vulkan.h"
 #include "../character/movement.h"
 
 
 namespace Graphics {
-	class Engine {
-	private:
-		GLFWwindow* window;
-		GLFWmonitor* monitor;
+    void Engine::start(int width, int height, std::string title) {
+        Engine::framebufferResized = false;
+        initWindow(width, height, title);
+        vk.start(window);
+    }
 
-		const GLFWvidmode* standardmode;
+    void Engine::stop() {
+        Engine::vk.stop();
+    }
 
+    bool Engine::update(Movement movement) {
+        glfwPollEvents();
+        vk.update(&framebufferResized, movement);
+        return !glfwWindowShouldClose(window);
+    }
 
-		int posx = 0;
-		int posy = 0;
-		int width = 400;
-		int height = 400;
+    void Engine::fullScreen() {
+        if (fullscreen) {
+            glfwGetWindowPos(window, &posx, &posy);
+            glfwGetWindowSize(window, &width, &height);
 
-		bool framebufferResized = false;
+            glfwSetWindowMonitor(window, monitor, 0, 0, standardmode->width, standardmode->height, standardmode->refreshRate);
+            fullscreen = false;
+        }
+        else {
+            glfwSetWindowMonitor(window, NULL, posx, posy, width, height, standardmode->refreshRate);
+            fullscreen = true;
+        }
 
-		bool fullscreen = true;
+        printf("Fullscreen Toggle\n");
+    }
 
+    void Engine::setKeyCallback(GLFWkeyfun callback) {
+        glfwSetKeyCallback(window, callback);
+    }
 
-	public:
-		Vulkan vulkan;
+    void Engine::setCursorPositionCallback(GLFWcursorposfun callback) {
+        glfwSetCursorPosCallback(window, callback);
+    }
 
-		void start(int width, int height, std::string title) {
-			Engine::framebufferResized = false;
-			initWindow(width, height, title);
-			vulkan.start(window);
-		}
+    void Engine::setMouseButtonCallback(GLFWmousebuttonfun callback) {
+        glfwSetMouseButtonCallback(window, callback);
+    }
 
-		void stop() {
-			vulkan.stop();
-		}
+    void Engine::setScrollCallback(GLFWscrollfun callback) {
+        glfwSetScrollCallback(window, callback);
+    }
 
-		bool update(Movement movement) {
-			glfwPollEvents();
-			vulkan.update(&framebufferResized, movement);
-			return !glfwWindowShouldClose(window);
-		}
+    void Engine::initWindow(int width, int height, std::string title) {
+        this->width = width;
+        this->height = height;
 
-		void fullScreen() {
-			if (fullscreen) {
-				glfwGetWindowPos(window, &posx, &posy);
-				glfwGetWindowSize(window, &width, &height);
+        glfwInit();
 
-				glfwSetWindowMonitor(window, monitor, 0, 0, standardmode->width, standardmode->height, standardmode->refreshRate);
-				fullscreen = false;
-			}
-			else {
-				glfwSetWindowMonitor(window, NULL, posx, posy, width, height, standardmode->refreshRate);
-				fullscreen = true;
-			}
+        monitor = glfwGetPrimaryMonitor();
+        standardmode = glfwGetVideoMode(monitor);
 
-			printf("Fullscreen Toggle\n");
-		}
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-		void setKeyCallback(GLFWkeyfun callback) {
-			glfwSetKeyCallback(window, callback);
-		}
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-		void setCursorPositionCallback(GLFWcursorposfun callback) {
-			glfwSetCursorPosCallback(window, callback);
-		}
+        glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+        glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+        glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+        glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-		void setMouseButtonCallback(GLFWmousebuttonfun callback) {
-			glfwSetMouseButtonCallback(window, callback);
-		}
+        window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+        glfwSetWindowUserPointer(window, this);
+        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 
-		void setScrollCallback(GLFWscrollfun callback) {
-			glfwSetScrollCallback(window, callback);
-		}
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
 
-	private:
-		void initWindow(int width, int height, std::string title) {
-			this->width = width;
-			this->height = height;
-
-			glfwInit();
-
-			monitor = glfwGetPrimaryMonitor();
-			standardmode = glfwGetVideoMode(monitor);
-
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-
-			glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-			glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-			glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-			glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-
-			window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
-			glfwSetWindowUserPointer(window, this);
-			glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-
-			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		}
-
-		static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-			auto app = reinterpret_cast<Engine*>(glfwGetWindowUserPointer(window));
-			app->framebufferResized = true;
-		}
-	};
+    void Engine::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+        auto app = reinterpret_cast<Engine*>(glfwGetWindowUserPointer(window));
+        app->framebufferResized = true;
+    }
 }

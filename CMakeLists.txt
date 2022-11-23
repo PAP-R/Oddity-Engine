@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.23)
-project(OddityEngineCmake)
+project(OddityEngine)
 
 set(CMAKE_CXX_STANDARD 23)
 SET( CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "/NODEFAULTLIB:library" )

@@ -9,9 +9,11 @@ set(CHECK_FILES
         checks/checks.h)
 
 set(GRAPHICS_FILES
+        graphics/graphic_libs.h
         graphics/graphics.cpp
         graphics/graphics.h
         graphics/vulkan.cpp
+        graphics/vulkan.h
         graphics/vulkan_helper.cpp
         graphics/vulkan_helper.h)
 

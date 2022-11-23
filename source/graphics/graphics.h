@@ -1,38 +1,60 @@
-#pragma once
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
 
 #include <string>
 #include <optional>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
-#define VK_USEPLATFORM_WIN32_KHR
-#define GLFW_INCLUDE_VULKAN
-#define GLFW_EXPOSED_NATIVE_WIN32
-
-#define GLM_FORCE_RADIANS
-
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-
-#define GLM_ENABLE_EXPERIMENTAL
-
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <glm/ext.hpp>
-
-
-#define MAX_FRAMES_IN_FLIGHT 2
-#define VALIDATE true
-
+#include "graphic_libs.h"
+#include "vulkan.h"
 
 namespace Graphics {
-	struct UniformBufferObject {
-		glm::mat4 model;
-		glm::mat4 view;
-		glm::mat4 proj;
-	};
+
+    #define MAX_FRAMES_IN_FLIGHT 2
+    #define VALIDATE true
+
+    class Engine {
+    private:
+        GLFWwindow* window;
+        GLFWmonitor* monitor;
+
+        const GLFWvidmode* standardmode;
+
+
+        int posx = 0;
+        int posy = 0;
+        int width = 400;
+        int height = 400;
+
+        bool framebufferResized = false;
+
+        bool fullscreen = true;
+
+
+    public:
+        Vulkan vk;
+
+        void start(int width, int height, std::string title);
+
+        void stop();
+
+        bool update(Movement movement);
+
+        void fullScreen();
+
+        void setKeyCallback(GLFWkeyfun callback);
+
+        void setCursorPositionCallback(GLFWcursorposfun callback);
+
+        void setMouseButtonCallback(GLFWmousebuttonfun callback);
+
+        void setScrollCallback(GLFWscrollfun callback);
+
+    private:
+        void initWindow(int width, int height, std::string title);
+
+        static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+    };
+
 }
+
+#endif
