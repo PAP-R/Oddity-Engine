@@ -10,7 +10,7 @@ add_subdirectory(external)
 include_directories(
         external/glew-2.1.0/include
         external/glfw-3.3.8/include
-        external/glm-0.9.9.8
+        external/glm
         .
 )
 

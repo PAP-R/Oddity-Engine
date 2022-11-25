@@ -3,7 +3,9 @@ set(MAIN_FILE
 
 set(COMMON_FILES
         common/loadShader.cpp
-        common/loadShader.h)
+        common/loadShader.h
+        common/loadTexture.cpp
+        common/loadTexture.h)
 
 set(SOURCE_FILES
         ${MAIN_FILE})
