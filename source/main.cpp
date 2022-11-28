@@ -10,7 +10,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
+#include "Player.h"
 #include "common/loadShader.h"
+#include "common/loadTexture.h"
 
 static GLfloat g_color_buffer_data[12 * 3 * 3];
 
@@ -28,66 +30,6 @@ void createColor(GLuint colorbuffer) {
 
     glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
-}
-
-GLuint loadTGA_glfw(const char * imagepath) {
-    GLuint texture;
-    glGenTextures(1, &texture);
-
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glfwLoadTexture2D(imagepath, 0);
-}
-
-GLuint loadBMP_custom(const char * imagepath) {
-    unsigned char header[54];
-    unsigned int datapos;
-    unsigned int width, height;
-    unsigned int imageSize;
-
-    unsigned char * data;
-
-    FILE * file = fopen(imagepath, "rb");
-    if (!file) {
-        throw std::runtime_error("Couldn't open Texture file");
-    }
-
-    if (fread(header, 1, 54, file) != 54) {
-        throw std::runtime_error("Couldn't read texture header");
-    }
-
-    if (header[0] != 'B' || header[1] != 'M') {
-        throw std::runtime_error("Not a bm file");
-    }
-
-    datapos = *(int*)&(header[0x0A]);
-    imageSize = *(int*)&(header[0x22]);
-    width = *(int*)&(header[0x12]);
-    height = *(int*)&(header[0x16]);
-
-    if (imageSize == 0)
-        imageSize = width * height * 3;
-    if (datapos == 0)
-        datapos = 54;
-
-    data = new unsigned char [imageSize];
-
-    fread(data, 1, imageSize, file);
-
-    fclose(file);
-
-    GLuint texture;
-    glGenTextures(1, &texture);
-
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    return texture;
 }
 
 int main() {
@@ -115,11 +57,33 @@ int main() {
         throw std::runtime_error("Failed to create Window");
     }
 
+    glEnable(GL_CULL_FACE);
+
+    Player player;
+
+    printf("HorizontalAngle: %f\nVerticalAngle: %f\n", player.angle.x, player.angle.y);
+
+    glfwSetWindowUserPointer(window, &player);
+
+    auto keyfunc = [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+        static_cast<Player*>((glfwGetWindowUserPointer(window)))->key_callback(window, key, scancode, action, mods);
+    };
+
+    glfwSetKeyCallback(window, keyfunc);
+
+    auto cursorfunc = [](GLFWwindow* window, double posx, double posy) {
+        static_cast<Player*>((glfwGetWindowUserPointer(window)))->cursor_callback(window, posx, posy);
+    };
+
+    glfwSetCursorPosCallback(window, cursorfunc);
+
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK) {
         printf("Failed to initialize GLEW");
        throw std::runtime_error("Failed to initialize GLEW");
     }
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
@@ -129,19 +93,7 @@ int main() {
      GLuint program = loadFileShaders("shaders/testvert.shader", "shaders/testfrag.shader");
 
     /// Perspective
-    mat4 projection = perspective(radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 
-    mat4 view = lookAt(
-            vec3(4, 3, 3),
-            vec3(0, 0, 0),
-            vec3(0, 1, 0)
-    );
-
-    mat4 model = mat4(1.0f);
-
-    mat4 mvp = projection * view * model;
-
-    GLuint matrix = glGetUniformLocation(program, "MVP");
 
     /// Test Cube
     static const GLfloat g_vertex_buffer_data[] = {
@@ -236,14 +188,38 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
 
-    GLuint texture = loadBMP_custom("textures/uvtemplate.bmp");
+    GLuint texture = loadDDS("textures/uvtemplate.dds");//loadBMP_custom("textures/uvtemplate.bmp");//
+
+    GLuint textureSampler = glGetUniformLocation(program, "myTextureSampler");
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(program);
 
+        /// Perspective
+        player.move();
+
+        mat4 projection = perspective(radians(player.fov), float(width) / float(height), 0.1f, 100.0f);
+
+        mat4 view = lookAt(
+                player.position,
+                player.position + player.direction(),
+                player.up()
+        );
+
+        mat4 model = mat4(1.0f);
+
+        mat4 mvp = projection * view * model;
+
+        GLuint matrix = glGetUniformLocation(program, "MVP");
+
         glUniformMatrix4fv(matrix, 1, GL_FALSE, &mvp[0][0]);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glUniform1i(textureSampler, 0);
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);

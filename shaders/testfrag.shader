@@ -4,8 +4,8 @@ in vec2 UV;
 
 out vec3 color;
 
-uniform sampler2D textureSampler;
+uniform sampler2D myTextureSampler;
 
 void main() {
-    color = texture(textureSampler, UV).rgb;
+    color = clamp(texture(myTextureSampler, UV).rgb + vec3(0.1), 0.0, 1.0);
 }
