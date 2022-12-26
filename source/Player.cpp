@@ -1,31 +1,31 @@
 #include "Player.h"
 
-vec3 Player::direction() {
-    return vec3(
+vec3 Player::direction() const {
+    return {
             cos(angle.y) * sin(angle.x),
             sin(angle.y),
             cos(angle.y) * cos(angle.x)
-            );
+            };
 }
 
-vec3 Player::right() {
-    return vec3(
+vec3 Player::right() const {
+    return {
             sin(angle.x - 3.14f / 2.0f),
             0,
             cos(angle.x - 3.14f / 2.0f)
-            );
+            };
 }
 
-vec3 Player::up() {
+vec3 Player::up() const {
     return cross(right(), direction());
 }
 
 void Player::move() {
     double currentTime = glfwGetTime();
-    float deltaTime = float(currentTime - time);
+    auto moveDeltaTime = float(currentTime - time);
     time = currentTime;
 
-    position = position + movement * direction() * deltaTime * speed;
+    position = position + (movement.x * direction() + movement.z * right()) * moveDeltaTime * speed;
 }
 
 void Player::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -81,7 +81,6 @@ void Player::key_callback(GLFWwindow* window, int key, int scancode, int action,
 }
 
 void Player::cursor_callback(GLFWwindow* window, double xpos, double ypos) {
-
     angle.x -= mouseSpeed * deltaTime * xpos;
     angle.y -= mouseSpeed * deltaTime * ypos;
     angle.y = clamp(angle.y, radians(-90.0f), radians(90.0f));

@@ -11,7 +11,7 @@ using namespace glm;
 
 class Player {
     double time = glfwGetTime();
-    double deltaTime = glfwGetTime();
+    float deltaTime = glfwGetTime();
 
     vec3 movement = vec3(0);
 
@@ -24,9 +24,9 @@ public:
     float speed = 3.0f;
     float mouseSpeed = 0.005f;
 
-    vec3 direction();
-    vec3 right();
-    vec3 up();
+    vec3 direction() const;
+    vec3 right() const;
+    vec3 up() const;
     void move();
 
     void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

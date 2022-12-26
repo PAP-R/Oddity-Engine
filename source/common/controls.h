@@ -1,0 +1,10 @@
+#ifndef ODDITYENGINE_CONTROLS_H
+#define ODDITYENGINE_CONTROLS_H
+
+
+class controls {
+
+};
+
+
+#endif //ODDITYENGINE_CONTROLS_H

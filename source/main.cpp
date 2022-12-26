@@ -20,7 +20,7 @@ double lastTime = 0.0;
 
 void createColor(GLuint colorbuffer) {
     double currentTime = glfwGetTime();
-    float deltaTime = float(currentTime - lastTime);
+    auto deltaTime = float(currentTime - lastTime);
     lastTime = currentTime;
 
     for (float & v : g_color_buffer_data) {
@@ -34,10 +34,6 @@ void createColor(GLuint colorbuffer) {
 
 int main() {
     int width = 1080, height = 720;
-
-    glewExperimental = true;
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
 
     if (!glfwInit()) {
         throw std::runtime_error("Failed to initialize GLFW");
@@ -56,8 +52,6 @@ int main() {
         printf("Failed to create Window\n");
         throw std::runtime_error("Failed to create Window");
     }
-
-    glEnable(GL_CULL_FACE);
 
     Player player;
 
@@ -85,12 +79,17 @@ int main() {
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+    glewExperimental = true;
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
+
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
      /// Shaders
-     GLuint program = loadFileShaders("shaders/testvert.shader", "shaders/testfrag.shader");
+     GLuint program = loadFileShaders("shaders/colorvert.shader", "shaders/colorfrag.shader");
 
     /// Perspective
 
@@ -188,7 +187,7 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
 
-    GLuint texture = loadDDS("textures/uvtemplate.dds");//loadBMP_custom("textures/uvtemplate.bmp");//
+    GLuint texture = loadDDS("textures/uvtemplate.dds");
 
     GLuint textureSampler = glGetUniformLocation(program, "myTextureSampler");
 
@@ -232,11 +231,13 @@ int main() {
                 nullptr
         );
 
+        createColor(colorbuffer);
+
         glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
         glVertexAttribPointer(
                 1,
-                2,
+                3,
                 GL_FLOAT,
                 GL_FALSE,
                 0,

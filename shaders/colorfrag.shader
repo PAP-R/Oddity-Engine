@@ -1,11 +1,11 @@
 #version 330 core
 
-in vec2 UV;
+in vec3 fragmentColor;
 
 out vec3 color;
 
 uniform sampler2D myTextureSampler;
 
 void main() {
-    color = clamp(texture(myTextureSampler, UV).rgb + vec3(0.1), 0.0, 1.0);
+    color = clamp(fragmentColor * vec3(5.0), 0.0, 1.0);
 }
