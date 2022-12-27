@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
 
 #include <GL/glew.h>
@@ -10,6 +10,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <map>
+
 #include "Player.h"
 #include "common/loadShader.h"
 #include "common/loadTexture.h"
@@ -17,6 +22,56 @@ using namespace glm;
 static GLfloat g_color_buffer_data[12 * 3 * 3];
 
 double lastTime = 0.0;
+
+ std::vector<vec3> cubeCorners() {
+    size_t cornerCount = 8;
+    std::vector<vec3> cornerData;
+
+    for (int i = 0; i < cornerCount; i++) {
+        cornerData.emplace_back(((i / 4) % 2) * 2 - 1, ((i / 2) % 2) * 2 - 1, ((i) % 2) * 2 - 1);
+        printf("[%3f / %3f / %3f]\n", cornerData.back().x, cornerData.back().y, cornerData.back().z);
+    }
+
+    return cornerData;
+}
+
+bool compair(std::pair<int, float> first, std::pair<int, float> second) {
+     return first.second < second.second;
+ }
+
+std::vector<float> createTriangles(std::vector<vec3> points) {
+     std::vector<std::vector<std::pair<int, float>>> lengths(points.size());
+
+     for (int v = 0; v < points.size(); v++) {
+         for (int o = 0; o < points.size(); o++) {
+             int offset = (v + o) % points.size();
+             lengths[v].emplace_back(offset, distance(points[v], points[offset]));
+         }
+         std::sort(lengths[v].begin(), lengths[v].end(), compair);
+         for (auto d : lengths[v]) {
+             printf("%d -> %d : %f\n", v, d.first, d.second);
+         }
+     }
+
+     std::vector<float> verts;
+
+     for (size_t v = 0; v < points.size(); v++) {
+         for(int o = 0; o < 3; o++) {
+            for (int i = 0; i < 3; i++) {
+                verts.emplace_back(points[lengths[v][o].first][i]);
+                printf("%f\t", verts.back());
+            }
+            printf("\n");
+         }
+     }
+
+
+     return verts;
+ }
+
+std::vector<GLfloat> createCube() {
+    return createTriangles(cubeCorners());
+}
 
 void createColor(GLuint colorbuffer) {
     double currentTime = glfwGetTime();
@@ -33,6 +88,7 @@ void createColor(GLuint colorbuffer) {
 }
 
 int main() {
+    createTriangles(cubeCorners());
     int width = 1080, height = 720;
 
     if (!glfwInit()) {
@@ -89,7 +145,7 @@ int main() {
     glBindVertexArray(VertexArrayID);
 
      /// Shaders
-     GLuint program = loadFileShaders("shaders/colorvert.shader", "shaders/colorfrag.shader");
+    GLuint program = loadFileShaders("shaders/colorvert.shader", "shaders/colorfrag.shader");
 
     /// Perspective
 
@@ -137,59 +193,12 @@ int main() {
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-    static const GLfloat g_uv_buffer_data[] = {
-            0.000059f, 1.0f-0.000004f,
-            0.000103f, 1.0f-0.336048f,
-            0.335973f, 1.0f-0.335903f,
-            1.000023f, 1.0f-0.000013f,
-            0.667979f, 1.0f-0.335851f,
-            0.999958f, 1.0f-0.336064f,
-            0.667979f, 1.0f-0.335851f,
-            0.336024f, 1.0f-0.671877f,
-            0.667969f, 1.0f-0.671889f,
-            1.000023f, 1.0f-0.000013f,
-            0.668104f, 1.0f-0.000013f,
-            0.667979f, 1.0f-0.335851f,
-            0.000059f, 1.0f-0.000004f,
-            0.335973f, 1.0f-0.335903f,
-            0.336098f, 1.0f-0.000071f,
-            0.667979f, 1.0f-0.335851f,
-            0.335973f, 1.0f-0.335903f,
-            0.336024f, 1.0f-0.671877f,
-            1.000004f, 1.0f-0.671847f,
-            0.999958f, 1.0f-0.336064f,
-            0.667979f, 1.0f-0.335851f,
-            0.668104f, 1.0f-0.000013f,
-            0.335973f, 1.0f-0.335903f,
-            0.667979f, 1.0f-0.335851f,
-            0.335973f, 1.0f-0.335903f,
-            0.668104f, 1.0f-0.000013f,
-            0.336098f, 1.0f-0.000071f,
-            0.000103f, 1.0f-0.336048f,
-            0.000004f, 1.0f-0.671870f,
-            0.336024f, 1.0f-0.671877f,
-            0.000103f, 1.0f-0.336048f,
-            0.336024f, 1.0f-0.671877f,
-            0.335973f, 1.0f-0.335903f,
-            0.667969f, 1.0f-0.671889f,
-            1.000004f, 1.0f-0.671847f,
-            0.667979f, 1.0f-0.335851f
-    };
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), createCube().data(), GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
     GLuint colorbuffer;
     glGenBuffers(1, &colorbuffer);
     createColor(colorbuffer);
-
-    GLuint uvbuffer;
-    glGenBuffers(1, &uvbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_uv_buffer_data), g_uv_buffer_data, GL_STATIC_DRAW);
-
-    GLuint texture = loadDDS("textures/uvtemplate.dds");
-
-    GLuint textureSampler = glGetUniformLocation(program, "myTextureSampler");
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -214,11 +223,6 @@ int main() {
         GLuint matrix = glGetUniformLocation(program, "MVP");
 
         glUniformMatrix4fv(matrix, 1, GL_FALSE, &mvp[0][0]);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        glUniform1i(textureSampler, 0);
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
