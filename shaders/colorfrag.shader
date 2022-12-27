@@ -7,5 +7,5 @@ out vec3 color;
 uniform sampler2D myTextureSampler;
 
 void main() {
-    color = clamp(fragmentColor * vec3(5.0), 0.0, 1.0);
+    color = (fragmentColor + 1.0f) / 2;
 }

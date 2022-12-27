@@ -19,7 +19,7 @@ using namespace glm;
 #include "common/loadShader.h"
 #include "common/loadTexture.h"
 
-static GLfloat g_color_buffer_data[12 * 3 * 3];
+static std::vector<GLfloat> g_color_buffer_data;
 
 double lastTime = 0.0;
 
@@ -63,6 +63,7 @@ std::vector<float> createTriangles(std::vector<vec3> points) {
             }
             printf("\n");
          }
+         printf("-\t-\t-\t-\t-\n");
      }
 
 
@@ -73,18 +74,34 @@ std::vector<GLfloat> createCube() {
     return createTriangles(cubeCorners());
 }
 
-void createColor(GLuint colorbuffer) {
+float weirdMod(float num, float mod) {
+    while (num < -mod) {
+         num += mod;
+    }
+
+    while (num > mod) {
+         num -= mod;
+    }
+
+    return num;
+}
+
+void createColor(size_t c, GLuint colorbuffer) {
+    if (g_color_buffer_data.size() != c) {
+         g_color_buffer_data.resize(c);
+    }
+
     double currentTime = glfwGetTime();
     auto deltaTime = float(currentTime - lastTime);
     lastTime = currentTime;
 
     for (float & v : g_color_buffer_data) {
-        v += (((float)rand() / RAND_MAX) * 2 - 1) * deltaTime;
-        v = v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v;
+        v += ((static_cast<float>(rand()) / RAND_MAX) * 2 - 1) * deltaTime;
+        v = weirdMod(v, 1.0f);
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, c, g_color_buffer_data.data(), GL_STATIC_DRAW);
 }
 
 int main() {
@@ -147,58 +164,16 @@ int main() {
      /// Shaders
     GLuint program = loadFileShaders("shaders/colorvert.shader", "shaders/colorfrag.shader");
 
-    /// Perspective
-
-
-    /// Test Cube
-    static const GLfloat g_vertex_buffer_data[] = {
-            -1.0f,-1.0f,-1.0f, // triangle 1 : begin
-            -1.0f,-1.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f, // triangle 1 : end
-            1.0f, 1.0f,-1.0f, // triangle 2 : begin
-            -1.0f,-1.0f,-1.0f,
-            -1.0f, 1.0f,-1.0f, // triangle 2 : end
-            1.0f,-1.0f, 1.0f,
-            -1.0f,-1.0f,-1.0f,
-            1.0f,-1.0f,-1.0f,
-            1.0f, 1.0f,-1.0f,
-            1.0f,-1.0f,-1.0f,
-            -1.0f,-1.0f,-1.0f,
-            -1.0f,-1.0f,-1.0f,
-            -1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f,-1.0f,
-            1.0f,-1.0f, 1.0f,
-            -1.0f,-1.0f, 1.0f,
-            -1.0f,-1.0f,-1.0f,
-            -1.0f, 1.0f, 1.0f,
-            -1.0f,-1.0f, 1.0f,
-            1.0f,-1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            1.0f,-1.0f,-1.0f,
-            1.0f, 1.0f,-1.0f,
-            1.0f,-1.0f,-1.0f,
-            1.0f, 1.0f, 1.0f,
-            1.0f,-1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f,-1.0f,
-            -1.0f, 1.0f,-1.0f,
-            1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f,-1.0f,
-            -1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,
-            1.0f,-1.0f, 1.0f
-    };
+    std::vector<GLfloat> cube = createCube();
 
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), createCube().data(), GL_STATIC_DRAW);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 12 * 3 * 3, cube.data(), GL_STATIC_DRAW);
 
     GLuint colorbuffer;
     glGenBuffers(1, &colorbuffer);
-    createColor(colorbuffer);
+    createColor(cube.size(), colorbuffer);
 
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -235,7 +210,7 @@ int main() {
                 nullptr
         );
 
-        createColor(colorbuffer);
+        createColor(cube.size(), colorbuffer);
 
         glEnableVertexAttribArray(1);
         glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
