@@ -1,5 +1,7 @@
 #include "Player.h"
 
+#include <stdio.h>
+
 vec3 Player::direction() const {
     return {
             cos(angle.y) * sin(angle.x),

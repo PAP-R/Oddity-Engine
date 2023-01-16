@@ -3,10 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdexcept>
+#include <cstring>
+#include <filesystem>
 
 #include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 #define FOURCC_DXT1 0x31545844 // Equivalent to "DXT1" in ASCII
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII
@@ -18,8 +21,9 @@ GLuint loadDDS(const char * imagepath) {
     FILE *fp;
 
     fp = fopen(imagepath, "rb");
+    std::cerr << errno << std::endl;
     if (fp == NULL) {
-        throw std::invalid_argument("Could not open dds file");
+        throw std::invalid_argument("Could not open dds file " + std::string(imagepath) + "\nThe working directory is " + std::string(std::filesystem::current_path()));
     }
 
     char filecode[4];

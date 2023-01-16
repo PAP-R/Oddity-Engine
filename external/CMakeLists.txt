@@ -46,3 +46,20 @@ target_link_libraries(GLEW_1130
         ${OPENGL_LIBRARY}
         ${EXTRA_LIBS}
 )
+
+### IMGUI ###
+set(IMGUI
+        imgui/imconfig.h
+        imgui/imgui.cpp
+        imgui/imgui.h
+        imgui/imgui_draw.cpp
+        imgui/imgui_tables.cpp
+        imgui/imgui_widgets.cpp
+        imgui/backends/imgui_impl_glfw.cpp
+        imgui/backends/imgui_impl_glfw.h
+        imgui/backends/imgui_impl_opengl3.cpp
+        imgui/backends/imgui_impl_opengl3.h)
+
+target_sources(${CMAKE_PROJECT_NAME}
+        PRIVATE
+            ${IMGUI})

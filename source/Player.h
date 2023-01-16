@@ -16,7 +16,7 @@ class Player {
     vec3 movement = vec3(0);
 
 public:
-    vec3 position = vec3(0);
+    vec3 position = vec3(2);
     vec2 angle = vec2(3.14f, 0.0f);
 
     float fov = 45.0f;

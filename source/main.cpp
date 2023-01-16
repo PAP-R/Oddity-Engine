@@ -2,13 +2,17 @@
 #include <cstdlib>
 #include <stdexcept>
 
-#include <GL/glew.h>
-
-#include <GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
+
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
+#include <GL/glew.h>
+
+#include <GLFW/glfw3.h>
 
 #include <vector>
 #include <algorithm>
@@ -22,6 +26,11 @@ using namespace glm;
 static std::vector<GLfloat> g_color_buffer_data;
 
 double lastTime = 0.0;
+
+static void glfw_error_callback(int error, const char* description)
+{
+    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
 
  std::vector<vec3> cubeCorners() {
     size_t cornerCount = 8;
@@ -108,9 +117,11 @@ int main() {
     createTriangles(cubeCorners());
     int width = 1080, height = 720;
 
+    glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) {
         throw std::runtime_error("Failed to initialize GLFW");
     }
+
 
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -125,6 +136,12 @@ int main() {
         printf("Failed to create Window\n");
         throw std::runtime_error("Failed to create Window");
     }
+
+    glfwMakeContextCurrent(window);
+
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
 
     Player player;
 
@@ -142,7 +159,7 @@ int main() {
         static_cast<Player*>((glfwGetWindowUserPointer(window)))->cursor_callback(window, posx, posy);
     };
 
-    glfwSetCursorPosCallback(window, cursorfunc);
+    //glfwSetCursorPosCallback(window, cursorfunc);
 
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK) {
@@ -150,7 +167,7 @@ int main() {
        throw std::runtime_error("Failed to initialize GLEW");
     }
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glewExperimental = true;
     glEnable(GL_DEPTH_TEST);
@@ -176,8 +193,16 @@ int main() {
     createColor(cube.size(), colorbuffer);
 
     while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Hallo");
+        ImGui::Text("Aaaaaaaaaaaaaaaaaaaaa");
+        ImGui::End();
         glUseProgram(program);
 
         /// Perspective
@@ -226,9 +251,14 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
         glDisableVertexAttribArray(0);
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwDestroyWindow(window);
     glfwTerminate();
