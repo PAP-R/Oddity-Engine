@@ -1,0 +1,9 @@
+#ifndef ODDITYENGINE_OBJECT_H
+#define ODDITYENGINE_OBJECT_H
+
+class Object {
+
+};
+
+
+#endif //ODDITYENGINE_OBJECT_H

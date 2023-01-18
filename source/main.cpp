@@ -44,37 +44,51 @@ static void glfw_error_callback(int error, const char* description)
     return cornerData;
 }
 
-bool compair(std::pair<int, float> first, std::pair<int, float> second) {
+bool compair(std::pair<vec3 , float> first, std::pair<vec3, float> second) {
      return first.second < second.second;
  }
 
 std::vector<float> createTriangles(std::vector<vec3> points) {
-     std::vector<std::vector<std::pair<int, float>>> lengths(points.size());
+     std::vector<std::vector<std::pair<vec3, float>>> lengths(points.size());
 
      for (int v = 0; v < points.size(); v++) {
          for (int o = 0; o < points.size(); o++) {
              int offset = (v + o) % points.size();
-             lengths[v].emplace_back(offset, distance(points[v], points[offset]));
+             lengths[v].emplace_back(points[offset], distance(points[v], points[offset]));
          }
          std::sort(lengths[v].begin(), lengths[v].end(), compair);
-         for (auto d : lengths[v]) {
-             printf("%d -> %d : %f\n", v, d.first, d.second);
-         }
      }
 
      std::vector<float> verts;
 
-     for (size_t v = 0; v < points.size(); v++) {
-         for(int o = 0; o < 3; o++) {
-            for (int i = 0; i < 3; i++) {
-                verts.emplace_back(points[lengths[v][o].first][i]);
-                printf("%f\t", verts.back());
-            }
-            printf("\n");
-         }
-         printf("-\t-\t-\t-\t-\n");
-     }
+     auto size = points.size();
 
+     for (size_t v = 0; v < size; v++) {
+         auto min = lengths[v][1].second;
+         if (points.size() < 3) {
+             break;
+         }
+         for(size_t o = 0, f = 0; o < size; o++) {
+             if (f >= 3 && lengths[v][o].second > min) {
+                break;
+             }
+             if (std::find(points.begin(), points.end(), lengths[v][o].first) != points.end()) {
+                 printf("[%d -> %d : %f]\n", v, std::find(points.begin(), points.end(), lengths[v][o].first) - points.begin(), lengths[v][o].second);
+                 for (int i = 0; i < 3; i++) {
+                     verts.emplace_back(lengths[v][o].first[i]);
+                 }
+                 min = lengths[v][o].second;
+                 f++;
+             }
+         }
+
+         for (auto d : lengths[v]) {
+             if (std::find(points.begin(), points.end(), d.first) != points.end()) {
+                 printf("%d -> %d : %f\n", v, std::find(points.begin(), points.end(), d.first) - points.begin(), d.second);
+             }
+         }
+         points.erase(points.begin());
+     }
 
      return verts;
  }
@@ -145,8 +159,6 @@ int main() {
 
     Player player;
 
-    printf("HorizontalAngle: %f\nVerticalAngle: %f\n", player.angle.x, player.angle.y);
-
     glfwSetWindowUserPointer(window, &player);
 
     auto keyfunc = [](GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -159,7 +171,7 @@ int main() {
         static_cast<Player*>((glfwGetWindowUserPointer(window)))->cursor_callback(window, posx, posy);
     };
 
-    //glfwSetCursorPosCallback(window, cursorfunc);
+    glfwSetCursorPosCallback(window, cursorfunc);
 
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK) {
@@ -167,7 +179,7 @@ int main() {
        throw std::runtime_error("Failed to initialize GLEW");
     }
 
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     glewExperimental = true;
     glEnable(GL_DEPTH_TEST);
@@ -181,7 +193,8 @@ int main() {
      /// Shaders
     GLuint program = loadFileShaders("shaders/colorvert.shader", "shaders/colorfrag.shader");
 
-    std::vector<GLfloat> cube = createCube();
+    auto cube = createCube();
+    auto corners = cubeCorners();
 
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
@@ -200,9 +213,6 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Hallo");
-        ImGui::Text("Aaaaaaaaaaaaaaaaaaaaa");
-        ImGui::End();
         glUseProgram(program);
 
         /// Perspective
@@ -250,6 +260,29 @@ int main() {
 
         glDrawArrays(GL_TRIANGLES, 0, 12 * 3);
         glDisableVertexAttribArray(0);
+
+        ImGui::Begin("Hallo", nullptr, 0 & (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
+        ImGui::Text("Player:\n\t[ %f | %f | %f ]\n\t[ %f | %f | %f ]\n\t[ %f | %f ]\n", player.position.x, player.position.y, player.position.z, player.direction().x, player.direction().y, player.direction().z, player.angle.x, player.angle.y);
+
+        for (size_t i = 0; i < corners.size(); i++) {
+            auto ray = corners[i] - player.position;
+            ray = ray * player.direction();
+            auto raylength = length(ray);
+            auto shortray = normalize(ray);
+            auto point = project(corners[i], view, projection, vec4(0, 0, width, height));
+            auto point2d = vec2(point.x, height - point.y);
+
+            ImGui::Text("%d [ %F | %f | %f ] => [ %F | %f | %f ]\n", i, corners[i].x, corners[i].y, corners[i].z, point.x, point.y, point.z);
+
+            ImGui::SetNextWindowPos(ImVec2(point2d.x, point2d.y));
+            ImGui::Begin(std::to_string(i).data(), nullptr, (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
+
+            ImGui::Text("%d", i);
+            //ImGui::Text("%d [ %f | %f | %f ]", i, corners[i].x, corners[i].y, corners[i].z);
+            ImGui::End();
+        }
+
+        ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
