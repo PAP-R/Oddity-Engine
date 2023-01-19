@@ -1,6 +1,9 @@
 #include "Cube.h"
 
 #include <algorithm>
+#include <tuple>
+
+#include <cstdio>
 
 using namespace std;
 
@@ -37,7 +40,7 @@ Cube::Cube() {
         sort(lengths[v].begin(), lengths[v].end(), compair);
 
         auto min = get<2>(lengths[v][1]);
-        for (auto i = 1; i < verts.size() && get<2>(lengths[v][i]) <= min; i++) {
+        for (auto i = 1; i < verts.size()/* && get<2>(lengths[v][i]) <= min*/; i++) {
             points[v].cons.emplace_back(&points[get<0>(lengths[v][i])]);
         }
         printf("%d: %d\t", v, points[v].cons.size());
@@ -45,12 +48,13 @@ Cube::Cube() {
 
     int c = 0;
 
-    for (auto p : points) {
-        auto len = p.cons.size();
+    for (auto i = 0; i < points.size(); i++) {
+        auto len = 3;
         for (auto i = 0; i < len; i++) {
-            p.insertSelf(&vertices);
-            p.cons[i]->insertSelf(&vertices);
-            p.cons[(i + 1) % len]->insertSelf(&vertices);
+            points[i].insertSelf(&vertices);
+            points[i].cons[i]->insertSelf(&vertices);
+            points[i].cons[(i + 1) % len]->insertSelf(&vertices);
+            points[i].cons[i]->cons.erase(remove(points[i].cons[i]->cons.begin(), points[i].cons[i]->cons.end(), &points[i]), points[i].cons[i]->cons.end());
             c++;
         }
     }
