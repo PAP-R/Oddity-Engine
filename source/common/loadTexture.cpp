@@ -1,10 +1,10 @@
 #include "loadTexture.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <filesystem>
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
 #include <cstring>
-#include <filesystem>
 
 #include <GL/glew.h>
 
@@ -23,7 +23,7 @@ GLuint loadDDS(const char * imagepath) {
     fp = fopen(imagepath, "rb");
     std::cerr << errno << std::endl;
     if (fp == NULL) {
-        throw std::invalid_argument("Could not open dds file " + std::string(imagepath) + "\nThe working directory is " + std::string(std::filesystem::current_path()));
+        throw std::invalid_argument("Could not open dds file " + std::string(imagepath) + "\nThe working directory is " + std::filesystem::current_path().string());
     }
 
     char filecode[4];
