@@ -364,6 +364,6 @@ FodyWeavers.xsd
 /cmake-build-debug/
 /.idea/
 
-/external/**
-/external/*
-/external/
+/external/glew-2.1.0/**
+/external/glew-2.1.0/*
+/external/glew-2.1.0/
