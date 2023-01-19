@@ -363,7 +363,3 @@ MigrationBackup/
 FodyWeavers.xsd
 /cmake-build-debug/
 /.idea/
-
-/external/glew-2.1.0/**
-/external/glew-2.1.0/*
-/external/glew-2.1.0/
