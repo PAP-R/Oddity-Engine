@@ -6,6 +6,7 @@
 using namespace glm;
 
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ public:
     vec3 pos{};
     size_t id;
 
-    vector<Point*> cons;
+    vector<tuple<Point*, size_t>> cons;
 
     Point();
 

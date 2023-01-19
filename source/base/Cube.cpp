@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <tuple>
+#include <limits>
 
 #include <cstdio>
 
@@ -40,21 +41,49 @@ Cube::Cube() {
         sort(lengths[v].begin(), lengths[v].end(), compair);
 
         auto min = get<2>(lengths[v][1]);
-        for (auto i = 1; i < verts.size()/* && get<2>(lengths[v][i]) <= min*/; i++) {
-            points[v].cons.emplace_back(&points[get<0>(lengths[v][i])]);
+        auto max = numeric_limits<float>::max();
+        for (auto i = 1; i < verts.size() && get<2>(lengths[v][i]) <= min; i++) {
+            if (false && get<2>(lengths[v][i]) > min) {
+                max = get<2>(lengths[v][i]);
+            }
+            points[v].cons.emplace_back(&points[get<0>(lengths[v][i])], 2);
         }
-        printf("%d: %d\t", v, points[v].cons.size());
     }
 
     int c = 0;
 
-    for (auto i = 0; i < points.size(); i++) {
-        auto len = 3;
+    for (auto p = 0; p < points.size(); p++) {
+        printf("%d: %d\n", p, points[p].cons.size());
+        auto len = points[p].cons.size();
+        for(auto i = 0; i < len; i++) {
+            printf("%d\t", get<0>(points[p].cons[i])->id);
+        }
+        printf("\n");
+        len = len > 3 ? 3 : len == 2 ? 1 : len;
+        if (len < 2) {
+            continue;
+        }
         for (auto i = 0; i < len; i++) {
-            points[i].insertSelf(&vertices);
-            points[i].cons[i]->insertSelf(&vertices);
-            points[i].cons[(i + 1) % len]->insertSelf(&vertices);
-            points[i].cons[i]->cons.erase(remove(points[i].cons[i]->cons.begin(), points[i].cons[i]->cons.end(), &points[i]), points[i].cons[i]->cons.end());
+            points[p].insertSelf(&vertices);
+            get<0>(points[p].cons[i])->insertSelf(&vertices);
+            get<0>(points[p].cons[(i + 1) % len])->insertSelf(&vertices);
+
+            printf("Triangle: %d -> %f -> %d -> %f -> %d\n", p, distance(points[p].pos, get<0>(points[p].cons[i])->pos), get<0>(points[p].cons[i])->id, distance(points[p].pos, get<0>(points[p].cons[(i + 1) % len])->pos), get<0>(points[p].cons[(i + 1) % len])->id);
+
+            get<1>(points[p].cons[i])--;
+            get<1>(*find_if(get<0>(points[p].cons[i])->cons.begin(), get<0>(points[p].cons[i])->cons.end(), [this, &p] (const tuple<Point*, size_t> t) {return get<0>(t) == &points[p];}))--;
+            if(get<1>(points[p].cons[i]) == 0) {
+                printf("Deleted %d from %d\n", p, get<0>(points[p].cons[i])->id);
+                get<0>(points[p].cons[i])->cons.erase(remove(get<0>(points[p].cons[i])->cons.begin(), get<0>(points[p].cons[i])->cons.end(), tuple(&points[p], 0)), get<0>(points[p].cons[i])->cons.end());
+            }
+            
+            get<1>(points[p].cons[(i + 1) % len])--;
+            get<1>(*find_if(get<0>(points[p].cons[(i + 1) % len])->cons.begin(), get<0>(points[p].cons[(i + 1) % len])->cons.end(), [this, &p] (const tuple<Point*, size_t> t) {return get<0>(t) == &points[p];}))--;
+            if(get<1>(points[p].cons[(i + 1) % len]) == 0) {
+                printf("Deleted %d from %d\n", p, get<0>(points[p].cons[(i + 1) % len])->id);
+                get<0>(points[p].cons[(i + 1) % len])->cons.erase(remove(get<0>(points[p].cons[(i + 1) % len])->cons.begin(), get<0>(points[p].cons[(i + 1) % len])->cons.end(), tuple(&points[p], 0)), get<0>(points[p].cons[(i + 1) % len])->cons.end());
+            }
+
             c++;
         }
     }
