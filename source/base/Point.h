@@ -6,13 +6,13 @@
 using namespace glm;
 
 #include <vector>
-#include <map>
 
 using namespace std;
 
 class Point {
 public:
     vec3 pos{};
+    vec3 dir;
     size_t id;
 
     vector<tuple<Point*, size_t>> cons;
@@ -22,6 +22,8 @@ public:
     explicit Point(const vec3 &pos);
 
     Point(const vec3 &pos, size_t id);
+
+    Point(const vec3 &pos, const vec3 &dir, size_t id);
 
     vector<float> toFloats();
 

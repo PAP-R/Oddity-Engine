@@ -23,6 +23,8 @@ using namespace glm;
 
 using namespace std;
 
+#include "debug/Debug.h"
+
 #include "base/Cube.h"
 #include "Player.h"
 #include "common/loadShader.h"
@@ -125,7 +127,7 @@ int main() {
     glewExperimental = true;
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
-    //glEnable(GL_CULL_FACE);
+    glEnable(GL_CULL_FACE);
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
@@ -181,28 +183,26 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, cube.points.size() * 3 * 3);
         glDisableVertexAttribArray(0);
 
-        ImGui::Begin("Hallo", nullptr, 0 & (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
-        ImGui::Text("Player:\n\t[ %f | %f | %f ]\n\t[ %f | %f | %f ]\n\t[ %f | %f ]\n", player.position.x, player.position.y, player.position.z, player.direction().x, player.direction().y, player.direction().z, player.angle.x, player.angle.y);
+        ImGui::Begin("Hallo", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
+        ImGui::Text("Player:\nPos:\t[ %1.2f | %1.2f | %1.2f ]\nDir:\t[ %1.2f | %1.2f | %1.2f ]\nAng:\t[ %1.2f | %1.2f ]\n", player.position.x, player.position.y, player.position.z, player.direction().x, player.direction().y, player.direction().z, player.angle.x, player.angle.y);
 
-        for (size_t i = 0; i < cube.points.size(); i++) {
-            auto ray = cube.points[i].pos - player.position;
+        for (size_t i = 0; i < Debug::get_points().size(); i++) {
+            auto ray = Debug::get_points()[i] - player.position;
             ray = ray * player.direction();
             auto raylength = length(ray);
             auto shortray = normalize(ray);
-            auto point = project(cube.points[i].pos, view, projection, vec4(0, 0, width, height));
+            auto point = project(Debug::get_points()[i], view, projection, vec4(0, 0, width, height));
             auto point2d = vec2(point.x, height - point.y);
-
-            ImGui::Text("%d [ %F | %f | %f ] => [ %F | %f | %f ]\n", i, cube.points[i].pos.x, cube.points[i].pos.y, cube.points[i].pos.z, point.x, point.y, point.z);
 
             if ((ray.x + ray.y + ray.z) < 0) {
                 continue;
             }
 
             ImGui::SetNextWindowPos(ImVec2(point2d.x, point2d.y));
+            ImGui::SetNextWindowSize(ImVec2(400, 64));
             ImGui::Begin(to_string(i).data(), nullptr, (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
 
-            ImGui::Text("%d\n%1.0f %1.0f %1.0f", i, cube.points[i].pos[0], cube.points[i].pos[1], cube.points[i].pos[2]);
-            //ImGui::Text("%d [ %f | %f | %f ]", i, corners[i].x, corners[i].y, corners[i].z);
+            ImGui::Text("%s", Debug::get_point_texts()[i].data());
             ImGui::End();
         }
 

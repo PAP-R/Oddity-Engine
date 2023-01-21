@@ -13,7 +13,9 @@ using namespace glm;
 
 class Object {
 public:
+    vec3 pos{0.0f, 0.0f, 0.0f};
     vector<Point> points;
+
     vector<float> vertices;
 
     Object();

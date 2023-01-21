@@ -15,3 +15,5 @@ void Point::insertSelf(vector<float> * dest) {
 }
 
 Point::Point(const vec3 &pos, size_t id) : pos(pos), id(id) {}
+
+Point::Point(const vec3 &pos, const vec3 &dir, size_t id) : pos(pos), dir(dir), id(id) {}
