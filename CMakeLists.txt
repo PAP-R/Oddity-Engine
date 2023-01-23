@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
 project(OddityEngine)
 
-add_executable(${PROJECT_NAME} source/main.cpp source/base/Object.cpp source/base/Object.h source/base/Cube.h source/base/Cube.cpp source/base/Point.h source/base/Point.cpp source/debug/Debug.h source/debug/Debug.cpp source/base/Polygon.cpp source/base/Polygon.h)
+add_executable(${PROJECT_NAME} source/main.cpp source/base/Object.cpp source/base/Object.h source/base/Cube.h source/base/Cube.cpp source/base/Point.h source/base/Point.cpp source/debug/Debug.h source/debug/Debug.cpp source/base/Polygon.cpp source/base/Polygon.h source/base/HalfEdge.cpp source/base/HalfEdge.h)
 
 set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 23)
 

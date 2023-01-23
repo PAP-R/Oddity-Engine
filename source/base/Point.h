@@ -11,9 +11,10 @@ using namespace std;
 
 class Point {
 public:
-    vec3 pos{};
-    vec3 dir;
     size_t id;
+    vec3 pos;
+    vec3 dir;
+    vec3 color;
 
     vector<tuple<Point*, size_t>> cons;
 
