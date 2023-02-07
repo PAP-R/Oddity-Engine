@@ -12,11 +12,7 @@ using namespace std;
 #include "Point.h"
 
 class Polygon {
-private:
-    vector<Point> points;
-    vector<Polygon*> neighbours;
-    vec3 normal;
-    vec3 pos;
+    static void test(size_t pointCount, float radius);
 };
 
 

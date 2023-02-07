@@ -20,8 +20,6 @@ std::vector<vec3> cubeCorners() {
         cornerData.emplace_back(((i / 4) % 2) * 2 - 1, ((i / 2) % 2) * 2 - 1, ((i) % 2) * 2 - 1);
     }
 
-    cornerData.emplace_back(0, 1, 0);
-
     return cornerData;
 }
 
