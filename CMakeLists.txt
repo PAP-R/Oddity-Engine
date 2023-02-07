@@ -1,26 +1,25 @@
 cmake_minimum_required(VERSION 3.23)
 project(OddityEngine)
 
-add_executable(${PROJECT_NAME} source/main.cpp source/base/Object.cpp source/base/Object.h source/base/Cube.h source/base/Cube.cpp source/base/Point.h source/base/Point.cpp source/debug/Debug.h source/debug/Debug.cpp source/base/Polygon.cpp source/base/Polygon.h source/base/HalfEdge.cpp source/base/HalfEdge.h)
-
-set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY CXX_STANDARD 23)
 
 find_package(OpenGL REQUIRED)
 
-add_subdirectory(external)
 
 include_directories(
-        external/glew-2.1.0/include
+        external/glew/include
         external/glfw/include
         external/glm
         external/imgui
         .
 )
 
+add_subdirectory(external)
+
 set(ALL_LIBS
         ${OPENGL_LIBRARY}
         glfw
         libglew_static
+        IMGUI
 )
 
 add_definitions(
@@ -32,7 +31,12 @@ add_definitions(
 )
 
 add_subdirectory(source)
+add_subdirectory(test)
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME}_run
         ${ALL_LIBS}
 )
+
+target_link_libraries(${PROJECT_NAME}_lib
+        ${ALL_LIBS}
+        )

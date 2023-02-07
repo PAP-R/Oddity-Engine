@@ -1,22 +1,11 @@
-### MAIN ###
-list(APPEND SOURCE_FILES
-        ${CMAKE_CURRENT_LIST_DIR}/main.cpp)
+set(BINARY ${PROJECT_NAME})
 
-### PLAYER ###
-list(APPEND SOURCE_FILES
-        ${CMAKE_CURRENT_LIST_DIR}/Player.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/Player.h)
+file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 
-### COMMON ###
-list(APPEND SOURCE_FILES
-        ${CMAKE_CURRENT_LIST_DIR}/common/loadShader.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/common/loadShader.h
-        ${CMAKE_CURRENT_LIST_DIR}/common/loadTexture.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/common/loadTexture.h)
+set(SOURCES ${SOURCES})
 
-target_sources(${CMAKE_PROJECT_NAME}
-        PRIVATE
-            ${SOURCE_FILES})
-#target_include_directories(${PROJECT_NAME} PUBLIC E:/VulkanSDK/1.3.211.0/Include E:/code/bin/glm/glm E:/code/bin/glfw-3.3.7.bin.WIN64/include E:/code/bin/stb)
-#target_link_directories(${PROJECT_NAME} PUBLIC E:/VulkanSDK/1.3.211.0/Lib E:/code/bin/glfw-3.3.7.bin.WIN64/lib-vc2022)
-#target_link_libraries(${PROJECT_NAME} PUBLIC vulkan-1.lib glfw3.lib)
+add_executable(${BINARY}_run ${SOURCES})
+
+add_library(${BINARY}_lib STATIC ${SOURCES})
+
+set_target_properties(${BINARY}_run ${BINARY}_lib PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)

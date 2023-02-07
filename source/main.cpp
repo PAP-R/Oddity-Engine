@@ -26,7 +26,8 @@ using namespace std;
 #include "debug/Debug.h"
 
 #include "base/Cube.h"
-#include "Player.h"
+#include "base/HalfEdge.h"
+#include "base/Player.h"
 #include "common/loadShader.h"
 #include "common/loadTexture.h"
 
@@ -71,6 +72,12 @@ void createColor(size_t c, GLuint colorbuffer) {
 }
 
 int main() {
+    for (size_t i = 3; i <= 12; i++) {
+        printf("==\t==\t==\t==\t==\nPoints: %d\n", i);
+        HalfEdge::test(i, (float)i/10);
+    }
+    return 0;
+
     Cube cube;
     int width = 1080, height = 720;
 
