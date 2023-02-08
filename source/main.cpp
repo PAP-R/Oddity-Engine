@@ -71,13 +71,18 @@ void createColor(size_t c, GLuint colorbuffer) {
     glBufferData(GL_ARRAY_BUFFER, g_color_buffer_data.size() * sizeof(float), g_color_buffer_data.data(), GL_STATIC_DRAW);
 }
 
-int main() {
-    for (size_t i = 3; i <= 12; i++) {
-        printf("==\t==\t==\t==\t==\nPoints: %d\n", i);
-        HalfEdge::test(i, (float)i/10);
+void test(size_t from, size_t to) {
+    for (size_t i = from; i <= to; i++) {
+        printf("==\t==\t==\t==\t==\nPoints: %d\n Testing Creation\n", i);
+        HalfEdge::testCreation(i, (float)i/10);
+        printf("==\t==\t==\t==\t==\nPoints: %d\n Testing Traversal\n", i);
+        HalfEdge::testGetting(i);
+        printf("==\t==\t==\t==\t==\nPoints: %d\n Testing Inserting\n", i);
+        HalfEdge::testInsert(i);
     }
-    return 0;
+}
 
+int main() {
     Cube cube;
     int width = 1080, height = 720;
 
@@ -143,6 +148,8 @@ int main() {
     /// Shaders
     GLuint program = loadFileShaders("shaders/colorvert.shader", "shaders/colorfrag.shader");
 
+    cube.pointsToFloat();
+
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
@@ -151,6 +158,14 @@ int main() {
     GLuint colorbuffer;
     glGenBuffers(1, &colorbuffer);
     createColor(cube.points.size() * 3 * 3 * 3, colorbuffer);
+
+    GLuint uvbuffer;
+    glGenBuffers(1, &uvbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+    glBufferData(GL_ARRAY_BUFFER, cube.uv.size() * sizeof(float), cube.uv.data(), GL_STATIC_DRAW);
+
+    chrono::duration<float> t;
+    auto tstart = chrono::system_clock::now();
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -187,11 +202,19 @@ int main() {
         glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        GLuint shaderTime = glGetUniformLocation(program, "TIME");
+        t = chrono::system_clock::now() - tstart;
+        glUniform1f(shaderTime, t.count());
+
         glDrawArrays(GL_TRIANGLES, 0, cube.points.size() * 3 * 3);
         glDisableVertexAttribArray(0);
 
         ImGui::Begin("Hallo", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
-        ImGui::Text("Player:\nPos:\t[ %1.2f | %1.2f | %1.2f ]\nDir:\t[ %1.2f | %1.2f | %1.2f ]\nAng:\t[ %1.2f | %1.2f ]\n", player.position.x, player.position.y, player.position.z, player.direction().x, player.direction().y, player.direction().z, player.angle.x, player.angle.y);
+        ImGui::Text("Time: %f\nPlayer:\nPos:\t[ %1.2f | %1.2f | %1.2f ]\nDir:\t[ %1.2f | %1.2f | %1.2f ]\nAng:\t[ %1.2f | %1.2f ]\n", t.count(), player.position.x, player.position.y, player.position.z, player.direction().x, player.direction().y, player.direction().z, player.angle.x, player.angle.y);
 
         for (size_t i = 0; i < Debug::get_points().size(); i++) {
             auto ray = Debug::get_points()[i] - player.position;

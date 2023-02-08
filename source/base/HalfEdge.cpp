@@ -1,19 +1,11 @@
+#include <algorithm>
 #include "HalfEdge.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-#include <algorithm>
-#include <iterator>
-#include <numeric>
-
-using namespace glm;
 
 /// Constructors ///
-HalfEdge::HalfEdge(HalfEdge *previous, size_t dest) : previous(previous), source(previous->dest), dest(dest) {}
+HalfEdge::HalfEdge(HalfEdge *previous, vec3 dest) : previous(previous), source(previous->dest), dest(dest) {}
 
-HalfEdge::HalfEdge(size_t source, size_t dest) : source(source), dest(dest) {
-    //printf("%d -> %d\n", source, dest);
-}
+HalfEdge::HalfEdge(vec3 source, vec3 dest) : source(source), dest(dest) {}
 
 /// Getters ///
 HalfEdge *HalfEdge::getTwin() const {
@@ -31,32 +23,24 @@ HalfEdge *HalfEdge::getNext() const {
 /// Setters ///
 void HalfEdge::setTwin(HalfEdge *twin) {
     if (twin && this->source == twin->dest && this->dest == twin->source) {
-        HalfEdge::twin = twin;
+        this->twin = twin;
         twin->twin = this;
-        printf("== Twins: [\n\t%d -> %d\n\t%d <- %d\n]\n", this->source, this->dest, twin->dest, twin->source);
-    }
-    else if (twin) {
-        printf("== Not Twins: [\n\t%d -> %d\n\t%d <- %d\n]\n", this->source, this->dest, twin->dest, twin->source);
-    }
-    else {
-        printf("== Not Twins: [\n\t%d -> %d\n\tNULL\n]\n", this->source, this->dest);
     }
 }
 
 void HalfEdge::setPrevious(HalfEdge *previous) {
-    HalfEdge::previous = previous;
+    this->previous = previous;
 }
 
 void HalfEdge::setNext(HalfEdge *next) {
-    HalfEdge::next = next;
+    this->next = next;
     next->setPrevious(this);
 }
 
 /// Creators ///
-HalfEdge *HalfEdge::addPolygon(vector<size_t> points) {
+HalfEdge *HalfEdge::addPolygon(vector<vec3> points) {
     HalfEdge* edge = nullptr;
     if (points.size() == 3) {
-        printf("\t%d -> %d -> %d\n", points[0], points[1], points[2]);
         edge = new HalfEdge(points[0], points[1]);
         auto* t = edge;
         for (size_t i = 1; i < points.size(); i++) {
@@ -72,12 +56,12 @@ HalfEdge *HalfEdge::addPolygon(vector<size_t> points) {
     else if (points.size() > 3) {
         HalfEdge * t;
         bool toggle = false;
-        vector<size_t> midpoints;
-        copy_if(points.begin(), points.end(), back_inserter(midpoints), [&toggle](int){return toggle = !toggle;});
+        vector<vec3> midpoints;
+        copy_if(points.begin(), points.end(), back_inserter(midpoints), [&toggle](vec3){return toggle = !toggle;});
         auto * firstEdge = addPolygon(midpoints);
         edge = firstEdge;
         for (size_t i = 0; i < points.size() - 1; i += 2) {
-            t = addPolygon(vector<size_t>{points[i], points[(i + 1) % points.size()], points[(i + 2) % points.size()]});
+            t = addPolygon(vector{points[i], points[(i + 1) % points.size()], points[(i + 2) % points.size()]});
             if (edge == nullptr) {
                 firstEdge = t;
                 edge = t->next;
@@ -101,8 +85,8 @@ HalfEdge *HalfEdge::addPolygon(vector<size_t> points) {
     return nullptr;
 }
 
-HalfEdge *HalfEdge::addPolygon(HalfEdge *twin, vector<size_t> points) {
-    vector<size_t> polyPoints = {twin->dest, twin->source};
+HalfEdge *HalfEdge::addPolygon(HalfEdge *twin, vector<vec3> points) {
+    vector<vec3> polyPoints = {twin->dest, twin->source};
     for (auto p : points) {
         polyPoints.emplace_back(p);
     }
@@ -110,16 +94,123 @@ HalfEdge *HalfEdge::addPolygon(HalfEdge *twin, vector<size_t> points) {
     return twin->twin;
 }
 
-/// Test ///
+/// Traversal ///
+HalfEdge *HalfEdge::getTriangleRec(size_t *n) {
+    HalfEdge *tn = nullptr, *tp = nullptr;
+    if(*n == 0) {
+        return this->getFirst();
+    }
+    if (*n > 0 && this->next->twin) {
+        *n -= 1;
+        tn = this->next->twin->getTriangleRec(n);
+    }
+    if (*n > 0 && this->previous->twin) {
+        *n -= 1;
+        tp = this->previous->twin->getTriangleRec(n);
+    }
 
-void HalfEdge::test(size_t pointCount, float radius) {
+    return tn ? tn : tp;
+}
+
+HalfEdge *HalfEdge::getTriangle(size_t n) {
+    HalfEdge *tn = nullptr, *tp = nullptr;
+    if(n == 0) {
+        return this->getFirst();
+    }
+    if (n > 0 && this->twin) {
+        n -= 1;
+        tn = this->twin->next->getTriangleRec(&n);
+    }
+    if (n > 0 && this->next->twin) {
+        n -= 1;
+        tn = this->next->twin->getTriangleRec(&n);
+    }
+    if (n > 0 && this->previous->twin) {
+        n -= 1;
+        tp = this->previous->twin->getTriangleRec(&n);
+    }
+
+    return tn ? tn : tp;
+}
+
+HalfEdge *HalfEdge::getFirst() {
+    auto *start = this;
+    while (length(start->next->source) < length(start->source)) {
+        start = start->next;
+    }
+    while (length(start->previous->source) < length(start->source)) {
+        start = start->previous;
+    }
+    return start;
+}
+
+void HalfEdge::insertPolygon(vector<vec3> *destination) {
+    size_t i = 1;
+    auto *tri = this;
+    while (tri) {
+        tri->insertTriangle(destination);
+        tri = this->getTriangle(i++);
+    }
+}
+
+void HalfEdge::insertTriangle(vector<vec3> *destination) {
+    destination->emplace_back(this->source);
+    destination->emplace_back(this->dest);
+    destination->emplace_back(this->next->dest);
+}
+
+/// Test ///
+void HalfEdge::testCreation(size_t pointCount, float radius) {
     vector<vec3> points;
-    vector<size_t> pointI;
+    vector<vec3> pointI;
     for (size_t i = 0; i < pointCount; i++) {
         points.emplace_back(sin(i * 2 * pi<float>() / pointCount), cos(i * 2 * pi<float>() / pointCount), radius);
-        pointI.emplace_back(i);
+        pointI.emplace_back(points.back());
     }
 
     HalfEdge::addPolygon(pointI);
+}
+
+void HalfEdge::testGetting(size_t pointCount) {
+    vector<vec3> points;
+    vector<vec3> pointI;
+    for (size_t i = 0; i < pointCount; i++) {
+        points.emplace_back(sin(i * 2 * pi<float>() / pointCount), cos(i * 2 * pi<float>() / pointCount), 0.0f);
+        pointI.emplace_back(points.back());
+    }
+
+    auto * he = HalfEdge::addPolygon(pointI);
+    for (size_t i = 0; i < points.size(); i++) {
+        printf("Triangle %zd", i);
+        auto *r = he->getTriangle(i);
+        if (r) {
+            printf(": %1.0f -> %1.0f -> %1.0f\n", r->source, r->dest, r->next->dest);
+        }
+        else {
+            printf(": doen't exist\n");
+        }
+    }
+}
+
+void HalfEdge::testInsert(size_t pointCount) {
+    vector<vec3> points;
+    vector<vec3> pointI;
+    for (size_t i = 0; i < pointCount; i++) {
+        points.emplace_back(sin(i * 2 * pi<float>() / pointCount), cos(i * 2 * pi<float>() / pointCount), 0.0f);
+        pointI.emplace_back(points.back());
+    }
+
+    auto * he = HalfEdge::addPolygon(pointI);
+
+    vector<vec3> result;
+
+    he->insertPolygon(&result);
+}
+
+bool HalfEdge::hasTwin() {
+    if (twin != nullptr) {
+        return true;
+    }
+    return false;
 }
 

@@ -12,7 +12,6 @@ using namespace std;
 #include "Point.h"
 
 class Polygon {
-    static void test(size_t pointCount, float radius);
 };
 
 

@@ -4,7 +4,12 @@
 #include <vector>
 using namespace std;
 
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+using namespace glm;
+
 #include <cstddef>
+#include <iterator>
 
 class HalfEdge {
 private:
@@ -12,8 +17,11 @@ private:
     HalfEdge* previous = nullptr;
     HalfEdge* next = nullptr;
 
+    HalfEdge *getTriangleRec(size_t *n);
+    void insertTriangle(vector<vec3> *destination);
+
 public:
-    size_t source, dest;
+    vec3 source, dest;
 
     HalfEdge *getPrevious() const;
     void setPrevious(HalfEdge *previous);
@@ -23,18 +31,26 @@ public:
 
     HalfEdge *getTwin() const;
     void setTwin(HalfEdge *twin);
+    bool hasTwin();
 
-    HalfEdge(HalfEdge *previous, size_t dest);
+    HalfEdge(HalfEdge *previous, vec3 dest);
 
-    HalfEdge(size_t source, size_t dest);
+    HalfEdge(vec3 source, vec3 dest);
 
-    static HalfEdge *addPolygon(HalfEdge *twin, vector<size_t> points);
+    static HalfEdge * addPolygon(HalfEdge *twin, vector<vec3> points);
 
-    static HalfEdge *addPolygon(vector<size_t> points);
+    static HalfEdge * addPolygon(vector<vec3> points);
+
+    HalfEdge *getTriangle(size_t n);
+
+    HalfEdge *getFirst();
+
+    void insertPolygon(vector<vec3> *destination);
 
     /// Test ///
-    static void test(size_t pointCount, float radius);
+    static void testCreation(size_t pointCount, float radius);
+    static void testGetting(size_t pointCount);
+    static void testInsert(size_t pointCount);
 };
-
 
 #endif //ODDITYENGINE_HALFEDGE_H

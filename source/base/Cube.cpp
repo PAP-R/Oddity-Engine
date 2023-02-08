@@ -10,6 +10,7 @@
 
 using namespace std;
 
+#include "HalfEdge.h"
 #include "../debug/Debug.h"
 
 std::vector<vec3> cubeCorners() {
@@ -27,6 +28,49 @@ bool compair(tuple<int, vec3, float> first, tuple<int, vec3, float> second) {
     return get<2>(first) < get<2>(second);
 }
 
+
+Cube::Cube() {
+    float s = 1.0f;
+
+    vec3 start(s);
+
+    vector<vec3> points;
+
+    size_t pointCount = 64;
+
+    for (size_t i = 0; false && i < pointCount; i++) {
+        points.emplace_back(sin(i * 2 * pi<float>() / pointCount), s, cos(i * 2 * pi<float>() / pointCount));
+        auto dir = normalize(points[i] - this->pos);
+        Debug::add_point(points[i], format("[{}]\n{:1.1} {:1.1} {:1.1}\n{:1.1} {:1.1} {:1.1}\n", i, points[i].x, points[i].y, points[i].z, dir.x, dir.y, dir.z));
+        Debug::add_point(points[i] + dir, "*");
+    }
+
+    for (int i = 0; i < 4; i++) {
+        points.emplace_back(s * sign(1 - 2 * ((i - 1) % 3)), s, s * sign(1 - 2 * ((i) % 3)));
+        auto dir = normalize(points.back() - this->pos);
+        Debug::add_point(points.back(), format("[{}]\n{:1.1} {:1.1} {:1.1}\n{:1.1} {:1.1} {:1.1}\n", i, points.back().x, points.back().y, points.back().z, dir.x, dir.y, dir.z));
+        Debug::add_point(points.back() + dir, "*");
+    }
+
+
+    auto *edge = HalfEdge::addPolygon(points);
+
+    auto *t = edge;
+    bool notstarted = true;
+    while (notstarted || t != edge) {
+        notstarted = false;
+        HalfEdge::addPolygon(t, {t->source - vec3(0, 2 * s, 0), t->dest - vec3(0, 2 * s, 0)});
+        t = t->getNext();
+        while (t->hasTwin() && t != edge) {
+            t = t->getTwin()->getNext();
+        }
+    }
+
+    edge->insertPolygon(&(this->points));
+}
+
+
+/*
 Cube::Cube() {
     vector<vec3> verts = cubeCorners();
 
@@ -102,3 +146,4 @@ Cube::Cube() {
         }
     }
 }
+*/
