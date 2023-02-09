@@ -13,9 +13,12 @@ void main() {
     vec2 q = UV - vec2(0.5f, 0.5f);
     float l = length(fp);
 
-    float r = 1. + 0.1 * sin(atan(fp.x, fp.z) * 4 + TIME);
+    float tm = 10;
+    float swirl = 10;
 
-    color = vec3(fp.x, fp.y, fp.z);
+    float r = 1. + 1. * sign(sin(atan(fp.x, fp.z) * 10 + tm * TIME + swirl * fp.y));
+
+    color = vec3(1., 1., 1.);
     color = sin(color);
     color *= smoothstep(r, r + 0.01, l);
     //color = vec3(fragmentColor.r, fragmentColor.g, fragmentColor.b);

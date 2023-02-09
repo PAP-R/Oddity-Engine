@@ -32,4 +32,16 @@ add_subdirectory(glew)
 
 add_subdirectory(glm)
 
-add_subdirectory(imgui)
+set(IMGUI
+        imgui/imconfig.h
+        imgui/imgui.cpp
+        imgui/imgui.h
+        imgui/imgui_draw.cpp
+        imgui/imgui_tables.cpp
+        imgui/imgui_widgets.cpp
+        imgui/backends/imgui_impl_glfw.cpp
+        imgui/backends/imgui_impl_glfw.h
+        imgui/backends/imgui_impl_opengl3.cpp
+        imgui/backends/imgui_impl_opengl3.h)
+
+add_library(IMGUI STATIC ${IMGUI})

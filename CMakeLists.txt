@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.23)
 project(OddityEngine)
 
-
 find_package(OpenGL REQUIRED)
 
 

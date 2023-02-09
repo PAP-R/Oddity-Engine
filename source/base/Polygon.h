@@ -9,8 +9,6 @@ using namespace glm;
 
 using namespace std;
 
-#include "Point.h"
-
 class Polygon {
 };
 
