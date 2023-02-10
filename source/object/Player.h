@@ -9,7 +9,9 @@
 #include "glm/gtc/matrix_transform.hpp"
 using namespace glm;
 
-class Player {
+#include "../base/interfaces/CallBack.h"
+
+class Player : virtual public CallBack{
     double time = glfwGetTime();
     float deltaTime = glfwGetTime();
 
@@ -29,8 +31,9 @@ public:
     vec3 up() const;
     void move();
 
-    void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    void cursor_callback(GLFWwindow* window, double xpos, double ypos);
+    void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
+    void cursor_callback(GLFWwindow *window, double xpos, double ypos);
+    void mouse_callback(GLFWwindow *window, int button, int action, int mods);
 };
 
 

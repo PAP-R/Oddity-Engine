@@ -87,3 +87,7 @@ void Player::cursor_callback(GLFWwindow* window, double xpos, double ypos) {
 
     glfwSetCursorPos(window, 0, 0);
 }
+
+void Player::mouse_callback(GLFWwindow *window, int button, int action, int mods) {
+    return;
+}

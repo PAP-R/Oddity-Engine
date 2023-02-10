@@ -1,7 +1,7 @@
 #ifndef ODDITYENGINE_DEBUG_H
 #define ODDITYENGINE_DEBUG_H
 
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 
 using namespace glm;
 

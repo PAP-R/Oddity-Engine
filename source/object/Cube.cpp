@@ -11,7 +11,7 @@
 using namespace std;
 
 #include "HalfEdge.h"
-#include "../debug/Debug.h"
+#include "source/base/tools/Debug.h"
 
 std::vector<vec3> cubeCorners() {
     size_t cornerCount = 8;
@@ -36,7 +36,7 @@ Cube::Cube() {
 
     vector<vec3> points;
 
-    size_t pointCount = 64;
+    size_t pointCount = 6;
 
     for (size_t i = 0; i < pointCount; i++) {
         points.emplace_back(sin(i * 2 * pi<float>() / pointCount), s, cos(i * 2 * pi<float>() / pointCount));

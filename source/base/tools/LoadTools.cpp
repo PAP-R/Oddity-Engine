@@ -1,15 +1,93 @@
-#include "loadTexture.h"
-
 #include <filesystem>
-#include <cstdio>
-#include <cstdlib>
-#include <stdexcept>
-#include <cstring>
-
-#include <GL/glew.h>
-
-#include <GLFW/glfw3.h>
+#include <fstream>
+#include <sstream>
+#include <utility>
+#include <vector>
 #include <iostream>
+
+using namespace std;
+
+#include "LoadTools.h"
+
+string loadShader(const char * path) {
+    string shaderCode;
+
+    std::ifstream shaderStream(path, std::ios::in);
+    if (shaderStream.is_open()) {
+        std::stringstream sstr;
+        sstr << shaderStream.rdbuf();
+        shaderCode = sstr.str();
+        shaderStream.close();
+    }
+    else {
+        printf("Failed to read shader file\n");
+        throw std::invalid_argument("Failed to read shader file");
+    }
+
+    return shaderCode;
+}
+
+GLuint loadFileShaders(const char * vertex_file_path,const char * fragment_file_path) {
+    std::string vertexShaderCode = loadShader(vertex_file_path);
+
+    std::string fragmentShaderCode = loadShader(fragment_file_path);
+
+    return loadShaders(vertexShaderCode, fragmentShaderCode);
+}
+
+GLuint compileShader(GLuint shader, const std::string& shaderCode) {
+    GLint result = GL_FALSE;
+    int infoLength = 0;
+
+    char const * vertexSrcPtr = shaderCode.c_str();
+    glShaderSource(shader, 1,  &vertexSrcPtr, nullptr);
+    glCompileShader(shader);
+
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLength);
+
+    if (infoLength > 0) {
+        std::vector<char> shaderError(infoLength + 1);
+        glGetShaderInfoLog(shader, infoLength, nullptr, &shaderError[0]);
+        printf("%d : %s\n%s", infoLength, &shaderError[0], shaderCode.c_str());
+        throw std::runtime_error(&shaderError[0]);
+    }
+
+    return shader;
+}
+
+GLuint loadShaders(const std::string& vertexShaderCode, const std::string& fragmentShaderCode) {
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+    compileShader(vertexShader, vertexShaderCode);
+    compileShader(fragmentShader, fragmentShaderCode);
+
+    GLuint program = glCreateProgram();
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+    glLinkProgram(program);
+
+    GLint result = GL_FALSE;
+    int infoLength = 0;
+
+    glGetProgramiv(program, GL_LINK_STATUS, &result);
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLength);
+    if (infoLength > 1) {
+        std::vector<char> programError(infoLength + 1);
+        glGetProgramInfoLog(program, infoLength, nullptr, &programError[0]);
+        printf("%d : %s\nProgram\n", infoLength, &programError[0]);
+        throw std::runtime_error(&programError[0]);
+    }
+
+    glDetachShader(program, vertexShader);
+    glDetachShader(program, fragmentShader);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return program;
+}
 
 #define FOURCC_DXT1 0x31545844 // Equivalent to "DXT1" in ASCII
 #define FOURCC_DXT3 0x33545844 // Equivalent to "DXT3" in ASCII

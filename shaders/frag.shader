@@ -1,9 +1,21 @@
-#version 450
+#version 330 core
 
-layout(location = 0) in vec3 fragColor;
+in vec3 fragmentPosition;
 
-layout(location = 0) out vec4 outColor;
+out vec3 color;
+
+uniform float TIME;
 
 void main() {
-	outColor = vec4(fragColor, 1.0);
+    vec3 fp = fragmentPosition;
+    float l = length(fp);
+
+    float tm = 10;
+    float swirl = 10;
+
+    float r = 1. + 1. * sign(sin(atan(fp.x, fp.z) * 10 + tm * TIME + swirl * fp.y));
+
+    color = vec3(1., 1., 1.);
+    color = sin(color);
+    color *= smoothstep(r, r + 0.01, l);
 }
