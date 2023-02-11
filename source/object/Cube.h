@@ -5,7 +5,7 @@
 
 class Cube : public Object{
 public:
-    Cube();
+    Cube(float s=0.5f);
 };
 
 

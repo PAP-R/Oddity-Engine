@@ -13,7 +13,10 @@ using namespace glm;
 
 class Object {
 public:
-    vec3 pos{0.0f, 0.0f, 0.0f};
+    vec3 pos{0};
+    vec3 dir{0, 1, 0};
+    vec3 scale{1};
+
     HalfEdge *edge;
     vector<vec3> points;
     vector<float> vertices;

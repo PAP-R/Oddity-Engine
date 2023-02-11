@@ -4,7 +4,7 @@
 
 #include "source/base/tools/BufferTools.h"
 
-GraphicsObject::GraphicsObject(const vec3 &pos, const vec3 &dir, const string &vertexShader, const string &fragmentShader) : pos(pos), dir(dir) {
+GraphicsObject::GraphicsObject(const vec3 &pos, const vec3 &dir, const vec3 &scale, const string &vertexShader, const string &fragmentShader) : pos(pos), dir(dir), scale(scale) {
     this->program = loadShaders(vertexShader, fragmentShader);
 }
 

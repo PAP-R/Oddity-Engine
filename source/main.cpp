@@ -16,10 +16,13 @@ int main() {
     cube.pointsToFloat();
 
     GraphicsObject cubeGO(cube.pos);
+    GraphicsObject cubeGO2(cube.pos + vec3(1, 0, 0), vec3(1, 1, 1));
 
     cubeGO.addData(3, cube.vertices, GL_STATIC_DRAW);
+    cubeGO2.addData(3, cube.vertices, GL_STATIC_DRAW);
 
     window.addObject(cubeGO);
+    window.addObject(cubeGO2);
 
     window.setCamera(Camera(vec3(2, 0, 0), vec2(-quarter_pi<float>(), -quarter_pi<float>())));
 

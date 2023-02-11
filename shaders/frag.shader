@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 in vec3 fragmentPosition;
 
@@ -13,7 +13,7 @@ void main() {
     float tm = 10;
     float swirl = 10;
 
-    float r = 1. + 1. * sign(sin(atan(fp.x, fp.z) * 10 + tm * TIME + swirl * fp.y));
+    float r = 1. + abs(10 + fp.x * fp.y * fp.z) * sign(sin(atan(fp.x, fp.z) * 10 + tm * TIME + swirl * fp.y));
 
     color = vec3(1., 1., 1.);
     color = sin(color);

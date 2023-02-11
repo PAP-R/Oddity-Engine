@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/vector_angle.hpp>
 
 using namespace glm;
 
@@ -104,8 +105,8 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
     size = vec2(width, height);
 
     glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -126,6 +127,8 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
         printf("Failed to initialize GLEW");
         throw runtime_error("Failed to initialize GLEW");
     }
+
+    printf("%s\n", glGetString(GL_VERSION));
 
     glewExperimental = true;
     glEnable(GL_DEPTH_TEST);
@@ -155,6 +158,7 @@ void Window::setCamera(Camera cam) {
 bool Window::loop() {
     t = chrono::system_clock::now() - tstart;
 
+
     glfwPollEvents();
     glfwMakeContextCurrent(window);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -163,14 +167,30 @@ bool Window::loop() {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    ImGui::Begin("Hallo", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
+    ImGui::Text("FPS: %.1f\nPlayer:\nPos:\t[ %1.2f | %1.2f | %1.2f ]\nDir:\t[ %1.2f | %1.2f | %1.2f ]\nAng:\t[ %1.2f | %1.2f ]\n", ImGui::GetIO().Framerate, camera.position.x, camera.position.y, camera.position.z, camera.direction().x, camera.direction().y, camera.direction().z, camera.angle.x, camera.angle.y);
+    ImGui::End();
+
     for (auto o : objects) {
         glUseProgram(o.program);
+
+        GLuint shaderTime = glGetUniformLocation(o.program, "TIME");
+
+        glUniform1f(shaderTime, t.count());
 
         mat4 projection = perspective(radians(camera.fov), float(size.x) / float(size.y), 0.1f, 100.0f);
 
         mat4 view = lookAt(camera.position, camera.position + camera.direction(), camera.up());
 
-        mat4 model = mat4(1.0f);
+        vec3 up{0, 1, 0};
+
+        vec3 right = normalize(cross(o.dir, up));
+
+        right = all(isnan(right)) ? up : right;
+
+        float angle = orientedAngle(normalize(o.dir), normalize(up), right);
+
+        mat4 model = rotate(scale(translate(mat4(1.0f), o.pos), o.scale), angle, right);
 
         mat4 mvp = projection * view * model;
 
@@ -190,8 +210,6 @@ bool Window::loop() {
             glDisableVertexAttribArray(i);
         }
 
-        ImGui::Begin("Hallo", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
-        ImGui::Text("Player:\nPos:\t[ %1.2f | %1.2f | %1.2f ]\nDir:\t[ %1.2f | %1.2f | %1.2f ]\nAng:\t[ %1.2f | %1.2f ]\n", camera.position.x, camera.position.y, camera.position.z, camera.direction().x, camera.direction().y, camera.direction().z, camera.angle.x, camera.angle.y);
 
         for (size_t i = 0; i < Debug::get_points().size(); i++) {
             auto ray = Debug::get_points()[i] - camera.position;
@@ -213,7 +231,6 @@ bool Window::loop() {
             ImGui::End();
         }
 
-        ImGui::End();
     }
 
     ImGui::Render();

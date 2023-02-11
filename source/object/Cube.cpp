@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <tuple>
 #include <limits>
+#include <format>
 
 #include <string>
 
@@ -29,8 +30,7 @@ bool compair(tuple<int, vec3, float> first, tuple<int, vec3, float> second) {
 }
 
 
-Cube::Cube() {
-    float s = 1.0f;
+Cube::Cube(float s) {
 
     vec3 start(s);
 
@@ -38,14 +38,14 @@ Cube::Cube() {
 
     size_t pointCount = 6;
 
-    for (size_t i = 0; i < pointCount; i++) {
+    for (size_t i = 0; false && i < pointCount; i++) {
         points.emplace_back(sin(i * 2 * pi<float>() / pointCount), s, cos(i * 2 * pi<float>() / pointCount));
-        //auto dir = normalize(points[i] - this->pos);
-        //Debug::add_point(points[i], format("[{}]\n{:1.1} {:1.1} {:1.1}\n{:1.1} {:1.1} {:1.1}\n", i, points[i].x, points[i].y, points[i].z, dir.x, dir.y, dir.z));
-        //Debug::add_point(points[i] + dir, "*");
+        auto dir = normalize(points[i] - this->pos);
+        Debug::add_point(points[i], format("[{}]\n{:1.1} {:1.1} {:1.1}\n{:1.1} {:1.1} {:1.1}\n", i, points[i].x, points[i].y, points[i].z, dir.x, dir.y, dir.z));
+        Debug::add_point(points[i] + dir, "*");
     }
 
-    for (int i = 0; false && i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
         points.emplace_back(s * sign(1 - 2 * ((i - 1) % 3)), s, s * sign(1 - 2 * ((i) % 3)));
         //auto dir = normalize(points.back() - this->pos);
         //Debug::add_point(points.back(), format("[{}]\n{:1.1} {:1.1} {:1.1}\n{:1.1} {:1.1} {:1.1}\n", i, points.back().x, points.back().y, points.back().z, dir.x, dir.y, dir.z));
@@ -65,6 +65,9 @@ Cube::Cube() {
             t = t->getTwin()->getNext();
         }
     }
+
+    t = edge->getTwin()->getNext()->getNext()->getTwin()->getNext();
+    HalfEdge::addPolygon(t, {t->source - vec3(2 * s, 0, 0), t->dest - vec3(2 * s, 0, 0)});
 
     edge->insertPolygon(&(this->points));
 }
