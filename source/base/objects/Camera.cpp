@@ -20,4 +20,5 @@ vec3 Camera::up() const {
     return cross(right(), direction());
 }
 
-Camera::Camera(const vec3 &position, const vec2 &angle, float fov) : position(position), angle(angle), fov(fov) {}
+Camera::Camera(vec3 position, vec2 angle, float fov) : position(position), angle(angle), fov(fov) {}
+

@@ -9,7 +9,8 @@ using namespace std;
 
 using namespace glm;
 
-#include "HalfEdge.h"
+#include "source/object/HalfEdge.h"
+#include "Mesh.h"
 
 class Object {
 public:
@@ -17,18 +18,7 @@ public:
     vec3 dir{0, 1, 0};
     vec3 scale{1};
 
-    HalfEdge *edge;
-    vector<vec3> points;
-    vector<float> vertices;
-    vector<float> uv;
-
-    vec2 texPos{-1.0f};
-    vec2 texSize{2.0f};
-
-    vector<float> pointsToFloat();
-
-    Object();
-    explicit Object(const vector<vec3> &points);
+    Object(const vec3 &pos=vec3(0), const vec3 &dir=vec3(0, 1, 0), const vec3 &scale=vec3(1));
 };
 
 #endif //ODDITYENGINE_OBJECT_H

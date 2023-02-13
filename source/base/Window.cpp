@@ -64,6 +64,24 @@ void Window::setMouseButtonCallback() {
     glfwSetMouseButtonCallback(window, mouse_callback);
 }
 
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    for (auto f : winToWin[window]->getCallbackList()) {
+        f->scroll_callback(window, xoffset, yoffset);
+    }
+}
+
+void Window::setScrollCallback() {
+    glfwSetScrollCallback(window, scroll_callback);
+}
+
+
+void Window::setCallbacks() {
+    setKeyCallback();
+    setCursorCallback();
+    setMouseButtonCallback();
+    setScrollCallback();
+}
+
 
 /// Toggles ///
 void Window::setCursor(int mode) {
@@ -128,9 +146,8 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
         throw runtime_error("Failed to initialize GLEW");
     }
 
-    printf("%s\n", glGetString(GL_VERSION));
-
     glewExperimental = true;
+
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
@@ -150,14 +167,20 @@ void Window::removeObject(GraphicsObject go) {
     objects.erase(remove(objects.begin(), objects.end(), go));
 }
 
-void Window::setCamera(Camera cam) {
+void Window::setCamera(Camera *cam) {
     camera = cam;
 }
 
 
 bool Window::loop() {
-    t = chrono::system_clock::now() - tstart;
+    auto tNow = chrono::system_clock::now();
+    chrono::duration<float> t = tNow - tStart;
+    chrono::duration<float> spf = tNow - tLast;
+    tLast = tNow;
+    float fps = 1 / spf.count();
 
+    Debug::add_text(format("FPS: {}\n", fps));
+    Debug::add_text(format("Camera:\nPos:\t[ {:.1f} | {:.1f} | {:.1f} ]\nDir:\t[ {:.1f} | {:.1f} | {:.1f} ]\nAng:\t[ {:.1f} | {:.1f} ]\n", camera->position.x, camera->position.y, camera->position.z, camera->direction().x, camera->direction().y, camera->direction().z, camera->angle.x, camera->angle.y));
 
     glfwPollEvents();
     glfwMakeContextCurrent(window);
@@ -168,7 +191,7 @@ bool Window::loop() {
     ImGui::NewFrame();
 
     ImGui::Begin("Hallo", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
-    ImGui::Text("FPS: %.1f\nPlayer:\nPos:\t[ %1.2f | %1.2f | %1.2f ]\nDir:\t[ %1.2f | %1.2f | %1.2f ]\nAng:\t[ %1.2f | %1.2f ]\n", ImGui::GetIO().Framerate, camera.position.x, camera.position.y, camera.position.z, camera.direction().x, camera.direction().y, camera.direction().z, camera.angle.x, camera.angle.y);
+    ImGui::Text("%s", Debug::get_text().c_str());
     ImGui::End();
 
     for (auto o : objects) {
@@ -178,9 +201,9 @@ bool Window::loop() {
 
         glUniform1f(shaderTime, t.count());
 
-        mat4 projection = perspective(radians(camera.fov), float(size.x) / float(size.y), 0.1f, 100.0f);
+        mat4 projection = perspective(radians(camera->fov), float(size.x) / float(size.y), 0.1f, 100.0f);
 
-        mat4 view = lookAt(camera.position, camera.position + camera.direction(), camera.up());
+        mat4 view = lookAt(camera->position, camera->position + camera->direction(), camera->up());
 
         vec3 up{0, 1, 0};
 
@@ -212,8 +235,8 @@ bool Window::loop() {
 
 
         for (size_t i = 0; i < Debug::get_points().size(); i++) {
-            auto ray = Debug::get_points()[i] - camera.position;
-            ray = ray * camera.direction();
+            auto ray = Debug::get_points()[i] - camera->position;
+            ray = ray * camera->direction();
             auto raylength = length(ray);
             auto shortray = normalize(ray);
             auto point = project(Debug::get_points()[i], view, projection, vec4(0, 0, size.x, size.y));
@@ -252,5 +275,6 @@ void Window::selfdestruct() {
 }
 
 Camera * Window::getCamera() {
-    return &camera;
+    return camera;
 }
+

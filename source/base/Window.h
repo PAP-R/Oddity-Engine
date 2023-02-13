@@ -35,8 +35,8 @@ private:
     vec2 position;
     vec2 size;
 
-    chrono::duration<float> t;
-    chrono::time_point<chrono::system_clock> tstart = chrono::system_clock::now();
+    chrono::time_point<chrono::system_clock> tLast;
+    chrono::time_point<chrono::system_clock> tStart = chrono::system_clock::now();
 
     vector<CallBack*> callbackList;
 
@@ -49,7 +49,7 @@ private:
 
     vector<GraphicsObject> objects;
 
-    Camera camera;
+    Camera *camera;
 
 public:
     void addCallback(CallBack *callback);
@@ -61,6 +61,10 @@ public:
     void setCursorCallback();
 
     void setMouseButtonCallback();
+
+    void setScrollCallback();
+
+    void setCallbacks();
 
 
 /// Toggles ///
@@ -82,7 +86,7 @@ public:
 
     void removeObject(GraphicsObject go);
 
-    void setCamera(Camera cam);
+    void setCamera(Camera *cam);
 
     Camera * getCamera();
 

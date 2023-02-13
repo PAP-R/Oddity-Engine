@@ -1,11 +1,12 @@
-#include "Object.h"
+#include "Mesh.h"
 
-Object::Object() {}
+Mesh::Mesh() {}
 
-Object::Object(const vector<vec3> &points) : points(points) {}
+Mesh::Mesh(const vector<vec3> &points) : points(points) {
+    edge = HalfEdge::addPolygon(points);
+}
 
-vector<float> Object::pointsToFloat() {
-
+vector<float> Mesh::getVertices() {
     vec3 mid(0);
 
     for (auto p : this->points) {
@@ -23,6 +24,10 @@ vector<float> Object::pointsToFloat() {
         uv.emplace_back((p.z - mid.z - texPos.y) / texSize.y);
     }
 
-
     return vertices;
+}
+
+void Mesh::set_points(vector<vec3> points) {
+    this->points = points;
+    edge = HalfEdge::addPolygon(points);
 }

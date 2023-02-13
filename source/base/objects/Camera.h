@@ -7,16 +7,16 @@ using namespace glm;
 
 class Camera {
 public:
-    vec3 position = vec3(0);
-    vec2 angle = vec2(0);
+    vec3 position;
+    vec2 angle;
 
-    float fov = 45.0f;
+    float fov;
 
-    Camera(const vec3 &pos=vec3(0), const vec2 &angle=vec2(0), float pov=45.0f);
+    explicit Camera(vec3 position=vec3(0), vec2 angle=vec2(0), float fov=float(45));
 
-    vec3 direction() const;
-    vec3 right() const;
-    vec3 up() const;
+    [[nodiscard]] vec3 direction() const;
+    [[nodiscard]] vec3 right() const;
+    [[nodiscard]] vec3 up() const;
 };
 
 

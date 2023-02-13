@@ -4,7 +4,7 @@
 
 #include "source/base/tools/BufferTools.h"
 
-GraphicsObject::GraphicsObject(const vec3 &pos, const vec3 &dir, const vec3 &scale, const string &vertexShader, const string &fragmentShader) : pos(pos), dir(dir), scale(scale) {
+GraphicsObject::GraphicsObject(const vec3 &pos, const vec3 &dir, const vec3 &scale, const string &vertexShader, const string &fragmentShader) : Object{pos, dir, scale} {
     this->program = loadShaders(vertexShader, fragmentShader);
 }
 
@@ -24,12 +24,6 @@ void GraphicsObject::deleteData(size_t buffer) {
     this->buffers.erase(this->buffers.begin() + buffer);
 }
 
-void GraphicsObject::selfdestruct() {
-    for (int i = this->buffers.size() - 1; i >= 0; i--) {
-        this->deleteData(i);
-    }
-}
-
 bool GraphicsObject::operator==(const GraphicsObject &rhs) const {
     return pos.x == rhs.pos.x &&
            pos.y == rhs.pos.y &&
@@ -45,6 +39,12 @@ bool GraphicsObject::operator==(const GraphicsObject &rhs) const {
 
 bool GraphicsObject::operator!=(const GraphicsObject &rhs) const {
     return !(rhs == *this);
+}
+
+GraphicsObject::~GraphicsObject() {
+    for (int i = this->buffers.size() - 1; i >= 0; i--) {
+        this->deleteData(i);
+    }
 }
 
 
