@@ -6,7 +6,7 @@
 #include "source/object/HalfEdge.h"
 
 class Mesh {
-private:
+protected:
     HalfEdge *edge;
     vector<vec3> points;
     vector<float> vertices;

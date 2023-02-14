@@ -122,7 +122,7 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
     position = vec2(x, y);
     size = vec2(width, height);
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 16);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
@@ -148,6 +148,7 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
 
     glewExperimental = true;
 
+    glEnable(GL_MULTISAMPLE);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
@@ -159,11 +160,15 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
     winToWin.emplace(window, this);
 }
 
-void Window::addObject(GraphicsObject go) {
+Window::~Window() {
+    glfwDestroyWindow(window);
+}
+
+void Window::addObject(Graphics* go) {
     objects.emplace_back(go);
 }
 
-void Window::removeObject(GraphicsObject go) {
+void Window::removeObject(Graphics* go) {
     objects.erase(remove(objects.begin(), objects.end(), go));
 }
 
@@ -195,9 +200,9 @@ bool Window::loop() {
     ImGui::End();
 
     for (auto o : objects) {
-        glUseProgram(o.program);
+        glUseProgram(o->get_program());
 
-        GLuint shaderTime = glGetUniformLocation(o.program, "TIME");
+        GLuint shaderTime = glGetUniformLocation(o->get_program(), "TIME");
 
         glUniform1f(shaderTime, t.count());
 
@@ -207,32 +212,31 @@ bool Window::loop() {
 
         vec3 up{0, 1, 0};
 
-        vec3 right = normalize(cross(o.dir, up));
+        vec3 right = normalize(cross(o->dir, up));
 
         right = all(isnan(right)) ? up : right;
 
-        float angle = orientedAngle(normalize(o.dir), normalize(up), right);
+        float angle = orientedAngle(normalize(o->dir), normalize(up), right);
 
-        mat4 model = rotate(scale(translate(mat4(1.0f), o.pos), o.scale), angle, right);
+        mat4 model = rotate(scale(translate(mat4(1.0f), o->pos), o->scale), angle, right);
 
         mat4 mvp = projection * view * model;
 
-        GLuint matrix = glGetUniformLocation(o.program, "MVP");
+        GLuint matrix = glGetUniformLocation(o->get_program(), "MVP");
 
         glUniformMatrix4fv(matrix, 1, GL_FALSE, &mvp[0][0]);
 
-        for (size_t i = 0; i < o.buffers.size(); i++) {
+        for (size_t i = 0; i < o->get_buffer_size(); i++) {
             glEnableVertexAttribArray(i);
-            glBindBuffer(GL_ARRAY_BUFFER, o.buffers[i]);
-            glVertexAttribPointer(i, o.blockSize[i], GL_FLOAT, GL_FALSE, 0, nullptr);
+            glBindBuffer(GL_ARRAY_BUFFER, o->get_buffers()[i]);
+            glVertexAttribPointer(i, o->get_blocksize()[i], GL_FLOAT, GL_FALSE, 0, nullptr);
         }
 
-        glDrawArrays(GL_TRIANGLES, 0, o.size.front());
+        glDrawArrays(GL_TRIANGLES, 0, o->get_size().front());
 
-        for (size_t i = 0; i < o.buffers.size(); i++) {
+        for (size_t i = 0; i < o->get_buffers().size(); i++) {
             glDisableVertexAttribArray(i);
         }
-
 
         for (size_t i = 0; i < Debug::get_points().size(); i++) {
             auto ray = Debug::get_points()[i] - camera->position;
@@ -253,7 +257,6 @@ bool Window::loop() {
             ImGui::Text("%s", Debug::get_point_texts()[i].data());
             ImGui::End();
         }
-
     }
 
     ImGui::Render();
@@ -267,14 +270,6 @@ const vector<CallBack*> &Window::getCallbackList() const {
     return callbackList;
 }
 
-void Window::selfdestruct() {
-    glfwDestroyWindow(window);
-    for (auto o : objects) {
-        o.selfdestruct();
-    }
-}
-
 Camera * Window::getCamera() {
     return camera;
 }
-

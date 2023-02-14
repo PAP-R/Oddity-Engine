@@ -30,8 +30,7 @@ bool compair(tuple<int, vec3, float> first, tuple<int, vec3, float> second) {
 }
 
 
-Cube::Cube(float s) {
-
+Cube::Cube(float s,const vec3 &pos, const vec3 &dir, const vec3 &scale, const string &vertexShader, const string &fragmentShader) : Graphics{pos, dir, scale, vertexShader, fragmentShader} {
     vec3 start(s);
 
     vector<vec3> points;
@@ -53,7 +52,7 @@ Cube::Cube(float s) {
     }
 
 
-    auto *edge = HalfEdge::addPolygon(points);
+   edge = HalfEdge::addPolygon(points);
 
     auto *t = edge;
     bool notstarted = true;
@@ -70,6 +69,8 @@ Cube::Cube(float s) {
     HalfEdge::addPolygon(t, {t->source - vec3(2 * s, 0, 0), t->dest - vec3(2 * s, 0, 0)});
 
     edge->insertPolygon(&(this->points));
+
+    addData(3, getVertices(), GL_STATIC_DRAW);
 }
 
 

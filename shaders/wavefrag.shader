@@ -30,5 +30,5 @@ void main() {
     color = sin(color);
     color *= smoothstep(r, r + 0.01, color);
     r += 1;
-    color *= smoothstep(r + 5, r - 0.01, color);
+    color *= smoothstep(r, r - 0.01, color);
 }

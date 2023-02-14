@@ -8,39 +8,34 @@ int main() {
     if (!glfwInit()) {
         throw runtime_error("Failed to initialize GLFW");
     }
+
+    glEnable(GL_DEBUG_OUTPUT);
+
     int width = 1080, height = 720;
 
-    auto window = Window("Oddity", width, height);
+    auto window = new Window("Oddity", width, height);
 
-    Cube cube;
-    Cube biggerCube(4);
+    Cube cube1(1, vec3(0));
+    Cube cube2(1, vec3(3, 0, 0), vec3(0, 1, 0), vec3(5), loadShader("shaders/vert.shader"), loadShader("shaders/linefrag.shader"));
+    //Cube cube3(4, vec3(0, -5, -5), vec3(0, 1, 0));
 
+    window->addObject(&cube1);
+    window->addObject(&cube2);
+    //window->addObject(&cube3);
 
-    GraphicsObject cubeGO(cube.pos);
-    GraphicsObject cubeGO2(cube.pos + vec3(1, 0, 0), vec3(1, 1, 1));
-    GraphicsObject cubeGO3(cube.pos + vec3(0, -5, -5), vec3(0, 1, 0));
+    Camera camera(vec3(0, 4, 4), vec2(pi<float>(), -0.8));
 
-    cubeGO.addData(3, cube.vertices, GL_STATIC_DRAW);
-    cubeGO2.addData(3, cube.vertices, GL_STATIC_DRAW);
-    cubeGO3.addData(3, biggerCube.vertices, GL_STATIC_DRAW);
-
-    window.addObject(cubeGO);
-    window.addObject(cubeGO2);
-    window.addObject(cubeGO3);
-
-    Camera camera;
-
-    window.setCamera(&camera);
+    window->setCamera(&camera);
 
     Player player;
 
     player.camera = &camera;
 
-    window.setCursor(GLFW_CURSOR_DISABLED);
+    window->setCursor(GLFW_CURSOR_DISABLED);
 
-    window.addCallback(&player);
+    window->addCallback(&player);
 
-    window.setCallbacks();
+    window->setCallbacks();
 
     chrono::duration<float> t;
     auto tstart = chrono::system_clock::now();
@@ -48,12 +43,12 @@ int main() {
     do {
         Debug::clear_text();
         player.move();
-    } while(window.loop());
+    } while(window->loop());
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    window.selfdestruct();
+    delete window;
     glfwTerminate();
 }

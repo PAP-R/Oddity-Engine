@@ -19,7 +19,7 @@ using namespace glm;
 
 using namespace std;
 
-#include "source/base/objects/GraphicsObject.h"
+#include "source/base/objects/Graphics.h"
 #include "source/base/objects/Camera.h"
 #include "interfaces/CallBack.h"
 
@@ -47,7 +47,7 @@ private:
     GLenum cursormode;
     const GLFWvidmode* windowMode;
 
-    vector<GraphicsObject> objects;
+    vector<Graphics*> objects;
 
     Camera *camera;
 
@@ -80,11 +80,11 @@ public:
 /// Window ///
     Window(const char *name, size_t width, size_t height, int x=0, int y=0);
 
-    void selfdestruct();
+    virtual ~Window();
 
-    void addObject(GraphicsObject go);
+    void addObject(Graphics* go);
 
-    void removeObject(GraphicsObject go);
+    void removeObject(Graphics* go);
 
     void setCamera(Camera *cam);
 
