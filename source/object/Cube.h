@@ -6,7 +6,9 @@
 
 class Cube : public Physics, public Graphics {
 public:
-    Cube(float s=0.5f, const vec3 &pos=vec3(0), const vec3 &dir=vec3(0, 1, 0), const vec3 &scale=vec3(1, 1, 1), const string &vertexShader=loadShader("shaders/vert.shader"), const string &fragmentShader=loadShader("shaders/wavefrag.shader"));
+    explicit Cube(const vec3 &pos=vec3(0), const vec3 &dir=vec3(0, 1, 0), const vec3 &scale=vec3(1, 1, 1), const string &vertexShader=loadShader("shaders/vert.shader"), const string &fragmentShader=loadShader("shaders/wavefrag.shader"));
+
+    void loop(float deltaSeconds);
 };
 
 

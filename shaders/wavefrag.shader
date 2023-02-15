@@ -2,7 +2,7 @@
 
 in vec3 fragmentPosition;
 
-out vec3 color;
+out vec4 color;
 
 uniform float TIME;
 
@@ -26,7 +26,7 @@ void main() {
 
     float t = wave(0.);
 
-    color = vec3(wave(0), wave(0), wave(0));
+    color = vec4(wave(0));
     color = sin(color);
     color *= smoothstep(r, r + 0.01, color);
     r += 1;

@@ -4,7 +4,7 @@
 
 #include "source/base/tools/BufferTools.h"
 
-Graphics::Graphics(const vec3 &pos, const vec3 &dir, const vec3 &scale, const string &vertexShader, const string &fragmentShader) : Object{pos, dir, scale} {
+Graphics::Graphics(const string &vertexShader, const string &fragmentShader) {
     this->program = loadShaders(vertexShader, fragmentShader);
 }
 
@@ -65,6 +65,10 @@ vector<size_t> Graphics::get_blocksize() {
 
 vector<size_t> Graphics::get_size() {
     return size;
+}
+
+void Graphics::loop(float deltaSeconds) {
+    Object::loop(deltaSeconds);
 }
 
 

@@ -1,8 +1,9 @@
 #include "Player.h"
 #include "source/base/tools/Debug.h"
+#include <fmt/core.h>
+using namespace fmt;
 
 #include <stdio.h>
-#include <format>
 
 void Player::move() {
     double currentTime = glfwGetTime();
@@ -11,7 +12,7 @@ void Player::move() {
 
     camera->fov = baseFOV / (zoomed ? zoom : 1);
     camera->fov = camera->fov > maxFOV ? maxFOV : camera->fov;
-    Debug::add_text(format("Zoom: {}\nFOV: {}\n", zoom, camera->fov));
+    Debug::add_text(fmt::format("Zoom: {}\nFOV: {}\n", zoom, camera->fov));
 
     camera->position = camera->position + (movement.x * camera->direction() + movement.z * camera->right()) * moveDeltaTime * speed;
 }

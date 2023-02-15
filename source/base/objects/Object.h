@@ -19,6 +19,7 @@ public:
     vec3 scale{1};
 
     Object(const vec3 &pos=vec3(0), const vec3 &dir=vec3(0, 1, 0), const vec3 &scale=vec3(1));
+    void loop(float deltaSeconds);
 };
 
 #endif //ODDITYENGINE_OBJECT_H

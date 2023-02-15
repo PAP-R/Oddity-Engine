@@ -2,7 +2,7 @@
 
 in vec3 fragmentPosition;
 
-out vec3 color;
+out vec4 color;
 
 uniform float TIME;
 
@@ -26,7 +26,7 @@ void main() {
     vec3 fp = fragmentPosition;
     float l = length(fp);
 
-    color = vec3(1.);
+    color = vec4(1.);
 
     color *= step(r, abs(fp.x * fp.y)) + step(r, abs(fp.y * fp.z)) + step(r, abs(fp.z * fp.x));
 }

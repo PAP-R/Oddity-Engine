@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.23)
 project(OddityEngine)
 
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+
 find_package(OpenGL REQUIRED)
 
 
@@ -9,6 +11,7 @@ include_directories(
         external/glfw/include
         external/glm
         external/imgui
+        external/fmt/include
         .
 )
 
@@ -19,6 +22,7 @@ set(ALL_LIBS
         glfw
         libglew_static
         IMGUI
+        fmt::fmt
 )
 
 add_definitions(

@@ -17,7 +17,11 @@ using namespace glm;
 
 #include <vector>
 #include <map>
+#include <algorithm>
 using namespace std;
+
+#include <fmt/core.h>
+using namespace fmt;
 
 #include "source/base/tools/Debug.h"
 #include "interfaces/CallBack.h"
@@ -148,10 +152,15 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
 
     glewExperimental = true;
 
+    glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
+
+    glClearColor(0.1, 0.1, 0.1, 1.0);
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
@@ -177,12 +186,9 @@ void Window::setCamera(Camera *cam) {
 }
 
 
-bool Window::loop() {
-    auto tNow = chrono::system_clock::now();
-    chrono::duration<float> t = tNow - tStart;
-    chrono::duration<float> spf = tNow - tLast;
-    tLast = tNow;
-    float fps = 1 / spf.count();
+bool Window::loop(float deltaSeconds) {
+    runtimeSeconds += deltaSeconds;
+    float fps = 1 / deltaSeconds;
 
     Debug::add_text(format("FPS: {}\n", fps));
     Debug::add_text(format("Camera:\nPos:\t[ {:.1f} | {:.1f} | {:.1f} ]\nDir:\t[ {:.1f} | {:.1f} | {:.1f} ]\nAng:\t[ {:.1f} | {:.1f} ]\n", camera->position.x, camera->position.y, camera->position.z, camera->direction().x, camera->direction().y, camera->direction().z, camera->angle.x, camera->angle.y));
@@ -199,12 +205,14 @@ bool Window::loop() {
     ImGui::Text("%s", Debug::get_text().c_str());
     ImGui::End();
 
+
+
     for (auto o : objects) {
         glUseProgram(o->get_program());
 
         GLuint shaderTime = glGetUniformLocation(o->get_program(), "TIME");
 
-        glUniform1f(shaderTime, t.count());
+        glUniform1f(shaderTime, runtimeSeconds);
 
         mat4 projection = perspective(radians(camera->fov), float(size.x) / float(size.y), 0.1f, 100.0f);
 

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Debug.h"
 
 Debug debug;

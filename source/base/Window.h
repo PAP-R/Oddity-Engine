@@ -35,8 +35,7 @@ private:
     vec2 position;
     vec2 size;
 
-    chrono::time_point<chrono::system_clock> tLast;
-    chrono::time_point<chrono::system_clock> tStart = chrono::system_clock::now();
+    float runtimeSeconds = 0.0f;
 
     vector<CallBack*> callbackList;
 
@@ -90,7 +89,7 @@ public:
 
     Camera * getCamera();
 
-    bool loop();
+    bool loop(float deltaSeconds);
 };
 
 

@@ -13,3 +13,6 @@
 [submodule "external/glew"]
 	path = external/glew
 	url = https://github.com/Perlmint/glew-cmake.git
+[submodule "external/fmt"]
+	path = external/fmt
+	url = https://github.com/fmtlib/fmt.git

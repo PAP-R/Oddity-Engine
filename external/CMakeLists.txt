@@ -45,3 +45,5 @@ set(IMGUI
         imgui/backends/imgui_impl_opengl3.h)
 
 add_library(IMGUI STATIC ${IMGUI})
+
+add_subdirectory(fmt)

@@ -3,13 +3,14 @@
 #include <algorithm>
 #include <tuple>
 #include <limits>
-#include <format>
 
 #include <string>
 
 #include <cstdio>
 
 using namespace std;
+
+#include <fmt/core.h>
 
 #include "HalfEdge.h"
 #include "source/base/tools/Debug.h"
@@ -30,7 +31,9 @@ bool compair(tuple<int, vec3, float> first, tuple<int, vec3, float> second) {
 }
 
 
-Cube::Cube(float s,const vec3 &pos, const vec3 &dir, const vec3 &scale, const string &vertexShader, const string &fragmentShader) : Graphics{pos, dir, scale, vertexShader, fragmentShader} {
+Cube::Cube(const vec3 &pos, const vec3 &dir, const vec3 &scale, const string &vertexShader, const string &fragmentShader) : Object{pos, dir, scale}, Graphics{vertexShader, fragmentShader}, Physics{&this->pos, &this->scale} {
+    float s = 1.0f;
+
     vec3 start(s);
 
     vector<vec3> points;
@@ -40,7 +43,7 @@ Cube::Cube(float s,const vec3 &pos, const vec3 &dir, const vec3 &scale, const st
     for (size_t i = 0; false && i < pointCount; i++) {
         points.emplace_back(sin(i * 2 * pi<float>() / pointCount), s, cos(i * 2 * pi<float>() / pointCount));
         auto dir = normalize(points[i] - this->pos);
-        Debug::add_point(points[i], format("[{}]\n{:1.1} {:1.1} {:1.1}\n{:1.1} {:1.1} {:1.1}\n", i, points[i].x, points[i].y, points[i].z, dir.x, dir.y, dir.z));
+        Debug::add_point(points[i], fmt::format("[{}]\n{:1.1} {:1.1} {:1.1}\n{:1.1} {:1.1} {:1.1}\n", i, points[i].x, points[i].y, points[i].z, dir.x, dir.y, dir.z));
         Debug::add_point(points[i] + dir, "*");
     }
 
@@ -71,6 +74,11 @@ Cube::Cube(float s,const vec3 &pos, const vec3 &dir, const vec3 &scale, const st
     edge->insertPolygon(&(this->points));
 
     addData(3, getVertices(), GL_STATIC_DRAW);
+}
+
+void Cube::loop(float deltaSeconds) {
+    Physics::loop(deltaSeconds);
+    Graphics::loop(deltaSeconds);
 }
 
 

@@ -16,7 +16,7 @@ using namespace glm;
 
 using namespace std;
 
-class Graphics : public Object, public Mesh {
+class Graphics : public virtual Object, public Mesh {
 protected:
     GLuint program;
     vector<GLuint> buffers;
@@ -24,7 +24,7 @@ protected:
     vector<size_t> size;
 
 public:
-    Graphics(const vec3 &pos=vec3(0), const vec3 &dir=vec3(0, 1, 0), const vec3 &scale=vec3(1, 1, 1), const string &vertexShader=loadShader("shaders/vert.shader"), const string &fragmentShader=loadShader("shaders/wavefrag.shader"));
+    explicit Graphics(const string &vertexShader=loadShader("shaders/vert.shader"), const string &fragmentShader=loadShader("shaders/wavefrag.shader"));
 
     ~Graphics();
 
@@ -41,6 +41,8 @@ public:
     bool operator==(const Graphics &rhs) const;
 
     bool operator!=(const Graphics &rhs) const;
+
+    void loop(float deltaSeconds);
 };
 
 
