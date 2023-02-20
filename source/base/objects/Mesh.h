@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "source/object/HalfEdge.h"
+#include "source/base/objects/geometry/HalfEdge.h"
 
 class Mesh {
 protected:

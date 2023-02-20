@@ -159,6 +159,7 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glClearColor(0.1, 0.1, 0.1, 1.0);
 
@@ -205,7 +206,9 @@ bool Window::loop(float deltaSeconds) {
     ImGui::Text("%s", Debug::get_text().c_str());
     ImGui::End();
 
+    mat4 projection = perspective(radians(camera->fov), float(size.x) / float(size.y), 0.1f, 100.0f);
 
+    mat4 view = lookAt(camera->position, camera->position + camera->direction(), camera->up());
 
     for (auto o : objects) {
         glUseProgram(o->get_program());
@@ -213,10 +216,6 @@ bool Window::loop(float deltaSeconds) {
         GLuint shaderTime = glGetUniformLocation(o->get_program(), "TIME");
 
         glUniform1f(shaderTime, runtimeSeconds);
-
-        mat4 projection = perspective(radians(camera->fov), float(size.x) / float(size.y), 0.1f, 100.0f);
-
-        mat4 view = lookAt(camera->position, camera->position + camera->direction(), camera->up());
 
         vec3 up{0, 1, 0};
 
@@ -245,26 +244,26 @@ bool Window::loop(float deltaSeconds) {
         for (size_t i = 0; i < o->get_buffers().size(); i++) {
             glDisableVertexAttribArray(i);
         }
+    }
 
-        for (size_t i = 0; i < Debug::get_points().size(); i++) {
-            auto ray = Debug::get_points()[i] - camera->position;
-            ray = ray * camera->direction();
-            auto raylength = length(ray);
-            auto shortray = normalize(ray);
-            auto point = project(Debug::get_points()[i], view, projection, vec4(0, 0, size.x, size.y));
-            auto point2d = vec2(point.x, size.y - point.y);
+    for (size_t i = 0; i < Debug::get_points().size(); i++) {
+        auto ray = Debug::get_points()[i] - camera->position;
+        ray = ray * camera->direction();
+        auto raylength = length(ray);
+        auto shortray = normalize(ray);
+        auto point = project(Debug::get_points()[i], view, projection, vec4(0, 0, size.x, size.y));
+        auto point2d = vec2(point.x, size.y - point.y);
 
-            if ((ray.x + ray.y + ray.z) < 0) {
-                continue;
-            }
-
-            ImGui::SetNextWindowPos(ImVec2(point2d.x, point2d.y));
-            ImGui::SetNextWindowSize(ImVec2(400, 64));
-            ImGui::Begin(to_string(i).data(), nullptr, (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
-
-            ImGui::Text("%s", Debug::get_point_texts()[i].data());
-            ImGui::End();
+        if ((ray.x + ray.y + ray.z) < 0) {
+            continue;
         }
+
+        ImGui::SetNextWindowPos(ImVec2(point2d.x, point2d.y));
+        ImGui::SetNextWindowSize(ImVec2(400, 64));
+        ImGui::Begin(to_string(i).data(), nullptr, (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
+
+        ImGui::Text("%s", Debug::get_point_texts()[i].data());
+        ImGui::End();
     }
 
     ImGui::Render();

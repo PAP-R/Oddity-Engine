@@ -3,6 +3,9 @@
 #include "object/Cube.h"
 #include "source/object/Player.h"
 #include "source/base/tools/Debug.h"
+#include "base/objects/Physics.h"
+
+#include <list>
 
 int main() {
     if (!glfwInit()) {
@@ -13,13 +16,23 @@ int main() {
 
     auto window = new Window("Oddity", width, height);
 
-    Cube cube1(vec3(0, 100, 0));
-    Cube cube2(vec3(0, 0, 0), vec3(0, 1, 0), vec3(2), loadShader("shaders/vert.shader"), loadShader("shaders/linefrag.shader"));
-    Cube cube3(vec3(0, -5, 0), vec3(0, 1, 0), vec3(10, 1, 10));
+    Cube cube1(false, vec3(0, 0, 0), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/wavefrag.shader"));
+    //Cube cube2(true, vec3(0, 0, 0), vec3(0, 1, 0), vec3(2), loadShader("shaders/vert.shader"), loadShader("shaders/linefrag.shader"));
+//    Cube cube3(false, vec3(0, -5, 0), vec3(0, 1, 0), vec3(20, 4, 20));
 
     window->addObject(&cube1);
-    window->addObject(&cube2);
-    window->addObject(&cube3);
+    //window->addObject(&cube2);
+//    window->addObject(&cube3);
+
+    vector<Cube*> cubes;
+    for (int x = -4; false && x <= 4; x += 2) {
+        for (int z = -4; z <= 4; z += 2) {
+            for (int i = 0; i < 1; i++) {
+                cubes.emplace_back(new Cube(true, vec3(x * 1.1, 10 + i * 3, z * 1.1), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader")));
+                window->addObject(cubes.back());
+            }
+        }
+    }
 
     Camera camera(vec3(0, 4, 4), vec2(pi<float>(), -0.8));
 
@@ -45,8 +58,7 @@ int main() {
 
         Debug::clear_text();
         player.move();
-        cube1.loop(deltaTime.count());
-        cube2.loop(deltaTime.count());
+        Physics::update_physics_sub_steps(deltaTime.count(), 1);
     } while(window->loop(deltaTime.count()));
 
     ImGui_ImplOpenGL3_Shutdown();

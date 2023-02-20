@@ -3,7 +3,7 @@
 Mesh::Mesh() {}
 
 Mesh::Mesh(const vector<vec3> &points) : points(points) {
-    edge = HalfEdge::addPolygon(points);
+    edge = HalfEdge::create_outline_fill(points);
 }
 
 vector<float> Mesh::getVertices() {
@@ -29,5 +29,6 @@ vector<float> Mesh::getVertices() {
 
 void Mesh::set_points(vector<vec3> points) {
     this->points = points;
-    edge = HalfEdge::addPolygon(points);
+    edge = HalfEdge::create_outline(points);
+    edge->fill();
 }

@@ -9,7 +9,7 @@ using namespace std;
 
 using namespace glm;
 
-#include "source/object/HalfEdge.h"
+#include "source/base/objects/geometry/HalfEdge.h"
 #include "Mesh.h"
 
 class Object {
