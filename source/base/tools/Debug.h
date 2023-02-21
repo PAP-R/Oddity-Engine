@@ -6,18 +6,15 @@
 using namespace glm;
 
 #include <vector>
-#include <string>
-//#include <format>
-
 using namespace std;
 
-
+#include <string>
 
 class Debug {
 private:
     vector<vec3> points;
     vector<string> pointTexts;
-    string mainText;
+    std::string mainText;
 
 public:
     static void add_point(vec3 pos, string text);

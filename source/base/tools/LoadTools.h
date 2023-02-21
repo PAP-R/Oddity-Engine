@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <string>
 
+using namespace std;
+
 #include "GL/glew.h"
 
 #include "GLFW/glfw3.h"
@@ -13,7 +15,7 @@
 #include "glm/glm.hpp"
 using namespace glm;
 
-std::string loadShader(const char * path);
+string loadShader(const char * path);
 
 GLuint loadShaders(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
 GLuint loadFileShaders(const char * vertex_file_path,const char * fragment_file_path);

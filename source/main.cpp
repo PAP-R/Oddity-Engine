@@ -16,9 +16,11 @@ int main() {
 
     auto window = new Window("Oddity", width, height);
 
-    Cube cube1(false, vec3(0, 0, 0), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/wavefrag.shader"));
+    Cube cube1(vec3(0, 0, 0), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader"));
+//    cube1.setMovable(true);
     //Cube cube2(true, vec3(0, 0, 0), vec3(0, 1, 0), vec3(2), loadShader("shaders/vert.shader"), loadShader("shaders/linefrag.shader"));
-//    Cube cube3(false, vec3(0, -5, 0), vec3(0, 1, 0), vec3(20, 4, 20));
+//    Cube cube3(vec3(0, -5, 0), vec3(0, 1, 0), vec3(20, 4, 20));
+//    cube3.setGravity(1.0f);
 
     window->addObject(&cube1);
     //window->addObject(&cube2);
@@ -28,7 +30,7 @@ int main() {
     for (int x = -4; false && x <= 4; x += 2) {
         for (int z = -4; z <= 4; z += 2) {
             for (int i = 0; i < 1; i++) {
-                cubes.emplace_back(new Cube(true, vec3(x * 1.1, 10 + i * 3, z * 1.1), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader")));
+                cubes.emplace_back(new Cube(vec3(x * 1.1, 10 + i * 3, z * 1.1), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader")));
                 window->addObject(cubes.back());
             }
         }

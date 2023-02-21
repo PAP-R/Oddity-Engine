@@ -8,18 +8,18 @@
 using namespace std;
 
 template <typename T>
-GLuint createBuffer(vector<T> data, GLenum buffermode) {
+GLuint createBuffer(vector<T> data, GLenum type, GLenum mode) {
     GLuint buffer;
     glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(T), data.data(), buffermode);
+    glBindBuffer(type, buffer);
+    glBufferData(type, data.size() * sizeof(T), data.data(), mode);
     return buffer;
 }
 
 template <typename T>
-void editBufferData(GLuint buffer, vector<T> data, GLenum buffermode) {
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(T), data.data(), buffermode);
+void editBufferData(GLuint buffer, vector<T> data, GLenum type, GLenum buffermode) {
+    glBindBuffer(type, buffer);
+    glBufferData(type, data.size() * sizeof(T), data.data(), buffermode);
 }
 
 void deleteBuffer(GLuint buffer) {

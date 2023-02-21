@@ -8,8 +8,6 @@
 
 #include <cstdio>
 
-using namespace std;
-
 #include <fmt/core.h>
 
 #include "source/base/objects/geometry/HalfEdge.h"
@@ -26,36 +24,34 @@ std::vector<vec3> cubeCorners() {
     return cornerData;
 }
 
-bool compair(tuple<int, vec3, float> first, tuple<int, vec3, float> second) {
+bool compair(std::tuple<int, vec3, float> first, std::tuple<int, vec3, float> second) {
     return get<2>(first) < get<2>(second);
 }
 
 
-Cube::Cube(bool movable, const vec3 &pos, const vec3 &dir, const vec3 &scale, const string &vertexShader, const string &fragmentShader) : Object{pos, dir, scale}, Graphics{vertexShader, fragmentShader}, Physics(&(Object::pos), &(Object::scale), movable) {
+Cube::Cube(const vec3 &pos, const vec3 &dir, const vec3 &scale, const std::string &vertexShader, const std::string &fragmentShader) : Object{pos, dir, scale}, Graphics{vertexShader, fragmentShader}, Physics(&(Object::pos), &(Object::scale)) {
     float s = 1.0f;
-
-    vec3 start(s);
 
     vector<vec3> points;
 
-    size_t pointCount = 16;
+    size_t pointCount = 5;
 
     for (size_t i = 0; i < pointCount; i++) {
         points.emplace_back(sin(i * 2 * pi<float>() / pointCount), s, cos(i * 2 * pi<float>() / pointCount));
+        Debug::add_point(points.back(), fmt::format("{}", i));
     }
 
     for (int i = 0; i < 4; i++) {
 //        points.emplace_back(s * sign(1 - 2 * ((i - 1) % 3)), s, s * sign(1 - 2 * ((i) % 3)));
     }
 
+    add_face(points);
+    subdivide(3);
+    normalize();
 
-   edge = HalfEdge::create_outline_fill(points);
-
-    edge->extend(vec3(1, -s, 0), vec3(1, 1, 1))->extend(vec3(-1, -s, 0), vec3(1, 1, 1))->extend(vec3(1, -s, 0), vec3(1, 1, 1));
-
-    edge->insertPolygon(&(this->points));
-
-    addData(3, getVertices(), GL_STATIC_DRAW);
+    addData(3, getVertices(), GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    addData(3, getIndices(), GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+    set_size(get_index_count());
 }
 
 void Cube::loop(float deltaSeconds) {

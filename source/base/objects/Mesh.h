@@ -2,14 +2,14 @@
 #define ODDITYENGINE_MESH_H
 
 #include <vector>
+using namespace std;
 
 #include "source/base/objects/geometry/HalfEdge.h"
+#include "source/base/objects/geometry/Polygon.h"
+#include "GL/glew.h"
 
-class Mesh {
+class Mesh : public Polygon{
 protected:
-    HalfEdge *edge;
-    vector<vec3> points;
-    vector<float> vertices;
     vector<float> uv;
 
     vec2 texPos{-1.0f};
@@ -22,6 +22,8 @@ public:
     void set_points(vector<vec3> points);
 
     vector<float> getVertices();
+    vector<GLuint> getIndices();
+    size_t get_index_count();
 };
 
 

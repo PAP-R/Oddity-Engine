@@ -159,6 +159,7 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
+
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glClearColor(0.1, 0.1, 0.1, 1.0);
@@ -234,12 +235,19 @@ bool Window::loop(float deltaSeconds) {
         glUniformMatrix4fv(matrix, 1, GL_FALSE, &mvp[0][0]);
 
         for (size_t i = 0; i < o->get_buffer_size(); i++) {
-            glEnableVertexAttribArray(i);
-            glBindBuffer(GL_ARRAY_BUFFER, o->get_buffers()[i]);
-            glVertexAttribPointer(i, o->get_blocksize()[i], GL_FLOAT, GL_FALSE, 0, nullptr);
+            switch (o->get_type()[i]) {
+                case GL_ELEMENT_ARRAY_BUFFER:
+                    glBindBuffer(o->get_type()[i], o->get_buffers()[i]);
+                    break;
+                default:
+                    glEnableVertexAttribArray(i);
+                    glBindBuffer(o->get_type()[i], o->get_buffers()[i]);
+                    glVertexAttribPointer(i, o->get_blocksize()[i], GL_FLOAT, GL_FALSE, 0, nullptr);
+                    break;
+            }
         }
 
-        glDrawArrays(GL_TRIANGLES, 0, o->get_size().front());
+        glDrawElements(GL_TRIANGLES, o->get_size(), GL_UNSIGNED_INT, 0);
 
         for (size_t i = 0; i < o->get_buffers().size(); i++) {
             glDisableVertexAttribArray(i);

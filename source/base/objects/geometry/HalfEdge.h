@@ -90,7 +90,11 @@ public:
 
     HalfEdge *copy(vec3 direction, vec3 scale);
 
-    HalfEdge *twin_outline();
+    HalfEdge *create_triangle(vec3 point);
+
+    HalfEdge *fill(vec3 middle);
+
+    vec3 get_middle();
 };
 
 #endif //ODDITYENGINE_HALFEDGE_H

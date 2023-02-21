@@ -114,6 +114,42 @@ HalfEdge *HalfEdge::fill() {
     return this;
 }
 
+HalfEdge *HalfEdge::create_triangle(vec3 point) {
+    this->setNext((new HalfEdge(this->destination, point))->setNext((new HalfEdge(point, this->source))->setNext(this)));
+    return this;
+}
+
+HalfEdge *HalfEdge::fill(vec3 middle) {
+    auto t = this;
+    HalfEdge *next;
+    HalfEdge *previous;
+    do {
+        next = t->next;
+        previous = t->previous;
+
+        t->create_triangle(middle);
+        t->next->set_twin(next->previous);
+        t->previous->set_twin(previous->next);
+
+        t = next;
+    } while (t != this);
+    return this;
+}
+
+vec3 HalfEdge::get_middle() {
+    auto t = this;
+    size_t n(0);
+    vec3 middle(0);
+
+    do {
+        middle += t->get_source();
+        n++;
+        t = t->next;
+    } while (t != this);
+
+    return middle / vec3(n);
+}
+
 HalfEdge *HalfEdge::create_outline_fill(vector<vec3> points) {
     auto t = create_outline(points);
     t->fill();

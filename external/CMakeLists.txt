@@ -47,3 +47,5 @@ set(IMGUI
 add_library(IMGUI STATIC ${IMGUI})
 
 add_subdirectory(fmt)
+
+add_subdirectory(boost EXCLUDE_FROM_ALL)

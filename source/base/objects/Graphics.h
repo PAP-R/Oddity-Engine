@@ -8,12 +8,12 @@ using namespace glm;
 #include "GLFW/glfw3.h"
 
 #include <string>
-#include <vector>
 #include <tuple>
 #include "source/base/tools/LoadTools.h"
 #include "Mesh.h"
 #include "Object.h"
 
+#include <vector>
 using namespace std;
 
 class Graphics : public virtual Object, public Mesh {
@@ -21,10 +21,11 @@ protected:
     GLuint program;
     vector<GLuint> buffers;
     vector<size_t> blockSize;
-    vector<size_t> size;
+    size_t size;
+    vector<GLenum> type;
 
 public:
-    explicit Graphics(const string &vertexShader=loadShader("shaders/vert.shader"), const string &fragmentShader=loadShader("shaders/wavefrag.shader"));
+    explicit Graphics(const std::string &vertexShader=loadShader("shaders/vert.shader"), const std::string &fragmentShader=loadShader("shaders/wavefrag.shader"));
 
     ~Graphics();
 
@@ -32,10 +33,10 @@ public:
     size_t get_buffer_size();
     vector<GLuint> get_buffers();
     vector<size_t> get_blocksize();
-    vector<size_t> get_size();
+    size_t get_size();
+    void set_size(size_t size);
+    vector<GLenum> get_type();
 
-    void addData(size_t perSize, vector<float> data, GLenum buffermode);
-    void editData(size_t buffer, vector<float> data, GLenum buffermode);
     void deleteData(size_t buffer);
 
     bool operator==(const Graphics &rhs) const;
@@ -43,6 +44,12 @@ public:
     bool operator!=(const Graphics &rhs) const;
 
     void loop(float deltaSeconds);
+
+    void editData(size_t buffer, vector<float> data, GLenum buffermode);
+
+    void addData(size_t perSize, vector<float> data, GLenum type, GLenum buffermode);
+
+    void addData(size_t perSize, vector<GLuint> data, GLenum type, GLenum buffermode);
 };
 
 

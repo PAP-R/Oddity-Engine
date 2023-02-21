@@ -4,7 +4,7 @@
 
 #include "source/base/tools/BufferTools.h"
 
-Graphics::Graphics(const string &vertexShader, const string &fragmentShader) {
+Graphics::Graphics(const std::string &vertexShader, const std::string &fragmentShader) {
     this->program = loadShaders(vertexShader, fragmentShader);
 }
 
@@ -14,15 +14,20 @@ Graphics::~Graphics() {
     }
 }
 
-void Graphics::addData(size_t perSize, vector<float> data, GLenum buffermode) {
-    this->buffers.emplace_back(createBuffer<float>(data, buffermode));
+void Graphics::addData(size_t perSize, vector<float> data, GLenum type, GLenum buffermode) {
+    this->buffers.emplace_back(createBuffer<float>(data, type, buffermode));
     this->blockSize.emplace_back(perSize);
-    this->size.emplace_back(data.size());
+    this->type.emplace_back(type);
+}
+
+void Graphics::addData(size_t perSize, vector<GLuint> data, GLenum type, GLenum buffermode) {
+    this->buffers.emplace_back(createBuffer<GLuint>(data, type, buffermode));
+    this->blockSize.emplace_back(perSize);
+    this->type.emplace_back(type);
 }
 
 void Graphics::editData(size_t buffer, vector<float> data, GLenum buffermode) {
-    editBufferData<float>(this->buffers[buffer], data, buffermode);
-    this->size[buffer] = data.size();
+    editBufferData<float>(this->buffers[buffer], data, this->type[buffer], buffermode);
 }
 
 void Graphics::deleteData(size_t buffer) {
@@ -63,12 +68,20 @@ vector<size_t> Graphics::get_blocksize() {
     return blockSize;
 }
 
-vector<size_t> Graphics::get_size() {
+size_t Graphics::get_size() {
     return size;
 }
 
 void Graphics::loop(float deltaSeconds) {
     Object::loop(deltaSeconds);
+}
+
+vector<GLenum> Graphics::get_type() {
+    return type;
+}
+
+void Graphics::set_size(size_t size) {
+    Graphics::size = size;
 }
 
 
