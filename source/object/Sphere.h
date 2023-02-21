@@ -6,6 +6,7 @@
 #include "source/base/objects/Physics.h"
 
 class Sphere : public Physics, public Graphics {
+public:
     explicit Sphere(const vec3 &pos=vec3(0), const vec3 &dir=vec3(0, 1, 0), const vec3 &scale=vec3(1, 1, 1), const std::string &vertexShader=loadShader("shaders/vert.shader"), const std::string &fragmentShader=loadShader("shaders/wavefrag.shader"));
 };
 

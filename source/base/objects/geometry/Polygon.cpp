@@ -16,12 +16,15 @@ size_t Polygon::add_point(vec3 point) {
     return iterator - points.begin();
 }
 
-void Polygon::add_face(const vector<vec3> &points) {
-    vec3 middle = get_middle(points);
-
+void Polygon::add_face(const vector<vec3> &points, vec3 middle) {
     for (size_t i = 0; i < points.size(); i++) {
         add_triangle(points[i], points[(i + 1) % points.size()], middle);
     }
+}
+
+void Polygon::add_face(const vector<vec3> &points) {
+    vec3 middle = get_middle(points);
+    add_face(points, middle);
 }
 
 void Polygon::add_triangle(size_t first, size_t second, size_t third) {

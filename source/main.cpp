@@ -4,6 +4,7 @@
 #include "source/object/Player.h"
 #include "source/base/tools/Debug.h"
 #include "base/objects/Physics.h"
+#include "source/object/Sphere.h"
 
 #include <list>
 
@@ -16,7 +17,7 @@ int main() {
 
     auto window = new Window("Oddity", width, height);
 
-    Cube cube1(vec3(0, 0, 0), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader"));
+    Sphere cube1(vec3(0, 0, 0), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader"));
 //    cube1.setMovable(true);
     //Cube cube2(true, vec3(0, 0, 0), vec3(0, 1, 0), vec3(2), loadShader("shaders/vert.shader"), loadShader("shaders/linefrag.shader"));
 //    Cube cube3(vec3(0, -5, 0), vec3(0, 1, 0), vec3(20, 4, 20));

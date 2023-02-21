@@ -44,6 +44,8 @@ public:
     static vec3 get_middle(const vector<vec3> &points);
 
     void normalize();
+
+    void add_face(const vector<vec3> &points, vec3 middle);
 };
 
 
