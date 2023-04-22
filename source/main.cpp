@@ -1,5 +1,5 @@
 #include <chrono>
-#include "base/Window.h"
+#include "source/base/window/WindowOpenGL.h"
 #include "object/Cube.h"
 #include "source/object/Player.h"
 #include "source/base/tools/Debug.h"
@@ -15,29 +15,33 @@ int main() {
 
     int width = 1080, height = 720;
 
-    auto window = new Window("Oddity", width, height);
+    auto window = new WindowOpenGL("Oddity", width, height);
 
-    Sphere cube1(vec3(0, 0, 0), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader"));
-//    cube1.setMovable(true);
-    //Cube cube2(true, vec3(0, 0, 0), vec3(0, 1, 0), vec3(2), loadShader("shaders/vert.shader"), loadShader("shaders/linefrag.shader"));
-//    Cube cube3(vec3(0, -5, 0), vec3(0, 1, 0), vec3(20, 4, 20));
-//    cube3.setGravity(1.0f);
+    Sphere center(vec3(0, 0, 0), vec3(0, 1, 0), vec3(20), loadShader("shaders/vert.shader"), loadShader("shaders/shadedfrag.shader"));
+    center.setGravity(8.0f);
+    window->addObject(&center);
+    Sphere ball1(vec3(30, 30, 0), vec3(0, 1, 0), vec3(3), loadShader("shaders/vert.shader"), loadShader("shaders/shadedfrag.shader"));
+    ball1.setMovable(true);
+    ball1.setGravity(5);
+    window->addObject(&ball1);
+    Sphere ball2(vec3(30, 0, 0), vec3(0, 1, 0), vec3(2), loadShader("shaders/vert.shader"), loadShader("shaders/shadedfrag.shader"));
+    ball2.setMovable(true);
+    ball2.setGravity(5);
+    window->addObject(&ball2);
 
-    window->addObject(&cube1);
-    //window->addObject(&cube2);
-//    window->addObject(&cube3);
-
-    vector<Cube*> cubes;
-    for (int x = -4; false && x <= 4; x += 2) {
-        for (int z = -4; z <= 4; z += 2) {
-            for (int i = 0; i < 1; i++) {
-                cubes.emplace_back(new Cube(vec3(x * 1.1, 10 + i * 3, z * 1.1), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader")));
-                window->addObject(cubes.back());
+    vector<Sphere*> spheres;
+    for (int x = -1; x <= 1; x += 2) {
+        for (int z = -3; z <= 3; z += 2) {
+            for (int i = 0; i < 2; i++) {
+                spheres.emplace_back(new Sphere(vec3(x * 3, 22 + i * 3, z * 3), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader")));
+                spheres.back()->setMovable(true);
+                spheres.back()->setGravity(0.1f);
+//                window->addObject(spheres.back());
             }
         }
     }
 
-    Camera camera(vec3(0, 4, 4), vec2(pi<float>(), -0.8));
+    Camera camera(vec3(30), vec2(-2.4, -0.6));
 
     window->setCamera(&camera);
 
@@ -54,14 +58,16 @@ int main() {
     auto tStart = chrono::system_clock::now();
     auto tLast = chrono::system_clock::now();
     chrono::duration<float> deltaTime;
+
     do {
         auto tNow = chrono::system_clock::now();
         deltaTime = tNow - tLast;
         tLast = tNow;
 
+
         Debug::clear_text();
-        player.move();
-        Physics::update_physics_sub_steps(deltaTime.count(), 1);
+        player.move(deltaTime.count());
+        Physics::update_physics_sub_steps(deltaTime.count(), 4);
     } while(window->loop(deltaTime.count()));
 
     ImGui_ImplOpenGL3_Shutdown();

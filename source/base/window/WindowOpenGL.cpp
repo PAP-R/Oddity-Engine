@@ -1,8 +1,8 @@
-#include "Window.h"
+#include "WindowOpenGL.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/vector_angle.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/vector_angle.hpp"
 
 using namespace glm;
 
@@ -10,9 +10,9 @@ using namespace glm;
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
-#include <GL/glew.h>
+#include "GL/glew.h"
 
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 
 #include <vector>
@@ -20,21 +20,21 @@ using namespace glm;
 #include <algorithm>
 using namespace std;
 
-#include <fmt/core.h>
+#include "fmt/core.h"
 using namespace fmt;
 
 #include "source/base/tools/Debug.h"
-#include "interfaces/CallBack.h"
+#include "source/base/interfaces/CallBack.h"
 
-map<GLFWwindow*, Window*> winToWin;
+map<GLFWwindow*, WindowOpenGL*> winToWin;
 
 /// Callbacks ///
 /// Key ///
-void Window::addCallback(CallBack *callback) {
+void WindowOpenGL::addCallback(CallBack *callback) {
     callbackList.emplace_back(callback);
 }
 
-void Window::removeCallback(CallBack *callback) {
+void WindowOpenGL::removeCallback(CallBack *callback) {
     callbackList.erase(remove(callbackList.begin(), callbackList.end(), callback));
 }
 
@@ -44,7 +44,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
 }
 
-void Window::setKeyCallback() {
+void WindowOpenGL::setKeyCallback() {
     glfwSetKeyCallback(window, key_callback);
 }
 
@@ -54,7 +54,7 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
     }
 }
 
-void Window::setCursorCallback() {
+void WindowOpenGL::setCursorCallback() {
     glfwSetCursorPosCallback(window, cursor_callback);
 }
 
@@ -64,7 +64,7 @@ void mouse_callback(GLFWwindow *window, int button, int action, int mods) {
     }
 }
 
-void Window::setMouseButtonCallback() {
+void WindowOpenGL::setMouseButtonCallback() {
     glfwSetMouseButtonCallback(window, mouse_callback);
 }
 
@@ -74,12 +74,12 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     }
 }
 
-void Window::setScrollCallback() {
+void WindowOpenGL::setScrollCallback() {
     glfwSetScrollCallback(window, scroll_callback);
 }
 
 
-void Window::setCallbacks() {
+void WindowOpenGL::setCallbacks() {
     setKeyCallback();
     setCursorCallback();
     setMouseButtonCallback();
@@ -88,21 +88,21 @@ void Window::setCallbacks() {
 
 
 /// Toggles ///
-void Window::setCursor(int mode) {
+void WindowOpenGL::setCursor(int mode) {
     glfwSetInputMode(window, GLFW_CURSOR, mode);
 }
 
-void Window::setResolution(size_t width, size_t height) {
+void WindowOpenGL::setResolution(size_t width, size_t height) {
     size = vec2(width, height);
     glfwSetWindowSize(window, width, height);
 }
 
-void Window::setWindowPos(size_t x, size_t y) {
+void WindowOpenGL::setWindowPos(size_t x, size_t y) {
     this->position = vec2(x, y);
     glfwSetWindowPos(window, x, y);
 }
 
-void Window::setWindowMode(int mode) {
+void WindowOpenGL::setWindowMode(int mode) {
     GLFWmonitor *monitor = glfwGetPrimaryMonitor();
     windowMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
@@ -121,8 +121,8 @@ void Window::setWindowMode(int mode) {
 }
 
 
-/// Window ///
-Window::Window(const char *name, size_t width, size_t height, int x, int y) {
+/// WindowOpenGL ///
+WindowOpenGL::WindowOpenGL(const char *name, size_t width, size_t height, int x, int y) {
     position = vec2(x, y);
     size = vec2(width, height);
 
@@ -135,8 +135,8 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
     window = glfwCreateWindow(width, height, name, NULL, NULL);
     if (window == NULL) {
         glfwTerminate();
-        printf("Failed to create Window\n");
-        throw runtime_error("Failed to create Window");
+        printf("Failed to create WindowOpenGL\n");
+        throw runtime_error("Failed to create WindowOpenGL");
     }
 
     glfwMakeContextCurrent(window);
@@ -171,24 +171,24 @@ Window::Window(const char *name, size_t width, size_t height, int x, int y) {
     winToWin.emplace(window, this);
 }
 
-Window::~Window() {
+WindowOpenGL::~WindowOpenGL() {
     glfwDestroyWindow(window);
 }
 
-void Window::addObject(Graphics* go) {
+void WindowOpenGL::addObject(Graphics* go) {
     objects.emplace_back(go);
 }
 
-void Window::removeObject(Graphics* go) {
+void WindowOpenGL::removeObject(Graphics* go) {
     objects.erase(remove(objects.begin(), objects.end(), go));
 }
 
-void Window::setCamera(Camera *cam) {
+void WindowOpenGL::setCamera(Camera *cam) {
     camera = cam;
 }
 
 
-bool Window::loop(float deltaSeconds) {
+bool WindowOpenGL::loop(float deltaSeconds) {
     runtimeSeconds += deltaSeconds;
     float fps = 1 / deltaSeconds;
 
@@ -211,10 +211,20 @@ bool Window::loop(float deltaSeconds) {
 
     mat4 view = lookAt(camera->position, camera->position + camera->direction(), camera->up());
 
+    vec3 globalIllumination = vec3(cos(runtimeSeconds), -1, sin(runtimeSeconds));
+
     for (auto o : objects) {
         glUseProgram(o->get_program());
 
-        GLuint shaderTime = glGetUniformLocation(o->get_program(), "TIME");
+        GLint glilUBO = glGetUniformLocation(o->get_program(), "GLIL");
+
+        glUniform3f(glilUBO, globalIllumination.x, globalIllumination.y, globalIllumination.z);
+
+        GLint cameraUBO = glGetUniformLocation(o->get_program(), "CAMERAPOS");
+
+        glUniform3f(cameraUBO, camera->position.x, camera->position.y, camera->position.z);
+
+        GLint shaderTime = glGetUniformLocation(o->get_program(), "TIME");
 
         glUniform1f(shaderTime, runtimeSeconds);
 
@@ -281,10 +291,10 @@ bool Window::loop(float deltaSeconds) {
     return !glfwWindowShouldClose(window);
 }
 
-const vector<CallBack*> &Window::getCallbackList() const {
+const vector<CallBack*> &WindowOpenGL::getCallbackList() const {
     return callbackList;
 }
 
-Camera * Window::getCamera() {
+Camera * WindowOpenGL::getCamera() {
     return camera;
 }

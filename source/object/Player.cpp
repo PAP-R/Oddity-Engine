@@ -5,16 +5,12 @@ using namespace fmt;
 
 #include <stdio.h>
 
-void Player::move() {
-    double currentTime = glfwGetTime();
-    auto moveDeltaTime = float(currentTime - time);
-    time = currentTime;
-
+void Player::move(float deltaTime) {
     camera->fov = baseFOV / (zoomed ? zoom : 1);
     camera->fov = camera->fov > maxFOV ? maxFOV : camera->fov;
     Debug::add_text(fmt::format("Zoom: {}\nFOV: {}\n", zoom, camera->fov));
 
-    camera->position = camera->position + (movement.x * camera->direction() + movement.z * camera->right()) * moveDeltaTime * speed;
+    camera->position = camera->position + (movement.x * camera->direction() + movement.z * camera->right()) * deltaTime * speed;
 }
 
 void Player::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -98,5 +94,8 @@ void Player::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
         zoom += yoffset * zoomstep;
         float minZoom = baseFOV / maxFOV;
         zoom = zoom < minZoom ? minZoom : zoom;
+    }
+    else {
+        speed += yoffset;
     }
 }

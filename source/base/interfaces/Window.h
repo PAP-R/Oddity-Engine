@@ -1,0 +1,10 @@
+#ifndef ODDITYENGINE_WINDOW_H
+#define ODDITYENGINE_WINDOW_H
+
+
+class Window {
+
+};
+
+
+#endif //ODDITYENGINE_WINDOW_H

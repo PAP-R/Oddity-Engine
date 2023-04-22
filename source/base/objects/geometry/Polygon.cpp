@@ -23,6 +23,10 @@ void Polygon::add_face(const vector<vec3> &points, vec3 middle) {
 }
 
 void Polygon::add_face(const vector<vec3> &points) {
+    if (points.size() == 3) {
+        add_triangle(points[0], points[1], points[2]);
+        return;
+    }
     vec3 middle = get_middle(points);
     add_face(points, middle);
 }

@@ -1,8 +1,8 @@
-#ifndef ODDITYENGINE_WINDOW_H
-#define ODDITYENGINE_WINDOW_H
+#ifndef ODDITYENGINE_WINDOWOPENGL_H
+#define ODDITYENGINE_WINDOWOPENGL_H
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 using namespace glm;
 
@@ -10,9 +10,9 @@ using namespace glm;
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
-#include <GL/glew.h>
+#include "GL/glew.h"
 
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 #include <vector>
 #include <chrono>
@@ -21,7 +21,7 @@ using namespace std;
 
 #include "source/base/objects/Graphics.h"
 #include "source/base/objects/Camera.h"
-#include "interfaces/CallBack.h"
+#include "source/base/interfaces/CallBack.h"
 
 typedef enum {
     SCREEN_MODE_WINDOW,
@@ -29,7 +29,7 @@ typedef enum {
     SCREEN_MODE_FULLSCREEN
 } screenMode;
 
-class Window {
+class WindowOpenGL {
 private:
     GLFWwindow *window;
     vec2 position;
@@ -76,10 +76,10 @@ public:
     void setWindowMode(int mode);
 
 
-/// Window ///
-    Window(const char *name, size_t width, size_t height, int x=0, int y=0);
+/// WindowOpenGL ///
+    WindowOpenGL(const char *name, size_t width, size_t height, int x=0, int y=0);
 
-    virtual ~Window();
+    virtual ~WindowOpenGL();
 
     void addObject(Graphics* go);
 
@@ -93,4 +93,4 @@ public:
 };
 
 
-#endif //ODDITYENGINE_WINDOW_H
+#endif //ODDITYENGINE_WINDOWOPENGL_H

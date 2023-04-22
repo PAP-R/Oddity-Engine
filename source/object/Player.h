@@ -27,10 +27,10 @@ public:
     float zoomstep = 0.1f;
     bool zoomed = false;
 
-    float speed = 3.0f;
+    float speed = 10.0f;
     float mouseSpeed = 0.005f;
 
-    void move();
+    void move(float deltaTime);
 
     void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
     void cursor_callback(GLFWwindow *window, double xpos, double ypos);
