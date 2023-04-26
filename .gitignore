@@ -13,6 +13,9 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+# User-specific directories
+external
+
 # Mono auto generated files
 mono_crash.*
 
@@ -361,5 +364,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
 /cmake-build-debug/
+/cmake-build-debug-mingw/
 /.idea/

@@ -4,9 +4,7 @@ project(OddityEngine)
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
 
 find_package(OpenGL REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTK4 REQUIRED gtk4)
-#find_package(Boost REQUIRED)
+#find_package(PkgConfig REQUIRED)
 
 include_directories(
         external/glew/include
@@ -25,7 +23,6 @@ set(ALL_LIBS
         libglew_static
         IMGUI
         fmt::fmt
-        Boost::container
 )
 
 add_definitions(
@@ -37,7 +34,6 @@ add_definitions(
 )
 
 add_subdirectory(source)
-#add_subdirectory(test)
 
 target_link_libraries(${PROJECT_NAME}_run
         ${ALL_LIBS}

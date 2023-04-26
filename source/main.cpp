@@ -36,7 +36,7 @@ int main() {
                 spheres.emplace_back(new Sphere(vec3(x * 3, 22 + i * 3, z * 3), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader")));
                 spheres.back()->setMovable(true);
                 spheres.back()->setGravity(0.1f);
-//                window->addObject(spheres.back());
+                window->addObject(spheres.back());
             }
         }
     }
