@@ -1,12 +1,21 @@
 #include <chrono>
-#include "source/base/window/WindowOpenGL.h"
-#include "object/Cube.h"
-#include "source/object/Player.h"
-#include "source/base/tools/Debug.h"
-#include "base/objects/Physics.h"
-#include "source/object/Sphere.h"
+
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
+#include "glm/glm.hpp"
+using namespace glm;
 
 #include <list>
+#include <stdexcept>
+using namespace std;
+
+#include "base/Shader.h"
+#include "base/Tracer.h"
+
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+    printf("%s\n", message);
+}
+
 
 int main() {
     if (!glfwInit()) {
@@ -15,65 +24,70 @@ int main() {
 
     int width = 1080, height = 720;
 
-    auto window = new WindowOpenGL("Oddity", width, height);
+    vec2 size = vec2(width, height);
 
-    Sphere center(vec3(0, 0, 0), vec3(0, 1, 0), vec3(20), loadShader("shaders/vert.shader"), loadShader("shaders/shadedfrag.shader"));
-    center.setGravity(8.0f);
-    window->addObject(&center);
-    Sphere ball1(vec3(30, 30, 0), vec3(0, 1, 0), vec3(3), loadShader("shaders/vert.shader"), loadShader("shaders/shadedfrag.shader"));
-    ball1.setMovable(true);
-    ball1.setGravity(5);
-    window->addObject(&ball1);
-    Sphere ball2(vec3(30, 0, 0), vec3(0, 1, 0), vec3(2), loadShader("shaders/vert.shader"), loadShader("shaders/shadedfrag.shader"));
-    ball2.setMovable(true);
-    ball2.setGravity(5);
-    window->addObject(&ball2);
+    glfwWindowHint(GLFW_SAMPLES, 16);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    vector<Sphere*> spheres;
-    for (int x = -1; x <= 1; x += 2) {
-        for (int z = -3; z <= 3; z += 2) {
-            for (int i = 0; i < 2; i++) {
-                spheres.emplace_back(new Sphere(vec3(x * 3, 22 + i * 3, z * 3), vec3(0, 1, 0), vec3(1), loadShader("shaders/vert.shader"), loadShader("shaders/frag.shader")));
-                spheres.back()->setMovable(true);
-                spheres.back()->setGravity(0.1f);
-                window->addObject(spheres.back());
-            }
-        }
+    auto window = glfwCreateWindow(width, height, "Oddity", NULL, NULL);
+    if (window == NULL) {
+        glfwTerminate();
+        printf("Failed to create WindowOpenGL\n");
+        throw runtime_error("Failed to create WindowOpenGL");
     }
 
-    Camera camera(vec3(30), vec2(-2.4, -0.6));
+    glfwMakeContextCurrent(window);
 
-    window->setCamera(&camera);
+    if (glewInit() != GLEW_OK) {
+        printf("Failed to initialize GLEW");
+        throw runtime_error("Failed to initialize GLEW");
+    }
 
-    Player player;
+    glDebugMessageCallback(MessageCallback, nullptr);
 
-    player.camera = &camera;
+    glewExperimental = true;
 
-    window->setCursor(GLFW_CURSOR_DISABLED);
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+//    glEnable(GL_CULL_FACE);
 
-    window->addCallback(&player);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    window->setCallbacks();
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+
+    GLuint VertexArrayID;
+    glGenVertexArrays(1, &VertexArrayID);
+    glBindVertexArray(VertexArrayID);
+
+    Camera camera(vec3(0), vec2(0));
+
+    Tracer tracer(size, &camera);
 
     auto tStart = chrono::system_clock::now();
     auto tLast = chrono::system_clock::now();
     chrono::duration<float> deltaTime;
 
-    do {
+    while(!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+
         auto tNow = chrono::system_clock::now();
         deltaTime = tNow - tLast;
         tLast = tNow;
 
+        glfwMakeContextCurrent(window);
 
-        Debug::clear_text();
-        player.move(deltaTime.count());
-        Physics::update_physics_sub_steps(deltaTime.count(), 4);
-    } while(window->loop(deltaTime.count()));
+        tracer.loop(deltaTime.count());
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+        glfwSwapBuffers(window);
+    }
 
-    delete window;
+    glfwDestroyWindow(window);
     glfwTerminate();
 }

@@ -19,30 +19,50 @@ using namespace std;
 class Shader {
 private:
     GLuint ID;
+    GLuint type;
 
     string version = "#version 460 core";
 
     vector<std::string> constants;
-    vector<std::string> input;
-    vector<std::string> Output;
+    vector<std::string> inputs;
+    vector<std::string> outputs;
+    vector<std::string> uniforms;
 
     vector<std::string> function_declarations;
     vector<std::string> function_definitions;
+    vector<std::string> main_part;
 
 public:
     Shader(GLuint type) {
+        this->type = type;
         ID = glCreateShader(type);
     }
 
-    void add_function(string code);
+    ~Shader() {
+        glDeleteShader(ID);
+    }
 
-    void compile() {
-        GLuint result = GL_FALSE;
-        int infoLength = 0;
+    void add_function(const string& code);
 
+    void add_main(const string& code);
 
+    void add_constant(const string& constant);
+
+    void add_in(const string& input);
+
+    void add_in(size_t layout, const string& input);
+
+    void add_out(const string& output);
+
+    void add_uniform(const string& uniform);
+
+    void compile();
+
+    operator unsigned int() const {
+        return ID;
     }
 };
 
+GLuint createProgram(GLuint vertex, GLuint fragment);
 
 #endif //ODDITYENGINE_SHADER_H
