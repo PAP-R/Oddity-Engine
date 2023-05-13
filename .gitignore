@@ -13,8 +13,7 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
-# User-specific directories
-external
+# User-specific directorie
 
 # Mono auto generated files
 mono_crash.*
