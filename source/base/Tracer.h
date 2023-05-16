@@ -25,6 +25,8 @@ private:
     Buffer<float> buffer;
     Buffer<bufferobject> objectbuffer;
 
+    size_t bounces = 10;
+
     float time;
 
     vector<float> screen;

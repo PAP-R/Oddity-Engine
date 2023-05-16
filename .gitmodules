@@ -1,28 +1,28 @@
 [submodule "external/glfw"]
 	path = external/glfw
 	url = https://github.com/glfw/glfw.git
-	ignore = dirty
+	ignore = all
 [submodule "external/glm"]
 	path = external/glm
 	url = https://github.com/g-truc/glm.git
-	ignore = dirty
+	ignore = all
 [submodule "external/gli"]
 	path = external/gli
 	url = https://github.com/g-truc/gli.git
-	ignore = dirty
+	ignore = all
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui.git
-	ignore = dirty
+	ignore = all
 [submodule "external/glew"]
 	path = external/glew
 	url = https://github.com/Perlmint/glew-cmake.git
-	ignore = dirty
+	ignore = all
 [submodule "external/fmt"]
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt.git
-	ignore = dirty
+	ignore = all
 [submodule "external/boost"]
 	path = external/boost
 	url = https://github.com/boostorg/boost.git
-    ignore = dirty
+    ignore = all

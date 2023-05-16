@@ -14,7 +14,16 @@ using namespace glm;
 
 using namespace std;
 
-
+enum indextype {
+    GENERAL,
+    CONSTANTS,
+    INPUTS,
+    OUTPUTS,
+    UNIFORM,
+    FUNCTIONS_DECLARATIONS,
+    FUNCTION_DEFINITIONS,
+    MAIN,
+};
 
 class Shader {
 private:
@@ -23,44 +32,36 @@ private:
 
     string version = "#version 460 core";
 
-    vector<std::string> general;
+    vector<string> code;
 
-    vector<std::string> constants;
-    vector<std::string> inputs;
-    vector<std::string> outputs;
-    vector<std::string> uniforms;
-
-    vector<std::string> function_declarations;
-    vector<std::string> function_definitions;
-    vector<std::string> main_part;
+    vector<size_t> indices;
 
 public:
-    Shader(GLuint type) {
-        this->type = type;
-        ID = glCreateShader(type);
-    }
+    Shader(GLuint type);
+
+    Shader(GLuint type, const string& path);
 
     ~Shader() {
         glDeleteShader(ID);
     }
-
-    void add_function(const string& code);
-
-    void add_main(const string& code);
-
-    void add_constant(const string& constant);
-
-    void add_in(const string& input);
-
-    void add_in(const string &layout, const string& input);
-
-    void add_buffer(const string &layout, const string& input);
-
-    void add_out(const string& output);
-
-    void add_uniform(const string& uniform);
-
-    void add(const string& whatever);
+//
+//    void add_function(const string& code);
+//
+//    void add_main(const string& code);
+//
+//    void add_constant(const string& constant);
+//
+//    void add_in(const string& input);
+//
+//    void add_in(const string &layout, const string& input);
+//
+//    void add_buffer(const string &layout, const string& input);
+//
+//    void add_out(const string& output);
+//
+//    void add_uniform(const string& uniform);
+//
+//    void add(const string& whatever);
 
     void compile();
 

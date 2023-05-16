@@ -22,7 +22,7 @@ int main() {
         throw runtime_error("Failed to initialize GLFW");
     }
 
-    int width = 1080, height = 720;
+    int width = 1920, height = 1080;
 
     vec2 size = vec2(width, height);
 
