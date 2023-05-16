@@ -23,6 +23,8 @@ private:
 
     string version = "#version 460 core";
 
+    vector<std::string> general;
+
     vector<std::string> constants;
     vector<std::string> inputs;
     vector<std::string> outputs;
@@ -50,11 +52,15 @@ public:
 
     void add_in(const string& input);
 
-    void add_in(size_t layout, const string& input);
+    void add_in(const string &layout, const string& input);
+
+    void add_buffer(const string &layout, const string& input);
 
     void add_out(const string& output);
 
     void add_uniform(const string& uniform);
+
+    void add(const string& whatever);
 
     void compile();
 

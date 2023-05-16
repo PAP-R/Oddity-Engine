@@ -10,13 +10,20 @@ using namespace glm;
 #include "Buffer.h"
 #include "Camera.h"
 
+struct alignas(16) bufferobject {
+    vec4 color;
+    vec4 pos;
+    vec4 scale;
+    uint32 type;
+};
+
 class Tracer {
 private:
     Shader vertex_shader;
     Shader fragment_shader;
     GLuint program;
     Buffer<float> buffer;
-    Buffer<float> spherebuffer;
+    Buffer<bufferobject> objectbuffer;
 
     float time;
 
@@ -30,6 +37,5 @@ public:
 
     void loop(double dtime);
 };
-
 
 #endif //ODDITYENGINE_TRACER_H

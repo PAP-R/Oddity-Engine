@@ -27,6 +27,11 @@ void Shader::compile() {
 
     code << "\n";
 
+    for (const auto& g : general)
+        code << g;
+
+    code << "\n";
+
     for (const auto& i : inputs)
         code << i;
 
@@ -89,8 +94,12 @@ void Shader::add_in(const string &input) {
     inputs.emplace_back(format("in {};\n", input));
 }
 
-void Shader::add_in(size_t layout, const string &input) {
+void Shader::add_in(const string &layout, const string &input) {
     inputs.emplace_back(format("layout(location = {}) in {};\n", layout, input));
+}
+
+void Shader::add_buffer(const string &layout, const string &input) {
+    inputs.emplace_back(format("layout({}) {};\n", layout, input));
 }
 
 void Shader::add_out(const string &output) {
@@ -99,6 +108,10 @@ void Shader::add_out(const string &output) {
 
 void Shader::add_uniform(const string &uniform) {
     outputs.emplace_back(format("uniform {};\n", uniform));
+}
+
+void Shader::add(const string &whatever) {
+    general.emplace_back(format("{};\n", whatever));
 }
 
 GLuint createProgram(GLuint vertex, GLuint fragment) {

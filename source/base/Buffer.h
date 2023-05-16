@@ -30,9 +30,18 @@ public:
     size_t get_size();
 
     void add_data(vector<T> data);
+    void set_data(vector<T> data);
 
     operator unsigned int() const;
 };
+
+template<typename T>
+void Buffer<T>::set_data(vector<T> data) {
+    this->data.clear();
+    this->data.insert(this->data.end(), data.begin(), data.end());
+    glBindBuffer(this->type, ID);
+    glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
+}
 
 template<typename T>
 Buffer<T>::Buffer(GLuint type, GLenum usage) : ID(), type(type), usage(usage) {

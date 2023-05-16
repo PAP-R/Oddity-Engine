@@ -72,12 +72,13 @@ int main() {
 
     auto tStart = chrono::system_clock::now();
     auto tLast = chrono::system_clock::now();
+    auto tNow = chrono::system_clock::now();
     chrono::duration<float> deltaTime;
 
     while(!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
-        auto tNow = chrono::system_clock::now();
+        tNow = chrono::system_clock::now();
         deltaTime = tNow - tLast;
         tLast = tNow;
 
