@@ -66,7 +66,7 @@ int main() {
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-    Camera camera(vec3(0), vec2(0));
+    Camera camera(vec3(0), vec2(pi<float>(), 0));
 
     Tracer tracer(size, &camera);
 

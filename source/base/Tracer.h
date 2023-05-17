@@ -12,6 +12,7 @@ using namespace glm;
 
 struct alignas(16) bufferobject {
     vec4 color;
+    vec4 emission;
     vec4 pos;
     vec4 scale;
     uint32 type;
@@ -25,12 +26,13 @@ private:
     Buffer<float> buffer;
     Buffer<bufferobject> objectbuffer;
 
-    size_t bounces = 10;
+    size_t bounces = 4;
 
     float time;
 
     vector<float> screen;
     vec2 screensize;
+    Camera screencamera;
     Camera* camera;
 
 public:

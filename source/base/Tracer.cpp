@@ -2,7 +2,7 @@
 
 #include "Tracer.h"
 
-Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "shaders/ray.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/ray.frag"), screensize(size), camera(camera), buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW), objectbuffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW) {
+Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "shaders/ray.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/ray.frag"), screensize(size), camera(camera), buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW), objectbuffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW), screencamera(vec3(0), vec2(0), 90) {
     time = 0;
 
     screen = {
@@ -11,12 +11,6 @@ Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "sha
             0.0f, 10.0f, 1.0f
     };
     buffer.add_data(screen);
-
-    vector<bufferobject> spheres = {
-            {{1, 1, 1, 1}, {0, 0, -2, 0}, {1, 1, 1, 0}, 0},
-            {{0.5, 0, 1, 1}, {0, 0, 6, 0}, {1, 1, 1, 0}, 0},
-    };
-    objectbuffer.add_data(spheres);
 
     vertex_shader.compile();
     fragment_shader.compile();
@@ -34,12 +28,17 @@ void Tracer::loop(double dtime) {
     time += dtime;
     time = time > 360 ? time - 360 : time;
 
+//    camera->fov = 90 + 45 * sin(time/ 2);
+//    camera->position = vec3(0, sin(time) / 2, 0);
+//    camera->angle = vec2(-time, 0);
+
     vector<bufferobject> spheres = {
-            {{0, 1, 0, 0.1}, {sin(time) * 3, 0, cos(time) * 3, 0}, {1, 1, 1, 0}, 0},
-            {{1, 1, 1, 1}, {0, 0, 6, 0}, {1, 1, 1, 0}, 0},
-            {{200, 0, 0, 1}, {sin(time) * 20, 200, cos(time) * 20, 0}, {100, 25, 25, 0}, 0},
-            {{1, 1, 1, 1}, {sin(time) * 3, cos(time) * 3, 5, 0}, {1, 1, 1, 0}, 0},
+            {{1, 1, 1, 0.5}, {0, 0, 0, 0}, {0, 0, 3 + sin(time), 0}, {1, 1, 1, 0}, 0},
+            {{1, 1, 1, 1}, {1, 1, 1, 1}, {0, 0, 7, 0}, {1, 1, 1, 0}, 0},
+//            {{200, 0, 0, 1}, {sin(time) * 20, 200, cos(time) * 20, 0}, {100, 25, 25, 0}, 0},
+//            {{1, 1, 1, 1}, {sin(time) * 3, cos(time) * 3, 5, 0}, {1, 1, 1, 0}, 0},
     };
+
     objectbuffer.set_data(spheres);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -60,23 +59,15 @@ void Tracer::loop(double dtime) {
 
     glUniform1ui(glGetUniformLocation(program, "bounces"), this->bounces);
 
-//
-//    vec3 up{0, 1, 0};
+    mat4 model = mat4(1);
 
-//    vec3 right = normalize(cross(o->dir, up));
-
-//    right = all(isnan(right)) ? up : right;
-
-//    float angle = orientedAngle(normalize(o->dir), normalize(up), right);
-//
-
-    mat4 model = mat4(1);//rotate(scale(translate(mat4(1.0f), vec3(0)), vec3(1)), angle, right);
-
-    mat4 mvp = projection * view * model;
+    mat4 mvp = projection * view;
+    mat4 vp = projection * lookAt(screencamera.position, screencamera.position + screencamera.direction(), screencamera.up());
 
     GLuint matrix = glGetUniformLocation(program, "MVP");
 
-    glUniformMatrix4fv(matrix, 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(program, "VIEW"), 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(program, "PROJECTION"), 1, GL_FALSE, &vp[0][0]);
 
     glBindBufferBase(this->objectbuffer.get_type(), 3, this->objectbuffer);
 
