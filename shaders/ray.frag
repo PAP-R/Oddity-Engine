@@ -72,34 +72,37 @@ vec3 random_hemisphere_direction(vec3 normal, inout uint state) {
 }
 
 vec4 sphere_collision(vec3 pos, float radius, vec3 raypos, vec3 ray) {
-    vec3 rayn = normalize(ray);
-    vec3 posn = pos - raypos;
-    float len = dot(rayn, posn);
-    if (len <= 0) {
-        return vec4(0);
-    }
-    vec3 closest = len * rayn;
-    float discp = distance(closest, posn);
+    ray = normalize(ray);
+    pos = pos - raypos;
+    float len = dot(ray, pos);
+    vec3 closest = len * ray;
+    float discp = distance(closest, pos);
     if (discp <= radius) {
         float diff = sqrt((radius * radius) - (discp * discp));
-        if (diff >= len) {
-            return vec4(closest + (diff * rayn), 1);
+        if (len <= diff) {
+            if (len > -diff) {
+                return vec4(closest + (diff * ray), 1);
+            }
+            return vec4(closest, 0);
         }
-        return vec4(closest - (diff * rayn), 1);
+//        if ((0 < len && len <= diff) || (0 > len && len > -diff)) {
+//            return vec4(closest + (diff * ray), 1);
+//        }
+        return vec4(closest - (diff * ray), 1);
     }
     else {
         return vec4(closest, 0);
     }
 }
 
-Collision ray(vec3 position, vec3 direction) {
-    vec3 rayn = normalize(direction);
+Collision ray(vec3 position, vec3 dir) {
+    dir = normalize(dir);
     vec4 result = vec4(1. / 0.), temp = vec4(0), color = vec4(0);
     int index = -1;
     for (int i = 0; i < objects.length(); i++) {
         switch (objects[i].type) {
             case SPHERE:
-                temp = sphere_collision(objects[i].pos.xyz, objects[i].scale.x, position, rayn);
+                temp = sphere_collision(objects[i].pos.xyz, objects[i].scale.x, position, dir);
         }
         if (temp.w == 1 && distance(temp.xyz, position) < distance(result.xyz, position)) {
             result = temp;
@@ -112,16 +115,16 @@ Collision ray(vec3 position, vec3 direction) {
     col.emission = objects[index].emission;
     col.pos = result.xyz;
     col.object = index;
+    col.dir_in = dir;
 
     if (index > -1) {
         col.hit = true;
         col.normal = normalize(result.xyz - objects[index].pos.xyz);
-        col.dir_in = rayn;
-        col.dir_out = reflect(rayn, col.normal);
+//        col.normal = col.normal * sign(dot(col.normal, rayn));
+        col.dir_out = reflect(dir, col.normal);
     }
     else {
         col.hit = false;
-        col.dir_in = vec3(0);
         col.dir_out = vec3(0);
     }
 
@@ -154,13 +157,6 @@ vec4 multiray(vec3 pos, vec3 dir, uint count, uint spread, float spreadsize) {
     while (stack_in != stack_out) {
         current = stack[stack_out];
         if (current.count < count) {
-//            for (int i = 0; i < spread; i++) {
-//                stack[stack_in] = ray(current.pos, current.dir_out);
-//                if (stack[stack_in].object > -1) {
-//                    stack[stack_in].count = current.count + 1;
-//                    stack_in = (stack_in + 1) % MAX_STACK;
-//                }
-//            }
             temp = ray(current.pos, current.dir_out);
             if (temp.hit) {
                 stack[stack_in] = temp;
@@ -168,43 +164,24 @@ vec4 multiray(vec3 pos, vec3 dir, uint count, uint spread, float spreadsize) {
                 stack_in = (stack_in + 1) % MAX_STACK;
             }
 
-            if (current.color.w < 1) {
-                temp = ray(current.pos, refract(current.dir_in, current.normal, 1.1));
-                if (temp.hit) {
-                    stack[stack_in] = temp;
-                    stack[stack_in].count = temp.count + 1;
-                    stack_in = (stack_in + 1) % MAX_STACK;
-                }
-            }
+//            if (current.color.w < 1) {
+//                temp = ray(current.pos, current.dir_in);//refract(current.dir_in, current.normal, 1.01));
+//                if (temp.hit) {
+//                    stack[stack_in] = temp;
+//                    stack[stack_in].count = temp.count + 1;
+//                    stack_in = (stack_in + 1) % MAX_STACK;
+//                }
+//            }
         }
         if (current.hit) {
-            color *= current.color;//vec4(abs(current.color.xyz) * current.color.w, current.color.w);
             emission += vec4(current.emission.xyz * current.emission.w * color.xyz, current.emission.w);
+//            color *= vec4(current.normal, 1);
+            color *= current.color;
         }
         stack_out = (stack_out + 1) % MAX_STACK;
     }
 
     return emission;
-
-    Collision result;
-    vec4 tempcolor = vec4(0);
-    vec3 nextpos = pos, nextdir = dir;
-    for (int i = 0; i < count; i++) {
-        result = ray(nextpos, nextdir);
-        if (result.object == -1) {
-            return color;
-        }
-        color += result.color * result.color.w / (1 + distance(result.pos.xyz, nextpos) * FALLOFF);
-        nextpos = result.pos.xyz;
-        if (result.color.w < 1) {
-            vec3 temppos = nextpos, tempdir = nextdir;
-            Collision tempresult;
-            tempresult = ray(nextpos, nextdir);
-            color += tempresult.color * tempresult.color.w * (1 - result.color.w) / (1 + distance(tempresult.pos.xyz, nextpos) * FALLOFF);
-        }
-        nextdir = reflect(nextdir, normalize(result.pos.xyz - objects[result.object].pos.xyz));
-    }
-    return color;
 }
 
 void main() {

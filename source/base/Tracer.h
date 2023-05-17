@@ -26,7 +26,7 @@ private:
     Buffer<float> buffer;
     Buffer<bufferobject> objectbuffer;
 
-    size_t bounces = 4;
+    size_t bounces = 6;
 
     float time;
 
