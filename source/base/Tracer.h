@@ -10,12 +10,25 @@ using namespace glm;
 #include "Buffer.h"
 #include "Camera.h"
 
+enum objecttypes {
+    SPHERE,
+    MESH,
+};
+
 struct alignas(16) bufferobject {
     vec4 color;
     vec4 emission;
     vec4 pos;
     vec4 scale;
     uint32 type;
+    uint32 vertexstart;
+    uint32 vertexcount;
+};
+
+struct alignas(16) buffervertex {
+    vec4 pos;
+    vec4 color;
+    vec4 normal;
 };
 
 class Tracer {
@@ -25,8 +38,9 @@ private:
     GLuint program;
     Buffer<float> buffer;
     Buffer<bufferobject> objectbuffer;
+    Buffer<buffervertex> vertexbuffer;
 
-    size_t bounces = 6;
+    size_t bounces = 3;
 
     float time;
 

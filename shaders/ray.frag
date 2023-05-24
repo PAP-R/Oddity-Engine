@@ -36,12 +36,6 @@ uniform float TIME;
 uniform uint bounces;
 uniform mat4 MVP;
 
-vec4 sphere_collision(vec3 pos, float radius, vec3 raypos, vec3 ray) ;
-
-Collision ray(vec3 position, vec3 direction) ;
-
-vec4 multiray(vec3 pos, vec3 dir, uint count, uint spread) ;
-
 uint pos_to_state(vec3 pos) {
     return uint(pow((1 + pos.x) * 1000, 2)) * uint(pow((1 + pos.y) * 1000, 2)) * uint(pow((1 + pos.z) * 1000, 2));// + uint(pow((1 + TIME) * 1000, 2));
 }
@@ -74,21 +68,19 @@ vec3 random_hemisphere_direction(vec3 normal, inout uint state) {
 vec4 sphere_collision(vec3 pos, float radius, vec3 raypos, vec3 ray) {
     ray = normalize(ray);
     pos = pos - raypos;
+    int sign = -1;
+    if (length(pos) < radius) {
+        sign = 1;
+    }
     float len = dot(ray, pos);
     vec3 closest = len * ray;
     float discp = distance(closest, pos);
     if (discp <= radius) {
-        float diff = sqrt((radius * radius) - (discp * discp));
+        float diff = sign * sqrt((radius * radius) - (discp * discp));
         if (len <= diff) {
-            if (len > -diff) {
-                return vec4(closest + (diff * ray), 1);
-            }
             return vec4(closest, 0);
         }
-//        if ((0 < len && len <= diff) || (0 > len && len > -diff)) {
-//            return vec4(closest + (diff * ray), 1);
-//        }
-        return vec4(closest - (diff * ray), 1);
+        return vec4(closest + (diff * ray), 1);
     }
     else {
         return vec4(closest, 0);
@@ -157,21 +149,24 @@ vec4 multiray(vec3 pos, vec3 dir, uint count, uint spread, float spreadsize) {
     while (stack_in != stack_out) {
         current = stack[stack_out];
         if (current.count < count) {
-            temp = ray(current.pos, current.dir_out);
-            if (temp.hit) {
-                stack[stack_in] = temp;
-                stack[stack_in].count = current.count + 1;
-                stack_in = (stack_in + 1) % MAX_STACK;
+            if (current.color.w > 0) {
+                temp = ray(current.pos, current.dir_out);
+                if (temp.hit) {
+                    stack[stack_in] = temp;
+                    stack[stack_in].count = current.count + 1;
+                    stack_in = (stack_in + 1) % MAX_STACK;
+                }
             }
 
-//            if (current.color.w < 1) {
-//                temp = ray(current.pos, current.dir_in);//refract(current.dir_in, current.normal, 1.01));
-//                if (temp.hit) {
-//                    stack[stack_in] = temp;
-//                    stack[stack_in].count = temp.count + 1;
-//                    stack_in = (stack_in + 1) % MAX_STACK;
-//                }
-//            }
+            if (current.color.w < 1) {
+//                temp = ray(current.pos, current.dir_in);
+                temp = ray(current.pos, refract(current.dir_in, current.normal, 1.01));
+                if (temp.hit) {
+                    stack[stack_in] = temp;
+                    stack[stack_in].count = temp.count + 1;
+                    stack_in = (stack_in + 1) % MAX_STACK;
+                }
+            }
         }
         if (current.hit) {
             emission += vec4(current.emission.xyz * current.emission.w * color.xyz, current.emission.w);
