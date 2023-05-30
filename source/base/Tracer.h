@@ -40,7 +40,7 @@ private:
     Buffer<bufferobject> objectbuffer;
     Buffer<buffervertex> vertexbuffer;
 
-    size_t bounces = 3;
+    size_t bounces = 2;
 
     float time;
 

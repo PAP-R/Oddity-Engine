@@ -3,9 +3,9 @@
 const uint SPHERE = 0;
 const uint MESH = 1;
 
-const uint MAX_STACK = 8;
+const uint MAX_STACK = 16;
 const float FALLOFF = 0.0;
-const float tolerance = 1E-10;
+const float tolerance = 1E-5;
 
 struct bufferobject {
     vec4 color;
@@ -104,9 +104,9 @@ Ray mkray(vec3 pos, vec3 dir, uint count) {
 }
 
 Ray sphere_collision(Ray ray, vec3 pos, float radius) {
-    vec3 origin = pos - ray.origin;
-    float len = dot(ray.dir, pos);
-    vec3 c = len * ray.dir;
+    vec3 origin = pos;
+    float len = dot(ray.dir, pos - ray.origin);
+    vec3 c = len * ray.dir + ray.origin;
     float dstc = distance(pos, c);
     float sign = -1;
 
@@ -134,47 +134,82 @@ Ray sphere_collision(Ray ray, vec3 pos, float radius) {
 }
 
 Ray triangle_collision(Ray ray, vec3 pos, vec3 scale, buffervertex v0, buffervertex v1, buffervertex v2) {
-    vec3 v0pos = pos + scale * v0.pos.xyz;
-    vec3 v1pos = pos + scale * v1.pos.xyz;
-    vec3 v2pos = pos + scale * v2.pos.xyz;
+    ray.hit = false;
 
-    vec3 v01 = v1pos - v0pos;
-    vec3 v02 = v2pos - v0pos;
-    vec3 normal = cross(v01, v02);
-    if (abs(dot(ray.dir, normal)) >= tolerance) {
-        vec3 v0o = ray.origin - v0pos;
-        vec3 dv0o = cross(v0o, ray.dir);
+    vec3 a = pos + scale * v0.pos.xyz;
+    vec3 b = pos + scale * v1.pos.xyz;
+    vec3 c = pos + scale * v2.pos.xyz;
 
-        float det = -dot(ray.dir, normal);
-        float invdet = 1 / det;
+    vec3 edgeab = b - a;
+    vec3 edgeac = c - a;
 
-        float dst = dot(v0o, normal) * invdet;
-        float dst2 = dot(v0o, -normal) * invdet;
-        if (dst < dst2) {
-            dst = dst2;
-//            normal = -normal;
-        }
-        float u = dot(v02, dv0o) * invdet;
-        float v = -dot(v01, dv0o) * invdet;
-        float w = 1 - u - v;
+    vec3 normal = normalize(cross(edgeab, edgeac));
 
-//        ray.hit = abs(det) >= tolerance && dst >= 0 && u >= 0 && v >= 0 && w >= 0;
-        ray.hit = dst >= 0 && u >= 0 && v >= 0 && w >= 0;
-        if (ray.hit) {
-            ray.len = dst;
-            ray.pos = ray.origin + ray.dir * ray.len;
-//            ray.normal = normalize(v0.normal * w + v1.normal * u + v2.normal * v).xyz;
-            ray.normal = normalize(normal * sign(dot(-ray.dir, normal)));
-        }
+    float angle = dot(ray.dir, normal);
+
+    if (abs(angle) <= tolerance) {
+        return ray;
+    }
+
+//    normal = normal * signdir;
+    float d = dot(normal, a);
+    float t = (d - dot(normal, ray.origin)) / angle;
+
+    vec3 hitpos = ray.origin + t * ray.dir;
+
+    if (t > tolerance && dot(cross(b - a, hitpos - a), normal) >= 0 &&
+        dot(cross(c - b, hitpos - b), normal) >= 0 &&
+        dot(cross(a - c, hitpos - c), normal) >= 0) {
+        ray.hit = true;
+        ray.pos = hitpos;
+        ray.len = t;
+        ray.normal = normal;
     }
 
     return ray;
+
+//    vec3 v0pos = pos + scale * v0.pos.xyz;
+//    vec3 v1pos = pos + scale * v1.pos.xyz;
+//    vec3 v2pos = pos + scale * v2.pos.xyz;
+//
+//    vec3 v01 = v1pos - v0pos;
+//    vec3 v02 = v2pos - v0pos;
+//    vec3 normal = cross(v01, v02);
+//    if (abs(dot(ray.dir, normal)) >= tolerance) {
+//        vec3 v0o = ray.origin - v0pos;
+//        vec3 dv0o = cross(v0o, ray.dir);
+//
+//        float det = -dot(ray.dir, normal);
+//        float invdet = 1 / det;
+//
+//        float dst = dot(v0o, normal) * invdet;
+//        float dst2 = dot(v0o, -normal) * invdet;
+//        if (dst < dst2) {
+//            dst = dst2;
+////            normal = -normal;
+//        }
+//        float u = dot(v02, dv0o) * invdet;
+//        float v = -dot(v01, dv0o) * invdet;
+//        float w = 1 - u - v;
+//
+////        ray.hit = abs(det) >= tolerance && dst >= 0 && u >= 0 && v >= 0 && w >= 0;
+//        ray.hit = dst >= 0 && u >= 0 && v >= 0 && w >= 0;
+//        if (ray.hit) {
+//            ray.len = dst;
+//            ray.pos = ray.origin + ray.dir * ray.len;
+////            ray.normal = normalize(v0.normal * w + v1.normal * u + v2.normal * v).xyz;
+//            ray.normal = normalize(normal * sign(dot(-ray.dir, normal)));
+//        }
+//    }
+//
+//    return ray;
 }
 
 Ray mesh_collision(Ray ray, vec3 pos, vec3 scale, uint vertexstart, uint vertexcount) {
-    vertexcount = vertexcount - vertexcount % 3;
+    float vertexend = vertexstart + vertexcount - vertexcount % 3;
     Ray temp, result = ray;
-    for (uint i = vertexstart; i < vertexcount; i += 3) {
+    result.len = 1./0.;
+    for (uint i = vertexstart; i < vertexend; i += 3) {
         temp = triangle_collision(ray, pos, scale, vertices[i], vertices[i + 1], vertices[i + 2]);
         if (temp.hit && temp.len <= result.len) {
             result = temp;

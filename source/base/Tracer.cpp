@@ -33,7 +33,9 @@ void Tracer::loop(double dtime) {
 //    camera->position = vec3(0, sin(time) / 2, 0);
 //    camera->angle = vec2(-time, 0);
 
-//    float time = radians(90.0f);
+    float time = radians(0.0f);
+    float time2 = radians(90.0f);
+//    float time = this->time + radians(45.0f);
     vector<buffervertex> vertices = {
             {{1 * sin(time), 1, -1 * cos(time), 0}, {0, 0, 1, 1}, {1, 1, 1, 1}},
             {{1 * sin(time), -1, -1 * cos(time), 0}, {1, 0, 0, 1}, {1 * -cos(time), -1, -1 * sin(time), 0}},
@@ -41,20 +43,39 @@ void Tracer::loop(double dtime) {
             {{-1 * sin(time), -1, 1 * cos(time), 0}, {0, 0, 1, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
             {{-1 * sin(time), 1, 1 * cos(time), 0}, {1, 0, 0, 1}, {-1 * -cos(time), 1, 1 * sin(time), 0}},
             {{1 * sin(time), 1, -1 * cos(time), 0}, {0, 1, 0, 1}, {1 * -cos(time), 1, -1 * sin(time), 0}},
+            {{1 * sin(time2), -1 * cos(time2), 1, 0}, {0, 0, 1, 1}, {1, 1, 1, 1}},
+            {{1 * sin(time2), -1 * cos(time2), -1, 0}, {1, 0, 0, 1}, {1 * -cos(time), -1, -1 * sin(time), 0}},
+            {{-1 * sin(time2), 1 * cos(time2), -1, 0}, {0, 1, 0, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
+            {{-1 * sin(time2), 1 * cos(time2), -1, 0}, {0, 0, 1, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
+            {{-1 * sin(time2), 1 * cos(time2), 1, 0}, {1, 0, 0, 1}, {-1 * -cos(time), 1, 1 * sin(time), 0}},
+            {{1 * sin(time2), -1 * cos(time2), 1, 0}, {0, 1, 0, 1}, {1 * -cos(time), 1, -1 * sin(time), 0}},
+            {{1 * sin(time2), 1, -1 * cos(time2), 0}, {0, 0, 1, 1}, {1, 1, 1, 1}},
+            {{1 * sin(time2), -1, -1 * cos(time2), 0}, {1, 0, 0, 1}, {1 * -cos(time), -1, -1 * sin(time), 0}},
+            {{-1 * sin(time2), -1, 1 * cos(time2), 0}, {0, 1, 0, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
+            {{-1 * sin(time2), -1, 1 * cos(time2), 0}, {0, 0, 1, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
+            {{-1 * sin(time2), 1, 1 * cos(time2), 0}, {1, 0, 0, 1}, {-1 * -cos(time), 1, 1 * sin(time), 0}},
+            {{1 * sin(time2), 1, -1 * cos(time2), 0}, {0, 1, 0, 1}, {1 * -cos(time), 1, -1 * sin(time), 0}},
     };
     vertexbuffer.set_data(vertices);
 
     vector<bufferobject> objects = {
-            {{0, 0, 0, 0}, {1, 1, 1, 0.5}, {0, 0, 0, 0}, {50, 25, 25, 0}, SPHERE},
+            {{1, 1, 1, 1}, {1, 1, 1, 0.3}, {-2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
+            {{1, 1, 1, 1}, {1, 1, 1, 0.3}, {2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
+//            {{1, 1, 1, 1}, {1, 1, 1, 0.4}, {0, -2, 3, 0}, {2, 2, 4, 0}, MESH, 6, 6},
+//            {{1, 1, 1, 1}, {1, 1, 1, 0.4}, {0, 2, 3, 0}, {2, 2, 4, 0}, MESH, 6, 6},
+//            {{1, 1, 1, 1}, {1, 1, 1, 0.3}, {0, -1, 5, 0}, {1, 1, 1, 0}, MESH, 12, 6},
+//            {{0, 0, 0, 0}, {1, 1, 1, 0.5}, {0, 0, 0, 0}, {50, 25, 25, 0}, SPHERE},
 //            {{0.5, 0.5, 0.5, 1}, {1, 1, 1, 1}, {0, 0, 10, 0}, {2, 1, 1, 0}, SPHERE},
 //            {{1, 1, 1, 0}, {0, 0, 0, 0}, {1, 0, 8, 0}, {0.5, 1, 1, 0}, SPHERE},
 //            {{1, 1, 1, 1}, {0, 0, 0, 0}, {-1, 0, 8, 0}, {0.5, 1, 1, 0}, SPHERE},
 
+            {{1, 0, 0, 1}, {1, 0, 0, 1}, {0, 1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, SPHERE, 12, 6},
+            {{1, 0, 0, 1}, {1, 0, 0, 1}, {-2, -1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, MESH, 12, 6},
+
             {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time) * 2, 0, 5 + cos(this->time) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
-            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(90.0f)) * 2, 0, 5 + cos(this->time + radians(90.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
-            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(180.0f)) * 2, 0, 5 + cos(this->time + radians(180.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
-            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(270.0f)) * 2, 0, 5 + cos(this->time + radians(270.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
-            {{1.1, 1.1, 1.1, 1}, {1, 1, 1, 0}, {0, 0, 5, 0}, {1, 1, 1, 0}, MESH, 0, 6},
+//            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(90.0f)) * 1.5, 0, 7 + cos(this->time + radians(90.0f)) * 1.5, 0}, {0.5, 1, 1, 0}, SPHERE},
+//            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(180.0f)) * 2, 0, 5 + cos(this->time + radians(180.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
+//            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(270.0f)) * 2, 0, 5 + cos(this->time + radians(270.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
     };
 
     objectbuffer.set_data(objects);
