@@ -62,6 +62,7 @@ out vec4 color;
 uniform float TIME;
 uniform uint bounces;
 uniform mat4 MVP;
+uniform vec3 CAMERAPOS;
 
 uint pos_to_state(vec3 pos) {
     return uint(pow((1 + pos.x) * 1000, 2)) * uint(pow((1 + pos.y) * 1000, 2)) * uint(pow((1 + pos.z) * 1000, 2));// + uint(pow((1 + TIME) * 1000, 2));
@@ -290,5 +291,5 @@ vec4 collision_multi_ray(Ray ray, uint count) {
 }
 
 void main() {
-    color = collision_multi_ray(mkray(vec3(0), fragmentpos, 0), bounces);
+    color = collision_multi_ray(mkray(CAMERAPOS, fragmentpos, 0), bounces);
 }

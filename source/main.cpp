@@ -22,7 +22,7 @@ int main() {
         throw runtime_error("Failed to initialize GLFW");
     }
 
-    int width = 2000, height = 1000;
+    int width = 800, height = 800;
 
     vec2 size = vec2(width, height);
 
@@ -79,8 +79,17 @@ int main() {
         glfwPollEvents();
 
         tNow = chrono::system_clock::now();
+
+        deltaTime = tNow - tStart;
+
+        camera.angle.x = pi<float>() + sin(deltaTime.count()) * 1;
+        camera.position.x = -cos(deltaTime.count()) * 1;
+        camera.position.y = sin(deltaTime.count()) * 1;
+        camera.position.z = sin(deltaTime.count()) * 5;
+
         deltaTime = tNow - tLast;
         tLast = tNow;
+
 
         glfwMakeContextCurrent(window);
 

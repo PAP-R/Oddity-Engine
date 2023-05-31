@@ -59,20 +59,22 @@ void Tracer::loop(double dtime) {
     vertexbuffer.set_data(vertices);
 
     vector<bufferobject> objects = {
-            {{1, 1, 1, 1}, {1, 1, 1, 0.3}, {-2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
-            {{1, 1, 1, 1}, {1, 1, 1, 0.3}, {2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0}, {-2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0}, {2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
 //            {{1, 1, 1, 1}, {1, 1, 1, 0.4}, {0, -2, 3, 0}, {2, 2, 4, 0}, MESH, 6, 6},
 //            {{1, 1, 1, 1}, {1, 1, 1, 0.4}, {0, 2, 3, 0}, {2, 2, 4, 0}, MESH, 6, 6},
 //            {{1, 1, 1, 1}, {1, 1, 1, 0.3}, {0, -1, 5, 0}, {1, 1, 1, 0}, MESH, 12, 6},
-//            {{0, 0, 0, 0}, {1, 1, 1, 0.5}, {0, 0, 0, 0}, {50, 25, 25, 0}, SPHERE},
+            {{0, 0, 0, 0}, {1, 1, 1, 1}, {0, 0, 0, 0}, {50, 25, 25, 0}, SPHERE},
 //            {{0.5, 0.5, 0.5, 1}, {1, 1, 1, 1}, {0, 0, 10, 0}, {2, 1, 1, 0}, SPHERE},
 //            {{1, 1, 1, 0}, {0, 0, 0, 0}, {1, 0, 8, 0}, {0.5, 1, 1, 0}, SPHERE},
 //            {{1, 1, 1, 1}, {0, 0, 0, 0}, {-1, 0, 8, 0}, {0.5, 1, 1, 0}, SPHERE},
 
-            {{1, 0, 0, 1}, {1, 0, 0, 1}, {0, 1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, SPHERE, 12, 6},
-            {{1, 0, 0, 1}, {1, 0, 0, 1}, {-2, -1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, MESH, 12, 6},
+            {{0, 0.9, 0, 1}, {0, 1, 0, 0.5}, {0, 1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, SPHERE, 12, 6},
+            {{0, 0, 0.9, 1}, {0, 0, 1, 0.5}, {-2, -1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, MESH, 12, 6},
 
-            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time) * 2, 0, 5 + cos(this->time) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
+//            {{1, 0, 1, 0.1}, {0, 0, 0, 0}, {0, 0, 3 + cos(this->time) * 2, 0}, {1, 1, 1, 0}, MESH, 12, 6},
+
+            {{0.9, 0, 0, 1}, {1, 0, 0, 0.5}, {sin(this->time) * 1, cos(this->time) * 1, 4, 0}, {0.5, 1, 1, 0}, SPHERE},
 //            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(90.0f)) * 1.5, 0, 7 + cos(this->time + radians(90.0f)) * 1.5, 0}, {0.5, 1, 1, 0}, SPHERE},
 //            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(180.0f)) * 2, 0, 5 + cos(this->time + radians(180.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
 //            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(270.0f)) * 2, 0, 5 + cos(this->time + radians(270.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
@@ -84,13 +86,12 @@ void Tracer::loop(double dtime) {
 
     glUseProgram(program);
 
+    mat4 screenprojection = perspective(radians(screencamera.fov), float(screensize.x) / float(screensize.y), 0.1f, 100.0f);
+
     mat4 projection = perspective(radians(camera->fov), float(screensize.x) / float(screensize.y), 0.1f, 100.0f);
+    mat4 view = lookAt(vec3(0), camera->direction(), camera->up());
 
-    mat4 view = lookAt(camera->position, camera->position + camera->direction(), camera->up());
-
-    GLint cameraUBO = glGetUniformLocation(program, "CAMERAPOS");
-
-    glUniform3f(cameraUBO, camera->position.x, camera->position.y, camera->position.z);
+    glUniform3f(glGetUniformLocation(program, "CAMERAPOS"), camera->position.x, camera->position.y, camera->position.z);
 
     GLint shaderTime = glGetUniformLocation(program, "TIME");
 
@@ -101,12 +102,11 @@ void Tracer::loop(double dtime) {
     mat4 model = mat4(1);
 
     mat4 mvp = projection * view;
-    mat4 vp = projection * lookAt(screencamera.position, screencamera.position + screencamera.direction(), screencamera.up());
-
-    GLuint matrix = glGetUniformLocation(program, "MVP");
+    mat4 vp = screenprojection * lookAt(screencamera.position, screencamera.position + screencamera.direction(), screencamera.up());
 
     glUniformMatrix4fv(glGetUniformLocation(program, "VIEW"), 1, GL_FALSE, &view[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(program, "PROJECTION"), 1, GL_FALSE, &vp[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(program, "PROJECTION"), 1, GL_FALSE, &projection[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(program, "SCREENPROJECTION"), 1, GL_FALSE, &vp[0][0]);
 
     glBindBufferBase(this->objectbuffer.get_type(), 3, this->objectbuffer);
     glBindBufferBase(this->vertexbuffer.get_type(), 4, this->vertexbuffer);
