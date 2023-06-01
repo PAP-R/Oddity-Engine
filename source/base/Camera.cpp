@@ -1,18 +1,22 @@
 #include "Camera.h"
 
+mat4 rotation(vec3 angles) {
+
+}
+
 vec3 Camera::direction() const {
     return {
-            cos(angle.y) * sin(angle.x),
-            sin(angle.y),
-            cos(angle.y) * cos(angle.x)
+        sin(angle.y),
+        -sin(angle.x) * cos(angle.y),
+        cos(angle.x) * cos(angle.y),
     };
 }
 
 vec3 Camera::right() const {
     return {
-            sin(angle.x - 3.14f / 2.0f),
-            0,
-            cos(angle.x - 3.14f / 2.0f)
+        cos(angle.y),
+        sin(angle.x) * sin(angle.y),
+        -cos(angle.x) * sin(angle.y)
     };
 }
 
@@ -20,5 +24,5 @@ vec3 Camera::up() const {
     return cross(right(), direction());
 }
 
-Camera::Camera(vec3 position, vec2 angle, float fov) : position(position), angle(angle), fov(fov) {}
+Camera::Camera(vec3 position, vec3 angle, float fov) : position(position), angle(angle), fov(fov) {}
 

@@ -29,16 +29,31 @@ public:
 
     size_t get_size();
 
-    void add_data(vector<T> data);
-    void set_data(vector<T> data);
+    vec<2, uint32> add_data(vector<T> data);
+    vec<2, uint32> set_data(vector<T> data, size_t offset = 0, size_t count = 0);
+    void clear();
 
     operator unsigned int() const;
 };
 
 template<typename T>
-void Buffer<T>::set_data(vector<T> data) {
+void Buffer<T>::clear() {
     this->data.clear();
-    this->data.insert(this->data.end(), data.begin(), data.end());
+    glBindBuffer(this->type, ID);
+    glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
+}
+
+template<typename T>
+vec<2, uint32> Buffer<T>::set_data(vector<T> data, size_t offset, size_t count) {
+    count = 0 < count && count < data.size() ? count : data.size();
+
+    size_t size = offset + count;
+    size = size > this->data.size() ? size : this->data.size();
+
+    this->data.resize(size);
+
+    copy(data.begin(), data.begin() + count, this->data.begin() + offset);
+
     glBindBuffer(this->type, ID);
     glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
 }
@@ -69,10 +84,12 @@ size_t Buffer<T>::get_size() {
 }
 
 template<typename T>
-void Buffer<T>::add_data(vector<T> data) {
+vec<2, uint32> Buffer<T>::add_data(vector<T> data) {
+    vec<2, uint32> indices = {this->data.size(), data.size()};
     this->data.insert(this->data.end(), data.begin(), data.end());
     glBindBuffer(this->type, ID);
     glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
+    return indices;
 }
 
 template<typename T>

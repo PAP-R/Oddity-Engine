@@ -2,7 +2,9 @@
 
 #include "Tracer.h"
 
-Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "shaders/ray.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/betterray.frag"), screensize(size), camera(camera), buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW), objectbuffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW), vertexbuffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW), screencamera(vec3(0), vec2(0), 90) {
+#include "Loader.h"
+
+Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "shaders/ray.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/betterray.frag"), screensize(size), camera(camera), buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW), objectbuffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW), vertexbuffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW), screencamera(vec3(0), vec3(0), 90) {
     time = 0;
 
     screen = {
@@ -11,27 +13,6 @@ Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "sha
             0.0f, 10.0f, 1.0f
     };
     buffer.add_data(screen);
-
-
-    vertex_shader.compile();
-    fragment_shader.compile();
-
-    program = createProgram(vertex_shader, fragment_shader);
-
-    printf("Done Compiling\n");
-}
-
-Tracer::~Tracer() {
-
-}
-
-void Tracer::loop(double dtime) {
-    this->time += dtime;
-    this->time = time > 360 ? time - 360 : time;
-
-//    camera->fov = 90 + 45 * sin(time/ 2);
-//    camera->position = vec3(0, sin(time) / 2, 0);
-//    camera->angle = vec2(-time, 0);
 
     float time = radians(0.0f);
     float time2 = radians(90.0f);
@@ -58,29 +39,56 @@ void Tracer::loop(double dtime) {
     };
     vertexbuffer.set_data(vertices);
 
+    auto cube = obj_to_vert(Loader::obj("models/sphere.obj"));
+
+    auto cubei = vertexbuffer.add_data(cube);
+
     vector<bufferobject> objects = {
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0}, {-2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0}, {2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
-//            {{1, 1, 1, 1}, {1, 1, 1, 0.4}, {0, -2, 3, 0}, {2, 2, 4, 0}, MESH, 6, 6},
-//            {{1, 1, 1, 1}, {1, 1, 1, 0.4}, {0, 2, 3, 0}, {2, 2, 4, 0}, MESH, 6, 6},
+            {{1, 1, 1, 1}, {1, 1, 1, 0}, {0, 0, 5, 0}, {1, 1, 1, 1}, MESH, cubei.x, cubei.y},
+    };
+
+    objectbuffer.add_data(objects);
+
+    vertex_shader.compile();
+    fragment_shader.compile();
+
+    program = createProgram(vertex_shader, fragment_shader);
+
+    printf("Done Compiling\n");
+}
+
+Tracer::~Tracer() {
+
+}
+
+void Tracer::loop(double dtime) {
+    this->time += dtime;
+    this->time = time > 360 ? time - 360 : time;
+
+    vector<bufferobject> objects = {
+            {{0, 0, 0, 1}, {1, 1, 1, 1}, {0, 0, 0, 0}, {50, 25, 25, 0}, SPHERE},
+//
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, {-2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, {2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, {0, -2, 3, 0}, {2, 2, 20, 0}, MESH, 6, 6},
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, {0, 2, 3, 0}, {2, 2, 20, 0}, MESH, 6, 6},
 //            {{1, 1, 1, 1}, {1, 1, 1, 0.3}, {0, -1, 5, 0}, {1, 1, 1, 0}, MESH, 12, 6},
-            {{0, 0, 0, 0}, {1, 1, 1, 1}, {0, 0, 0, 0}, {50, 25, 25, 0}, SPHERE},
 //            {{0.5, 0.5, 0.5, 1}, {1, 1, 1, 1}, {0, 0, 10, 0}, {2, 1, 1, 0}, SPHERE},
 //            {{1, 1, 1, 0}, {0, 0, 0, 0}, {1, 0, 8, 0}, {0.5, 1, 1, 0}, SPHERE},
 //            {{1, 1, 1, 1}, {0, 0, 0, 0}, {-1, 0, 8, 0}, {0.5, 1, 1, 0}, SPHERE},
 
-            {{0, 0.9, 0, 1}, {0, 1, 0, 0.5}, {0, 1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, SPHERE, 12, 6},
-            {{0, 0, 0.9, 1}, {0, 0, 1, 0.5}, {-2, -1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, MESH, 12, 6},
+//            {{0, 0.9, 0, 1}, {0, 1, 0, 0.5}, {0, 1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, SPHERE, 12, 6},
+//            {{0, 0, 0.9, 1}, {0, 0, 1, 0.5}, {-2, -1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, MESH, 12, 6},
 
 //            {{1, 0, 1, 0.1}, {0, 0, 0, 0}, {0, 0, 3 + cos(this->time) * 2, 0}, {1, 1, 1, 0}, MESH, 12, 6},
 
-            {{0.9, 0, 0, 1}, {1, 0, 0, 0.5}, {sin(this->time) * 1, cos(this->time) * 1, 4, 0}, {0.5, 1, 1, 0}, SPHERE},
+//            {{0.9, 0, 0, 1}, {1, 0, 0, 0.5}, {sin(this->time) * 1, cos(this->time) * 1, 4, 0}, {0.5, 1, 1, 0}, SPHERE},
 //            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(90.0f)) * 1.5, 0, 7 + cos(this->time + radians(90.0f)) * 1.5, 0}, {0.5, 1, 1, 0}, SPHERE},
 //            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(180.0f)) * 2, 0, 5 + cos(this->time + radians(180.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
 //            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(270.0f)) * 2, 0, 5 + cos(this->time + radians(270.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
     };
 
-    objectbuffer.set_data(objects);
+    objectbuffer.set_data(objects, 1);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -118,4 +126,13 @@ void Tracer::loop(double dtime) {
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glDisableVertexAttribArray(0);
+}
+
+vector<buffervertex> Tracer::obj_to_vert(Loader::Object object) {
+    vector<buffervertex> vertices;
+    for (auto f : object.faces) {
+        vertices.emplace_back(vec4(object.vertices[f[0] - 1], 0), vec4(object.colors[f[0] - 1], 0), vec4(object.normals[f[2] - 1], 0), object.uvs[f[1] - 1]);
+    }
+
+    return vertices;
 }

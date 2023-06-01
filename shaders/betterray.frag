@@ -3,7 +3,7 @@
 const uint SPHERE = 0;
 const uint MESH = 1;
 
-const uint MAX_STACK = 16;
+const uint MAX_STACK = 8;
 const float FALLOFF = 0.0;
 const float tolerance = 1E-5;
 
@@ -21,6 +21,7 @@ struct buffervertex {
     vec4 pos;
     vec4 color;
     vec4 normal;
+    vec2 uv;
 };
 
 struct Ray {

@@ -11,6 +11,7 @@ using namespace std;
 
 #include "base/Shader.h"
 #include "base/Tracer.h"
+#include "base/Control.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
     printf("%s\n", message);
@@ -22,7 +23,7 @@ int main() {
         throw runtime_error("Failed to initialize GLFW");
     }
 
-    int width = 800, height = 800;
+    int width = 2000, height = 1000;
 
     vec2 size = vec2(width, height);
 
@@ -60,13 +61,18 @@ int main() {
 
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-    Camera camera(vec3(0), vec2(pi<float>(), 0));
+    Camera camera(vec3(0), vec3(0));
+
+    Control::set_camera(&camera);
+    Control::set_callbacks(window);
 
     Tracer tracer(size, &camera);
 
@@ -82,17 +88,17 @@ int main() {
 
         deltaTime = tNow - tStart;
 
-        camera.angle.x = pi<float>() + sin(deltaTime.count()) * 1;
-        camera.position.x = -cos(deltaTime.count()) * 1;
-        camera.position.y = sin(deltaTime.count()) * 1;
-        camera.position.z = sin(deltaTime.count()) * 5;
+//        camera.angle.x = pi<float>() + sin(deltaTime.count()) * 1;
+//        camera.position.x = -cos(deltaTime.count()) * 1;
+//        camera.position.y = sin(deltaTime.count()) * 1;
+//        camera.position.z = sin(deltaTime.count()) * 5;
 
         deltaTime = tNow - tLast;
         tLast = tNow;
 
-
         glfwMakeContextCurrent(window);
 
+        Control::update(deltaTime.count());
         tracer.loop(deltaTime.count());
 
         glfwSwapBuffers(window);

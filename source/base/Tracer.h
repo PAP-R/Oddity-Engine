@@ -9,6 +9,7 @@ using namespace glm;
 #include "Shader.h"
 #include "Buffer.h"
 #include "Camera.h"
+#include "Loader.h"
 
 enum objecttypes {
     SPHERE,
@@ -29,6 +30,7 @@ struct alignas(16) buffervertex {
     vec4 pos;
     vec4 color;
     vec4 normal;
+    vec2 uv;
 };
 
 class Tracer {
@@ -54,6 +56,8 @@ public:
     ~Tracer();
 
     void loop(double dtime);
+
+    vector<buffervertex> obj_to_vert(Loader::Object object);
 };
 
 #endif //ODDITYENGINE_TRACER_H

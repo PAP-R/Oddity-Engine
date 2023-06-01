@@ -8,11 +8,11 @@ using namespace glm;
 class Camera {
 public:
     vec3 position;
-    vec2 angle;
+    vec3 angle;
 
     float fov;
 
-    explicit Camera(vec3 position=vec3(0), vec2 angle=vec2(0), float fov=float(45));
+    explicit Camera(vec3 position=vec3(0), vec3 angle=vec3(0), float fov=float(45));
 
     [[nodiscard]] vec3 direction() const;
     [[nodiscard]] vec3 right() const;
