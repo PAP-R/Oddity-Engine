@@ -17,34 +17,15 @@ Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "sha
     float time = radians(0.0f);
     float time2 = radians(90.0f);
 //    float time = this->time + radians(45.0f);
-    vector<buffervertex> vertices = {
-            {{1 * sin(time), 1, -1 * cos(time), 0}, {0, 0, 1, 1}, {1, 1, 1, 1}},
-            {{1 * sin(time), -1, -1 * cos(time), 0}, {1, 0, 0, 1}, {1 * -cos(time), -1, -1 * sin(time), 0}},
-            {{-1 * sin(time), -1, 1 * cos(time), 0}, {0, 1, 0, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
-            {{-1 * sin(time), -1, 1 * cos(time), 0}, {0, 0, 1, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
-            {{-1 * sin(time), 1, 1 * cos(time), 0}, {1, 0, 0, 1}, {-1 * -cos(time), 1, 1 * sin(time), 0}},
-            {{1 * sin(time), 1, -1 * cos(time), 0}, {0, 1, 0, 1}, {1 * -cos(time), 1, -1 * sin(time), 0}},
-            {{1 * sin(time2), -1 * cos(time2), 1, 0}, {0, 0, 1, 1}, {1, 1, 1, 1}},
-            {{1 * sin(time2), -1 * cos(time2), -1, 0}, {1, 0, 0, 1}, {1 * -cos(time), -1, -1 * sin(time), 0}},
-            {{-1 * sin(time2), 1 * cos(time2), -1, 0}, {0, 1, 0, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
-            {{-1 * sin(time2), 1 * cos(time2), -1, 0}, {0, 0, 1, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
-            {{-1 * sin(time2), 1 * cos(time2), 1, 0}, {1, 0, 0, 1}, {-1 * -cos(time), 1, 1 * sin(time), 0}},
-            {{1 * sin(time2), -1 * cos(time2), 1, 0}, {0, 1, 0, 1}, {1 * -cos(time), 1, -1 * sin(time), 0}},
-            {{1 * sin(time2), 1, -1 * cos(time2), 0}, {0, 0, 1, 1}, {1, 1, 1, 1}},
-            {{1 * sin(time2), -1, -1 * cos(time2), 0}, {1, 0, 0, 1}, {1 * -cos(time), -1, -1 * sin(time), 0}},
-            {{-1 * sin(time2), -1, 1 * cos(time2), 0}, {0, 1, 0, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
-            {{-1 * sin(time2), -1, 1 * cos(time2), 0}, {0, 0, 1, 1}, {-1 * -cos(time), -1, 1 * sin(time), 0}},
-            {{-1 * sin(time2), 1, 1 * cos(time2), 0}, {1, 0, 0, 1}, {-1 * -cos(time), 1, 1 * sin(time), 0}},
-            {{1 * sin(time2), 1, -1 * cos(time2), 0}, {0, 1, 0, 1}, {1 * -cos(time), 1, -1 * sin(time), 0}},
-    };
-    vertexbuffer.set_data(vertices);
 
-    auto cube = obj_to_vert(Loader::obj("models/sphere.obj"));
+    vertexbuffer.add_data(obj_to_vert(Loader::obj("models/plane.obj")));
+
+    auto cube = obj_to_vert(Loader::obj("models/torus.obj"));
 
     auto cubei = vertexbuffer.add_data(cube);
 
     vector<bufferobject> objects = {
-            {{1, 1, 1, 1}, {1, 1, 1, 0}, {0, 0, 5, 0}, {1, 1, 1, 1}, MESH, cubei.x, cubei.y},
+            {{0, 0, 0, 1}, {1, 1, 1, 0.5}, transform(vec3(0, 0, -5), vec3(0, 0, 45), vec3(1)), MESH, cubei.x, cubei.y},
     };
 
     objectbuffer.add_data(objects);
@@ -66,12 +47,12 @@ void Tracer::loop(double dtime) {
     this->time = time > 360 ? time - 360 : time;
 
     vector<bufferobject> objects = {
-            {{0, 0, 0, 1}, {1, 1, 1, 1}, {0, 0, 0, 0}, {50, 25, 25, 0}, SPHERE},
+            {{0, 0, 0, 1}, {1, 0.7882, 0.1333, 1}, transform(vec3(0), vec3(0), vec3(50)), SPHERE},
 //
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, {-2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, {2, 0, 3, 0}, {2, 2, 20, 0}, MESH, 0, 6},
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, {0, -2, 3, 0}, {2, 2, 20, 0}, MESH, 6, 6},
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, {0, 2, 3, 0}, {2, 2, 20, 0}, MESH, 6, 6},
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, transform(vec3(-2, 0, 0), vec3(0, 90, 0), vec3(2)), MESH, 0, 6},
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, transform(vec3(2, 0, 0), vec3(0, 90, 0), vec3(2)), MESH, 0, 6},
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, transform(vec3(0, -2, 0), vec3(90, 0, 0), vec3(2)), MESH, 0, 6},
+            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, transform(vec3(0, 2, 0), vec3(90, 0, 0), vec3(2)), MESH, 0, 6},
 //            {{1, 1, 1, 1}, {1, 1, 1, 0.3}, {0, -1, 5, 0}, {1, 1, 1, 0}, MESH, 12, 6},
 //            {{0.5, 0.5, 0.5, 1}, {1, 1, 1, 1}, {0, 0, 10, 0}, {2, 1, 1, 0}, SPHERE},
 //            {{1, 1, 1, 0}, {0, 0, 0, 0}, {1, 0, 8, 0}, {0.5, 1, 1, 0}, SPHERE},
@@ -128,10 +109,14 @@ void Tracer::loop(double dtime) {
     glDisableVertexAttribArray(0);
 }
 
+mat4 Tracer::transform(vec3 translation, vec3 rotation, vec3 scale) {
+    return translate(mat4(1), translation) * glm::toMat4(quat(radians(rotation))) * glm::scale(mat4(1), scale);
+}
+
 vector<buffervertex> Tracer::obj_to_vert(Loader::Object object) {
     vector<buffervertex> vertices;
     for (auto f : object.faces) {
-        vertices.emplace_back(vec4(object.vertices[f[0] - 1], 0), vec4(object.colors[f[0] - 1], 0), vec4(object.normals[f[2] - 1], 0), object.uvs[f[1] - 1]);
+        vertices.emplace_back(vec4(object.vertices[f[0] - 1], 1), vec4(object.colors[f[0] - 1], 1), vec4(object.normals[f[2] - 1], 1), object.uvs[f[1] - 1]);
     }
 
     return vertices;

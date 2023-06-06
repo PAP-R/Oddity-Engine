@@ -10,8 +10,7 @@ const float tolerance = 1E-5;
 struct bufferobject {
     vec4 color;
     vec4 emission;
-    vec4 pos;
-    vec4 scale;
+    mat4 transform;
     uint type;
     uint vertexstart;
     uint vertexcount;
@@ -105,7 +104,9 @@ Ray mkray(vec3 pos, vec3 dir, uint count) {
     return ray;
 }
 
-Ray sphere_collision(Ray ray, vec3 pos, float radius) {
+Ray sphere_collision(Ray ray, mat4 transform) {
+    vec3 pos = transform[3].xyz;
+    float radius = length(transform[0].xyz);
     vec3 origin = pos;
     float len = dot(ray.dir, pos - ray.origin);
     vec3 c = len * ray.dir + ray.origin;
@@ -135,12 +136,12 @@ Ray sphere_collision(Ray ray, vec3 pos, float radius) {
     return ray;
 }
 
-Ray triangle_collision(Ray ray, vec3 pos, vec3 scale, buffervertex v0, buffervertex v1, buffervertex v2) {
+Ray triangle_collision(Ray ray, mat4 transform, buffervertex v0, buffervertex v1, buffervertex v2) {
     ray.hit = false;
 
-    vec3 a = pos + scale * v0.pos.xyz;
-    vec3 b = pos + scale * v1.pos.xyz;
-    vec3 c = pos + scale * v2.pos.xyz;
+    vec3 a = (transform * v0.pos).xyz;
+    vec3 b = (transform * v1.pos).xyz;
+    vec3 c = (transform * v2.pos).xyz;
 
     vec3 edgeab = b - a;
     vec3 edgeac = c - a;
@@ -169,50 +170,14 @@ Ray triangle_collision(Ray ray, vec3 pos, vec3 scale, buffervertex v0, bufferver
     }
 
     return ray;
-
-//    vec3 v0pos = pos + scale * v0.pos.xyz;
-//    vec3 v1pos = pos + scale * v1.pos.xyz;
-//    vec3 v2pos = pos + scale * v2.pos.xyz;
-//
-//    vec3 v01 = v1pos - v0pos;
-//    vec3 v02 = v2pos - v0pos;
-//    vec3 normal = cross(v01, v02);
-//    if (abs(dot(ray.dir, normal)) >= tolerance) {
-//        vec3 v0o = ray.origin - v0pos;
-//        vec3 dv0o = cross(v0o, ray.dir);
-//
-//        float det = -dot(ray.dir, normal);
-//        float invdet = 1 / det;
-//
-//        float dst = dot(v0o, normal) * invdet;
-//        float dst2 = dot(v0o, -normal) * invdet;
-//        if (dst < dst2) {
-//            dst = dst2;
-////            normal = -normal;
-//        }
-//        float u = dot(v02, dv0o) * invdet;
-//        float v = -dot(v01, dv0o) * invdet;
-//        float w = 1 - u - v;
-//
-////        ray.hit = abs(det) >= tolerance && dst >= 0 && u >= 0 && v >= 0 && w >= 0;
-//        ray.hit = dst >= 0 && u >= 0 && v >= 0 && w >= 0;
-//        if (ray.hit) {
-//            ray.len = dst;
-//            ray.pos = ray.origin + ray.dir * ray.len;
-////            ray.normal = normalize(v0.normal * w + v1.normal * u + v2.normal * v).xyz;
-//            ray.normal = normalize(normal * sign(dot(-ray.dir, normal)));
-//        }
-//    }
-//
-//    return ray;
 }
 
-Ray mesh_collision(Ray ray, vec3 pos, vec3 scale, uint vertexstart, uint vertexcount) {
+Ray mesh_collision(Ray ray, mat4 transform, uint vertexstart, uint vertexcount) {
     float vertexend = vertexstart + vertexcount - vertexcount % 3;
     Ray temp, result = ray;
     result.len = 1./0.;
     for (uint i = vertexstart; i < vertexend; i += 3) {
-        temp = triangle_collision(ray, pos, scale, vertices[i], vertices[i + 1], vertices[i + 2]);
+        temp = triangle_collision(ray, transform, vertices[i], vertices[i + 1], vertices[i + 2]);
         if (temp.hit && temp.len <= result.len) {
             result = temp;
         }
@@ -230,10 +195,10 @@ Ray collision_ray(Ray ray) {
         bufferobject object = objects[i];
         switch(object.type) {
             case SPHERE:
-                temp = sphere_collision(ray, object.pos.xyz, object.scale.x);
+                temp = sphere_collision(ray, object.transform);
                 break;
             case MESH:
-                temp = mesh_collision(ray, object.pos.xyz, object.scale.xyz, object.vertexstart, object.vertexcount);
+                temp = mesh_collision(ray, object.transform, object.vertexstart, object.vertexcount);
                 break;
         }
         if (temp.hit && temp.len < result.len) {

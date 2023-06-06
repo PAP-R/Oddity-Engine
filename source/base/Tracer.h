@@ -4,6 +4,8 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 using namespace glm;
 
 #include "Shader.h"
@@ -19,8 +21,7 @@ enum objecttypes {
 struct alignas(16) bufferobject {
     vec4 color;
     vec4 emission;
-    vec4 pos;
-    vec4 scale;
+    mat4 transform;
     uint32 type;
     uint32 vertexstart;
     uint32 vertexcount;
@@ -56,6 +57,8 @@ public:
     ~Tracer();
 
     void loop(double dtime);
+
+    static mat4 transform(vec3 translation = vec3(0), vec3 rotation = vec3(0), vec3 scale = vec3(0));
 
     vector<buffervertex> obj_to_vert(Loader::Object object);
 };
