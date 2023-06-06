@@ -39,6 +39,6 @@ target_link_libraries(${PROJECT_NAME}_run
         ${ALL_LIBS}
 )
 
-target_link_libraries(${PROJECT_NAME}_lib
+target_link_libraries(${PROJECT_NAME}
         ${ALL_LIBS}
         )

@@ -56,6 +56,7 @@ vec<2, uint32> Buffer<T>::set_data(vector<T> data, size_t offset, size_t count) 
 
     glBindBuffer(this->type, ID);
     glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
+    return {offset, count};
 }
 
 template<typename T>

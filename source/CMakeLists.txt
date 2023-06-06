@@ -1,11 +1,11 @@
 set(BINARY ${PROJECT_NAME})
 
-file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
+file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true base/*.h base/*.cpp)
 
-set(SOURCES ${SOURCES})
+set(SOURCES Tracer.cpp Tracer.h ${SOURCES})
 
-add_executable(${BINARY}_run ${SOURCES})
+add_executable(${BINARY}_run main.cpp ${SOURCES})
 
-add_library(${BINARY}_lib STATIC ${SOURCES})
+add_library(${BINARY} STATIC ${SOURCES})
 
-set_target_properties(${BINARY}_run ${BINARY}_lib PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)
+set_target_properties(${BINARY}_run ${BINARY} PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)

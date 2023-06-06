@@ -1,8 +1,10 @@
-#include "Buffer.h"
+#include "source/base/Buffer.h"
 
 #include "Tracer.h"
 
-#include "Loader.h"
+#include <utility>
+
+#include "source/base/Loader.h"
 
 Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "shaders/ray.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/betterray.frag"), screensize(size), camera(camera), buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW), objectbuffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW), vertexbuffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW), screencamera(vec3(0), vec3(0), 90) {
     time = 0;
@@ -120,4 +122,20 @@ vector<buffervertex> Tracer::obj_to_vert(Loader::Object object) {
     }
 
     return vertices;
+}
+
+size_t Tracer::add_objects(vector<bufferobject> objects) {
+    return objectbuffer.add_data(std::move(objects))[0];
+}
+
+size_t Tracer::set_objects(vector<bufferobject> objects, size_t offset, size_t count) {
+    return objectbuffer.set_data(std::move(objects), offset, count)[0];
+}
+
+size_t Tracer::add_vertices(vector<buffervertex> verticess) {
+    return vertexbuffer.add_data(std::move(verticess))[0];
+}
+
+size_t Tracer::set_vertices(vector<buffervertex> vertices, size_t offset, size_t count) {
+    return vertexbuffer.set_data(std::move(vertices), offset, count)[0];
 }

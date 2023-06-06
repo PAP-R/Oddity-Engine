@@ -10,7 +10,7 @@ using namespace glm;
 using namespace std;
 
 #include "base/Shader.h"
-#include "base/Tracer.h"
+#include "Tracer.h"
 #include "base/Control.h"
 
 void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
