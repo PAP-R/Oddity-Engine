@@ -1,9 +1,5 @@
 #include "Camera.h"
 
-mat4 rotation(vec3 angles) {
-
-}
-
 vec3 Camera::direction() const {
     return {
         sin(angle.y),

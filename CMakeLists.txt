@@ -19,6 +19,7 @@ add_subdirectory(external)
 
 set(ALL_LIBS
         ${OPENGL_LIBRARY}
+        glm
         glfw
         libglew_static
         IMGUI

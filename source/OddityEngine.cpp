@@ -1,45 +1,22 @@
-#include <chrono>
+#include "OddityEngine.h"
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include "glm/glm.hpp"
 using namespace glm;
 
-#include <list>
 #include <stdexcept>
 using namespace std;
 
-#include "base/Shader.h"
-#include "source/base/Tracer.h"
-#include "base/Control.h"
+#include <chrono>
 
-GLFWwindow* window;
 
-chrono::time_point<chrono::system_clock> tStart;
-chrono::time_point<chrono::system_clock> tLast;
-chrono::time_point<chrono::system_clock> tNow;
-
-Tracer* tracer;
-
-void update() {
-    glfwPollEvents();
-
-    tNow = chrono::system_clock::now();
-
-    tracer->set_object({{0, 0, 0, 1}, {1, 0.7882, 0.1333, 1}, Tracer::transform(vec3(0), vec3(0), vec3(1)), SPHERE});
-
-    chrono::duration<float> deltaTime = tNow - tLast;
-    tLast = tNow;
-
-    glfwMakeContextCurrent(window);
-
-    Control::update(deltaTime.count());
-    tracer->loop(deltaTime.count());
-
-    glfwSwapBuffers(window);
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+    printf("%s\n", message);
 }
 
-int main() {
+
+OddityEngine::OddityEngine() {
     if (!glfwInit()) {
         throw runtime_error("Failed to initialize GLFW");
     }
@@ -68,14 +45,16 @@ int main() {
         throw runtime_error("Failed to initialize GLEW");
     }
 
+    glDebugMessageCallback(MessageCallback, nullptr);
+
     glewExperimental = true;
 
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_MULTISAMPLE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+//    glEnable(GL_DEBUG_OUTPUT);
+//    glEnable(GL_MULTISAMPLE);
+//    glEnable(GL_BLEND);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_LESS);
 //    glEnable(GL_CULL_FACE);
 
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -88,21 +67,49 @@ int main() {
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-    Camera camera = Camera(vec3(0, 0, 1), vec3(0));
+    camera = new Camera(vec3(0, 0, 1), vec3(0));
 
-    Control::set_camera(&camera);
+    Control::set_camera(camera);
     Control::set_callbacks(window);
 
-    tracer = new Tracer(size, &camera);
+    tracer = new Tracer(size, camera);
 
     tStart = chrono::system_clock::now();
     tNow = tStart;
     tLast = tStart;
+}
 
-    while(!glfwWindowShouldClose(window)) {
-        update();
-    }
-
+OddityEngine::~OddityEngine() {
+    delete(tracer);
+    delete(camera);
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+bool OddityEngine::update() {
+    glfwMakeContextCurrent(window);
+
+    glfwPollEvents();
+
+    tNow = chrono::system_clock::now();
+
+    chrono::duration<float> deltaTime = tNow - tLast;
+    tLast = tNow;
+
+    Control::update(deltaTime.count());
+    tracer->loop(deltaTime.count());
+
+    glfwSwapBuffers(window);
+
+//    return !glfwWindowShouldClose(window);
+    return true;
+}
+
+float OddityEngine::get_time() {
+    chrono::duration<float> time = tNow - tStart;
+    return time.count();
+}
+
+GLFWwindow *OddityEngine::get_window() {
+    return window;
 }

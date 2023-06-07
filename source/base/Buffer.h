@@ -29,7 +29,9 @@ public:
 
     size_t get_size();
 
+    vec<2, uint32> add_data(T data);
     vec<2, uint32> add_data(vector<T> data);
+    vec<2, uint32> set_data(T data, size_t offset = 0);
     vec<2, uint32> set_data(vector<T> data, size_t offset = 0, size_t count = 0);
     void clear();
 
@@ -41,6 +43,38 @@ void Buffer<T>::clear() {
     this->data.clear();
     glBindBuffer(this->type, ID);
     glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
+}
+
+template<typename T>
+vec<2, uint32> Buffer<T>::add_data(T data) {
+    vec<2, uint32> indices = {this->data.size(), 1};
+    this->data.emplace_back(data);
+    glBindBuffer(this->type, ID);
+    glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
+    return indices;
+}
+
+template<typename T>
+vec<2, uint32> Buffer<T>::add_data(vector<T> data) {
+    vec<2, uint32> indices = {this->data.size(), data.size()};
+    this->data.insert(this->data.end(), data.begin(), data.end());
+    glBindBuffer(this->type, ID);
+    glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
+    return indices;
+}
+
+template<typename T>
+vec<2, uint32> Buffer<T>::set_data(T data, size_t offset) {
+    size_t size = offset + 1;
+    size = size > this->data.size() ? size : this->data.size();
+
+    this->data.resize(size);
+
+    this->data[offset] = data;
+
+    glBindBuffer(this->type, ID);
+    glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
+    return {offset, 1};
 }
 
 template<typename T>
@@ -82,15 +116,6 @@ void Buffer<T>::set_usage(GLenum usage) {
 template<typename T>
 size_t Buffer<T>::get_size() {
     return data.size();
-}
-
-template<typename T>
-vec<2, uint32> Buffer<T>::add_data(vector<T> data) {
-    vec<2, uint32> indices = {this->data.size(), data.size()};
-    this->data.insert(this->data.end(), data.begin(), data.end());
-    glBindBuffer(this->type, ID);
-    glBufferData(this->type, this->data.size() * sizeof(T), this->data.data(), this->usage);
-    return indices;
 }
 
 template<typename T>

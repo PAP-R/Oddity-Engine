@@ -8,10 +8,10 @@
 #include "glm/gtx/quaternion.hpp"
 using namespace glm;
 
-#include "source/base/Shader.h"
-#include "source/base/Buffer.h"
-#include "source/base/Camera.h"
-#include "source/base/Loader.h"
+#include "Shader.h"
+#include "Buffer.h"
+#include "Camera.h"
+#include "Loader.h"
 
 enum objecttypes {
     SPHERE,
@@ -53,22 +53,30 @@ private:
     Camera* camera;
 
 public:
-    explicit Tracer(vec2 size, Camera* camera);
+    Tracer(vec2 size, Camera* camera);
     ~Tracer();
 
     void loop(double dtime);
 
-    static mat4 transform(vec3 translation = vec3(0), vec3 rotation = vec3(0), vec3 scale = vec3(0));
+    static mat4 transform(vec3 translation = vec3(0), vec3 rotation = vec3(0), vec3 scale = vec3(1));
 
-    vector<buffervertex> obj_to_vert(Loader::Object object);
+    static vector<buffervertex> obj_to_vert(Loader::Object object);
 
     size_t add_objects(vector<bufferobject> objects);
 
     size_t set_objects(vector<bufferobject> objects, size_t offset = 0, size_t count = 0);
 
-    size_t add_vertices(vector<buffervertex> verticess);
+    size_t add_vertices(vector<buffervertex> vertices);
 
-    size_t set_vertices(vector<buffervertex> vertices, size_t offset, size_t count);
+    size_t set_vertices(vector<buffervertex> vertices, size_t offset = 0, size_t count = 0);
+
+    void set_camera(Camera *camera);
+
+    void set_size(vec2 size);
+
+    size_t set_object(bufferobject object, size_t offset = 0);
+
+    size_t add_object(bufferobject object);
 };
 
 #endif //ODDITYENGINE_TRACER_H

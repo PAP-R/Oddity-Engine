@@ -16,22 +16,6 @@ Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "sha
     };
     buffer.add_data(screen);
 
-    float time = radians(0.0f);
-    float time2 = radians(90.0f);
-//    float time = this->time + radians(45.0f);
-
-    vertexbuffer.add_data(obj_to_vert(Loader::obj("models/plane.obj")));
-
-    auto cube = obj_to_vert(Loader::obj("models/torus.obj"));
-
-    auto cubei = vertexbuffer.add_data(cube);
-
-    vector<bufferobject> objects = {
-            {{0, 0, 0, 1}, {1, 1, 1, 0.5}, transform(vec3(0, 0, -5), vec3(0, 0, 45), vec3(1)), MESH, cubei.x, cubei.y},
-    };
-
-    objectbuffer.add_data(objects);
-
     vertex_shader.compile();
     fragment_shader.compile();
 
@@ -44,34 +28,17 @@ Tracer::~Tracer() {
 
 }
 
+void Tracer::set_camera(Camera* camera) {
+    this->camera = camera;
+}
+
+void Tracer::set_size(vec2 size) {
+    this->screensize = size;
+}
+
 void Tracer::loop(double dtime) {
     this->time += dtime;
     this->time = time > 360 ? time - 360 : time;
-
-    vector<bufferobject> objects = {
-            {{0, 0, 0, 1}, {1, 0.7882, 0.1333, 1}, transform(vec3(0), vec3(0), vec3(50)), SPHERE},
-//
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, transform(vec3(-2, 0, 0), vec3(0, 90, 0), vec3(2)), MESH, 0, 6},
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, transform(vec3(2, 0, 0), vec3(0, 90, 0), vec3(2)), MESH, 0, 6},
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, transform(vec3(0, -2, 0), vec3(90, 0, 0), vec3(2)), MESH, 0, 6},
-            {{0.9, 0.9, 0.9, 1}, {1, 1, 1, 0.5}, transform(vec3(0, 2, 0), vec3(90, 0, 0), vec3(2)), MESH, 0, 6},
-//            {{1, 1, 1, 1}, {1, 1, 1, 0.3}, {0, -1, 5, 0}, {1, 1, 1, 0}, MESH, 12, 6},
-//            {{0.5, 0.5, 0.5, 1}, {1, 1, 1, 1}, {0, 0, 10, 0}, {2, 1, 1, 0}, SPHERE},
-//            {{1, 1, 1, 0}, {0, 0, 0, 0}, {1, 0, 8, 0}, {0.5, 1, 1, 0}, SPHERE},
-//            {{1, 1, 1, 1}, {0, 0, 0, 0}, {-1, 0, 8, 0}, {0.5, 1, 1, 0}, SPHERE},
-
-//            {{0, 0.9, 0, 1}, {0, 1, 0, 0.5}, {0, 1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, SPHERE, 12, 6},
-//            {{0, 0, 0.9, 1}, {0, 0, 1, 0.5}, {-2, -1, 10 + cos(this->time) * 5, 0}, {0.5, 0.5, 0.5, 0}, MESH, 12, 6},
-
-//            {{1, 0, 1, 0.1}, {0, 0, 0, 0}, {0, 0, 3 + cos(this->time) * 2, 0}, {1, 1, 1, 0}, MESH, 12, 6},
-
-//            {{0.9, 0, 0, 1}, {1, 0, 0, 0.5}, {sin(this->time) * 1, cos(this->time) * 1, 4, 0}, {0.5, 1, 1, 0}, SPHERE},
-//            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(90.0f)) * 1.5, 0, 7 + cos(this->time + radians(90.0f)) * 1.5, 0}, {0.5, 1, 1, 0}, SPHERE},
-//            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(180.0f)) * 2, 0, 5 + cos(this->time + radians(180.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
-//            {{1, 0, 0, 1}, {1, 0, 0, 1}, {sin(this->time + radians(270.0f)) * 2, 0, 5 + cos(this->time + radians(270.0f)) * 2, 0}, {0.5, 1, 1, 0}, SPHERE},
-    };
-
-    objectbuffer.set_data(objects, 1);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -124,16 +91,24 @@ vector<buffervertex> Tracer::obj_to_vert(Loader::Object object) {
     return vertices;
 }
 
+size_t Tracer::add_object(bufferobject object) {
+    return objectbuffer.add_data(object)[0];
+}
+
 size_t Tracer::add_objects(vector<bufferobject> objects) {
     return objectbuffer.add_data(std::move(objects))[0];
+}
+
+size_t Tracer::set_object(bufferobject object, size_t offset) {
+    return objectbuffer.set_data(object, offset)[0];
 }
 
 size_t Tracer::set_objects(vector<bufferobject> objects, size_t offset, size_t count) {
     return objectbuffer.set_data(std::move(objects), offset, count)[0];
 }
 
-size_t Tracer::add_vertices(vector<buffervertex> verticess) {
-    return vertexbuffer.add_data(std::move(verticess))[0];
+size_t Tracer::add_vertices(vector<buffervertex> vertices) {
+    return vertexbuffer.add_data(std::move(vertices))[0];
 }
 
 size_t Tracer::set_vertices(vector<buffervertex> vertices, size_t offset, size_t count) {
