@@ -22,6 +22,7 @@ struct alignas(16) bufferobject {
     vec4 color;
     vec4 emission;
     mat4 transform;
+    float roughness;
     uint32 type;
     uint32 vertexstart;
     uint32 vertexcount;
@@ -40,10 +41,9 @@ private:
     Shader fragment_shader;
     GLuint program;
     Buffer<float> buffer;
-    Buffer<bufferobject> objectbuffer;
-    Buffer<buffervertex> vertexbuffer;
 
-    size_t bounces = 2;
+    size_t bounces = 1;
+    size_t spread = 3;
 
     float time;
 
@@ -53,30 +53,25 @@ private:
     Camera* camera;
 
 public:
+    Buffer<bufferobject> objectbuffer;
+    Buffer<buffervertex> vertexbuffer;
+
     Tracer(vec2 size, Camera* camera);
     ~Tracer();
 
     void loop(double dtime);
 
     static mat4 transform(vec3 translation = vec3(0), vec3 rotation = vec3(0), vec3 scale = vec3(1));
+    static mat4 rotate(vec3 rotation);
 
     static vector<buffervertex> obj_to_vert(Loader::Object object);
-
-    size_t add_objects(vector<bufferobject> objects);
-
-    size_t set_objects(vector<bufferobject> objects, size_t offset = 0, size_t count = 0);
-
-    size_t add_vertices(vector<buffervertex> vertices);
-
-    size_t set_vertices(vector<buffervertex> vertices, size_t offset = 0, size_t count = 0);
 
     void set_camera(Camera *camera);
 
     void set_size(vec2 size);
 
-    size_t set_object(bufferobject object, size_t offset = 0);
-
-    size_t add_object(bufferobject object);
+    void apply_buffers();
+    void clear_buffers_dynamic();
 };
 
 #endif //ODDITYENGINE_TRACER_H
