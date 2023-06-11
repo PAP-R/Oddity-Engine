@@ -14,7 +14,7 @@ Tracer::Tracer(vec2 size, Camera* camera) : vertex_shader(GL_VERTEX_SHADER, "sha
             10.0f, -10.0f, 1.0f,
             0.0f, 10.0f, 1.0f
     };
-    buffer.add_data(screen);
+    buffer.add(screen);
 
     vertex_shader.compile();
     fragment_shader.compile();
@@ -56,6 +56,7 @@ void Tracer::loop(double dtime) {
     glUniform1f(shaderTime, time);
 
     glUniform1ui(glGetUniformLocation(program, "bounces"), this->bounces);
+    glUniform1ui(glGetUniformLocation(program, "spread"), this->spread);
 
     mat4 model = mat4(1);
 
@@ -79,7 +80,7 @@ void Tracer::loop(double dtime) {
 }
 
 mat4 Tracer::transform(vec3 translation, vec3 rotation, vec3 scale) {
-    return translate(mat4(1), translation) * glm::toMat4(quat(radians(rotation))) * glm::scale(mat4(1), scale);
+    return translate(mat4(1), translation) * glm::toMat4(quat(rotation)) * glm::scale(mat4(1), scale);
 }
 
 vector<buffervertex> Tracer::obj_to_vert(Loader::Object object) {
@@ -91,26 +92,18 @@ vector<buffervertex> Tracer::obj_to_vert(Loader::Object object) {
     return vertices;
 }
 
-size_t Tracer::add_object(bufferobject object) {
-    return objectbuffer.add_data(object)[0];
+void Tracer::apply_buffers() {
+    buffer.apply();
+    objectbuffer.apply();
+    vertexbuffer.apply();
 }
 
-size_t Tracer::add_objects(vector<bufferobject> objects) {
-    return objectbuffer.add_data(std::move(objects))[0];
+void Tracer::clear_buffers_dynamic() {
+    buffer.clear_dynamic();
+    objectbuffer.clear_dynamic();
+    vertexbuffer.clear_dynamic();
 }
 
-size_t Tracer::set_object(bufferobject object, size_t offset) {
-    return objectbuffer.set_data(object, offset)[0];
-}
-
-size_t Tracer::set_objects(vector<bufferobject> objects, size_t offset, size_t count) {
-    return objectbuffer.set_data(std::move(objects), offset, count)[0];
-}
-
-size_t Tracer::add_vertices(vector<buffervertex> vertices) {
-    return vertexbuffer.add_data(std::move(vertices))[0];
-}
-
-size_t Tracer::set_vertices(vector<buffervertex> vertices, size_t offset, size_t count) {
-    return vertexbuffer.set_data(std::move(vertices), offset, count)[0];
+mat4 Tracer::rotate(vec3 rotation) {
+    return glm::toMat4(quat(rotation));
 }

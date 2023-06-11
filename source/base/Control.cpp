@@ -22,7 +22,7 @@ namespace Control {
     }
 
     void update(float deltatime) {
-        camera->position += vec3(camera->right().x * deltapos.x + camera->direction().x * deltapos.y, 0, camera->right().z * deltapos.x + camera->direction().z * deltapos.y) * SPEED * deltatime;
+        camera->position += vec3(camera->right().x * deltapos.x + camera->direction().x * deltapos.z, camera->up().y * -deltapos.y, camera->right().z * deltapos.x + camera->direction().z * deltapos.z) * SPEED * deltatime;
 
         camera->angle += deltaangle * SENSITIVITY * deltatime;
         camera->angle.x = fmodf(camera->angle.x, two_pi<float>());
@@ -41,9 +41,15 @@ namespace Control {
                     deltapos.x += 1;
                     break;
                 case GLFW_KEY_S:
-                    deltapos.y += 1;
+                    deltapos.z += 1;
                     break;
                 case GLFW_KEY_W:
+                    deltapos.z -= 1;
+                    break;
+                case GLFW_KEY_SPACE:
+                    deltapos.y += 1;
+                    break;
+                case GLFW_KEY_LEFT_CONTROL:
                     deltapos.y -= 1;
                     break;
                 case GLFW_KEY_UP:
@@ -72,9 +78,15 @@ namespace Control {
                     deltapos.x -= 1;
                     break;
                 case GLFW_KEY_S:
-                    deltapos.y -= 1;
+                    deltapos.z -= 1;
                     break;
                 case GLFW_KEY_W:
+                    deltapos.z += 1;
+                    break;
+                case GLFW_KEY_SPACE:
+                    deltapos.y -= 1;
+                    break;
+                case GLFW_KEY_LEFT_CONTROL:
                     deltapos.y += 1;
                     break;
                 case GLFW_KEY_UP:

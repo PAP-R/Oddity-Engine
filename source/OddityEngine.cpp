@@ -67,7 +67,7 @@ OddityEngine::OddityEngine() {
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-    camera = new Camera(vec3(0, 0, 1), vec3(0));
+    camera = new Camera(vec3(0, 1, 1), vec3(0));
 
     Control::set_camera(camera);
     Control::set_callbacks(window);
@@ -87,6 +87,8 @@ OddityEngine::~OddityEngine() {
 }
 
 bool OddityEngine::update() {
+    tracer->apply_buffers();
+
     glfwMakeContextCurrent(window);
 
     glfwPollEvents();
@@ -101,8 +103,9 @@ bool OddityEngine::update() {
 
     glfwSwapBuffers(window);
 
-//    return !glfwWindowShouldClose(window);
-    return true;
+    tracer->clear_buffers_dynamic();
+
+    return !glfwWindowShouldClose(window);
 }
 
 float OddityEngine::get_time() {
