@@ -9,6 +9,8 @@ set(SOURCES
         util/Time.h
         graphics/Tracer.cpp
         graphics/Tracer.h
+        util/Debug.cpp
+        util/Debug.h
 )
 
 add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})

@@ -3,6 +3,7 @@
 
 #include "graphics/Graphics.h"
 #include "util/Time.h"
+#include "util/Debug.h"
 
 namespace OddityEngine {
     void init();

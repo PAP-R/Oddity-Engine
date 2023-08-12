@@ -6,7 +6,6 @@
 
 using namespace glm;
 
-
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
@@ -16,6 +15,8 @@ using namespace glm;
 #include "GLFW/glfw3.h"
 
 #include <stdexcept>
+#include <algorithm>
+
 namespace OddityEngine::Graphics {
     Window::Window(std::vector<Window*>* list, const char *name, int width, int height) : list(list) {
         glfwWindowHint(GLFW_SAMPLES, 16);

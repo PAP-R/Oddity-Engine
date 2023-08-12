@@ -29,7 +29,7 @@ namespace OddityEngine::Graphics {
         vec4 color;
         vec4 emission;
         float roughness;
-    }
+    };
 
     class Tracer {
 
