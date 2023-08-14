@@ -24,7 +24,8 @@ namespace OddityEngine::Graphics {
 
         ~Window();
 
-        void update();
+        void begin_update();
+        void end_update();
 
         vec<2, size_t> get_pos();
         vec<2, size_t> get_size();

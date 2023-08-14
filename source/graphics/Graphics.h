@@ -6,6 +6,7 @@
 #include "imgui_internal.h"
 
 #include "Window.h"
+#include "Tracer.h"
 
 namespace OddityEngine::Graphics {
     void init();
@@ -14,6 +15,7 @@ namespace OddityEngine::Graphics {
     bool update();
 
     Window* create_window(const char *name, int width, int height);
+    Tracer* create_tracer(Window* window, size_t width, size_t height);
 };
 
 

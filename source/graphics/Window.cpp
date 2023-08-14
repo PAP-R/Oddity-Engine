@@ -13,6 +13,7 @@ using namespace glm;
 #include "GL/glew.h"
 
 #include "GLFW/glfw3.h"
+#include "util/Debug.h"
 
 #include <stdexcept>
 #include <algorithm>
@@ -50,9 +51,9 @@ namespace OddityEngine::Graphics {
         glEnable(GL_MULTISAMPLE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glEnable(GL_CULL_FACE);
+//        glEnable(GL_DEPTH_TEST);
+//        glDepthFunc(GL_LESS);
+//        glEnable(GL_CULL_FACE);
 
         glClearColor(0.1, 0.1, 0.1, 0.1);
 
@@ -74,7 +75,7 @@ namespace OddityEngine::Graphics {
         ImGui::DestroyContext(this->context);
     }
 
-    void Window::update() {
+    void Window::begin_update() {
         glfwMakeContextCurrent(this->window);
         ImGui::SetCurrentContext(this->context);
 
@@ -86,6 +87,23 @@ namespace OddityEngine::Graphics {
         }
 
         glClear(GL_COLOR_BUFFER_BIT);
+
+//        ImGui_ImplOpenGL3_NewFrame();
+//        ImGui_ImplGlfw_NewFrame();
+//        ImGui::NewFrame();
+//
+//        ImGui::SetNextWindowPos(ImVec2(0, 0));
+//        int width, height;
+//        glfwGetWindowSize(this->window, &width, &height);
+//        ImGui::SetNextWindowSize(ImVec2(width, height));
+//        ImGui::Begin("Debug", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
+//        ImGui::Text("%s", Debug::get_text().c_str());
+//        ImGui::End();
+    }
+
+    void Window::end_update() {
+//        ImGui::Render();
+//        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(this->window);
     }

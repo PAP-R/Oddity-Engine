@@ -7,6 +7,9 @@
 
 #include <string>
 #include <vector>
+#include <functional>
+
+#include "Value.h"
 
 namespace OddityEngine::Debug {
     typedef std::pair<glm::vec3*, std::string*> point;
@@ -15,16 +18,19 @@ namespace OddityEngine::Debug {
     std::vector<point> get_points();
     point get_point(size_t index);
 
+
+
     void _add_text(fmt::string_view format, fmt::format_args args);
-    std::vector<std::string> get_texts();
-    std::string get_text(size_t index);
+    std::string get_text();
 
-
+    size_t add_value_interface(ValueInterface* value_interface);
 
     template<typename... T>
-    void add_text(fmt::format_string<T...> format, T&&... args) {
-        _add_text(format, fmt::make_format_args(args...));
+    size_t add_value(std::string format, T... value) {
+        return add_value_interface(new Value(format, value...));
     }
+
+    void terminate();
 }
 
 

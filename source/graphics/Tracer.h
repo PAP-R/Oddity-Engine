@@ -10,6 +10,10 @@
 #include "glm/gtx/quaternion.hpp"
 using namespace glm;
 
+#include "Window.h"
+#include "Shader.h"
+#include "buffer/Buffer.h"
+
 namespace OddityEngine::Graphics {
     enum Objecttype {
         SPHERE,
@@ -32,7 +36,26 @@ namespace OddityEngine::Graphics {
     };
 
     class Tracer {
+    private:
+        GLuint fbo = 0;
+        GLuint rbo_color = 0;
+        GLuint rbo_depth_stencil = 0;
+        Shader::Shader vertex_shader;
+        Shader::Shader fragment_shader;
+        GLuint program;
 
+        Buffer::Buffer screenbuffer;
+
+        vec<2, int> render_size;
+
+        Window* window;
+
+        vec3 look_at = vec3(0);
+
+    public:
+        Tracer(Window* window, size_t width, size_t height);
+        ~Tracer();
+        void update();
     };
 }
 

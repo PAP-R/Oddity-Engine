@@ -11,7 +11,7 @@ include_directories(
         external/glm
         external/imgui
         external/fmt/include
-        .
+        source
 )
 
 add_subdirectory(external)

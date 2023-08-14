@@ -11,6 +11,14 @@ set(SOURCES
         graphics/Tracer.h
         util/Debug.cpp
         util/Debug.h
+        util/Value.cpp
+        util/Value.h
+        graphics/Shader.cpp
+        graphics/Shader.h
+        graphics/buffer/Bufferobject.cpp
+        graphics/buffer/Bufferobject.h
+        graphics/buffer/Buffer.cpp
+        graphics/buffer/Buffer.h
 )
 
 add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})
