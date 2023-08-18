@@ -30,8 +30,9 @@ namespace OddityEngine::Graphics {
 
         this->camera = new Camera();
 
-        Debug::add_value("Look at: [ {: 05.05f} / {: 05.05f} / {: 05.05f} / {: 05.05f} ]", &this->camera->orientation.x, &this->camera->orientation.y, &this->camera->orientation.z, &this->camera->orientation.w);
-        Debug::add_value("Time: [ {: 05.05f} ]", &this->time);
+        Debug::add_value([&](){ImGui::Text("%s", fmt::format("Look at: [ {: 05.05f} / {: 05.05f} / {: 05.05f} ]", this->camera->direction().x, this->camera->direction().y, this->camera->direction().z).c_str());});
+        Debug::add_value([&](){ImGui::SliderFloat4("Quat", &this->camera->orientation[0], -1, 1);});
+        Debug::add_value([&](){ImGui::Text("%s", fmt::format("Time: [ {: 05.05f} ]", this->time).c_str());});
 
     }
 
@@ -53,8 +54,6 @@ namespace OddityEngine::Graphics {
         glUniform1f(glGetUniformLocation(program, "TIME"), time);
 
 //        this->look_at = vec3(sin(time / 1000), 0, cos(time / 1000));
-        this->camera->orientation.x = sin(time);
-        this->camera->orientation.y = sin(time);
 
         mat4 screen_projection = perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
 

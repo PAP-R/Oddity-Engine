@@ -34,17 +34,13 @@ namespace OddityEngine::Debug {
         return values.size() - 1;
     }
 
-    std::string get_text() {
+    void apply() {
         std::stringstream result;
         for (auto v : values) {
             if (v->show) {
-                result << v->apply();
-                if (result.str().back() != '\n') {
-                    result << std::endl;
-                }
+                v->apply();
             }
         }
-        return result.str();
     }
 
     void terminate() {
@@ -55,7 +51,7 @@ namespace OddityEngine::Debug {
 
     void update() {
         ImGui::Begin("Debug", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
-        ImGui::Text("%s", get_text().c_str());
+        apply();
         ImGui::End();
     }
 }

@@ -6,15 +6,18 @@ namespace OddityEngine::Graphics {
 
     }
 
-    vec3 Camera::direction() const {
+    vec3 Camera::direction() {
+        orientation = normalize(orientation);
         return orientation * vec3(0, 0, 1) * inverse(orientation);
     }
 
-    vec3 Camera::right() const {
+    vec3 Camera::right() {
+        orientation = normalize(orientation);
         return orientation * vec3(1, 0, 0) * inverse(orientation);
     }
 
-    vec3 Camera::up() const {
+    vec3 Camera::up() {
+        orientation = normalize(orientation);
         return orientation * vec3(0, 1, 0) * inverse(orientation);
     }
 }

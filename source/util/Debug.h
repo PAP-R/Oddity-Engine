@@ -26,8 +26,8 @@ namespace OddityEngine::Debug {
     size_t add_value_interface(ValueInterface* value_interface);
 
     template<typename T>
-    size_t add_value(std::string format, T value) {
-        return add_value_interface(new Value(format, value));
+    size_t add_value(T value) {
+        return add_value_interface(new Value(value));
     }
 
     void update();

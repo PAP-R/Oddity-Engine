@@ -14,11 +14,11 @@ namespace OddityEngine::Graphics {
         quat orientation;
 
         float fov;
-        explicit Camera(vec3 position=vec3(0), quat orientation = quat(), float fov = 90);
+        explicit Camera(vec3 position=vec3(0), quat orientation = quat(1, 0, 0, 0), float fov = 90);
 
-        [[nodiscard]] vec3 direction() const;
-        [[nodiscard]] vec3 right() const;
-        [[nodiscard]] vec3 up() const;
+        [[nodiscard]] vec3 direction();
+        [[nodiscard]] vec3 right();
+        [[nodiscard]] vec3 up();
     };
 }
 

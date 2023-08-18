@@ -12,13 +12,21 @@
 #include <future>
 
 namespace OddityEngine {
-    template<typename ... T>
-    class Value {
-        std::packaged_task<T...> element;
+    class ValueInterface {
     public:
-        Value(std::packaged_task<T...> element) : element(element) {}
+        bool show = true;
+        virtual void apply() = 0;
 
-        void apply() {
+        virtual ~ValueInterface() = default;
+    };
+
+    template<typename T>
+    class Value : public ValueInterface{
+        T element;
+    public:
+        Value(T element) : element(element) {}
+
+        void apply() override {
             element();
         }
     };
