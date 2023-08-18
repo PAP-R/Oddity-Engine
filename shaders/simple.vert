@@ -4,6 +4,7 @@ layout(location = 0) in vec3 vertexPosition_modelspace;
 
 out vec3 fragmentPosition;
 
+uniform float TIME;
 uniform mat4 screen_projection;
 
 void main() {

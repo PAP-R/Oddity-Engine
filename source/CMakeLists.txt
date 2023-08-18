@@ -19,6 +19,8 @@ set(SOURCES
         graphics/buffer/Bufferobject.h
         graphics/buffer/Buffer.cpp
         graphics/buffer/Buffer.h
+        graphics/Camera.cpp
+        graphics/Camera.h
 )
 
 add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})

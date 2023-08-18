@@ -2,8 +2,10 @@
 
 in vec3 fragmentPosition;
 
+uniform float TIME;
+
 out vec4 color;
 
 void main() {
-    color = vec4(abs(fragmentPosition), 1.0);
+    color = vec4(sin(TIME), 0, cos(TIME), 1.0);
 }

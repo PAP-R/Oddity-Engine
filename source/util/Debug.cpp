@@ -2,6 +2,10 @@
 
 #include "fmt/core.h"
 
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
 #include <sstream>
 
 #include "Value.h"
@@ -34,7 +38,7 @@ namespace OddityEngine::Debug {
         std::stringstream result;
         for (auto v : values) {
             if (v->show) {
-                result << v->get_text();
+                result << v->apply();
                 if (result.str().back() != '\n') {
                     result << std::endl;
                 }
@@ -47,5 +51,11 @@ namespace OddityEngine::Debug {
         for (auto v : values) {
             delete(v);
         }
+    }
+
+    void update() {
+        ImGui::Begin("Debug", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
+        ImGui::Text("%s", get_text().c_str());
+        ImGui::End();
     }
 }

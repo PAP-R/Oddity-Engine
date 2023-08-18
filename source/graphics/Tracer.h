@@ -13,6 +13,7 @@ using namespace glm;
 #include "Window.h"
 #include "Shader.h"
 #include "buffer/Buffer.h"
+#include "Camera.h"
 
 namespace OddityEngine::Graphics {
     enum Objecttype {
@@ -37,6 +38,8 @@ namespace OddityEngine::Graphics {
 
     class Tracer {
     private:
+        Camera * camera;
+
         GLuint fbo = 0;
         GLuint rbo_color = 0;
         GLuint rbo_depth_stencil = 0;
@@ -50,7 +53,8 @@ namespace OddityEngine::Graphics {
 
         Window* window;
 
-        vec3 look_at = vec3(0);
+        vec3 look_at = vec3(0, 0, 1);
+        double time;
 
     public:
         Tracer(Window* window, size_t width, size_t height);

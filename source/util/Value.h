@@ -8,36 +8,47 @@
 
 #include "fmt/core.h"
 #include <fmt/chrono.h>
+#include <functional>
+#include <future>
 
 namespace OddityEngine {
-
-#define SYMBOL '%'
-
-    class ValueInterface {
+    template<typename ... T>
+    class Value {
+        std::packaged_task<T...> element;
     public:
-        std::string format;
-        bool show = true;
+        Value(std::packaged_task<T...> element) : element(element) {}
 
-        std::string result;
-
-        ValueInterface(std::string name) : format(std::move(name)) {}
-        virtual ~ValueInterface(){}
-
-        virtual std::string get_text() = 0;
-    };
-
-    template<typename... T>
-    class Value : public ValueInterface {
-    private:
-        std::tuple<T...> values;
-
-    public:
-        Value(std::string format, T... values) : ValueInterface(format), values(values...) {}
-
-        virtual std::string get_text() {
-            return std::apply([&](auto&&... args){return fmt::vformat(this->format, fmt::make_format_args(*args...));}, this->values);
+        void apply() {
+            element();
         }
     };
+
+//    class ValueInterface {
+//    public:
+//        std::string format;
+//        bool show = true;
+//
+//        std::string result;
+//
+//        ValueInterface(std::string name) : format(std::move(name)) {}
+//        virtual ~ValueInterface(){}
+//
+//        virtual std::string apply() = 0;
+//    };
+//
+//    template<typename E, typename V>
+//    class Value : public ValueInterface {
+//    private:
+//        E element;
+//        V values;
+//
+//    public:
+//        Value(std::string format, V values) : ValueInterface(format), values(values) {}
+//
+//        virtual std::string apply() {
+//            return std::apply([&](auto&&... args){return fmt::vformat(this->format, fmt::make_format_args(*args...));}, this->values);
+//        }
+//    };
 }
 
 #endif //ODDITYENGINE_VALUE_H

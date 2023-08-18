@@ -19,4 +19,8 @@ namespace OddityEngine::Time {
     double get_time_delta() {
         return delta;
     }
+
+    time get_start() {
+        return start;
+    }
 };

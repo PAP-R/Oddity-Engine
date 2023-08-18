@@ -88,22 +88,20 @@ namespace OddityEngine::Graphics {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-//        ImGui_ImplOpenGL3_NewFrame();
-//        ImGui_ImplGlfw_NewFrame();
-//        ImGui::NewFrame();
-//
-//        ImGui::SetNextWindowPos(ImVec2(0, 0));
-//        int width, height;
-//        glfwGetWindowSize(this->window, &width, &height);
-//        ImGui::SetNextWindowSize(ImVec2(width, height));
-//        ImGui::Begin("Debug", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
-//        ImGui::Text("%s", Debug::get_text().c_str());
-//        ImGui::End();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::SetNextWindowPos(ImVec2(0, 0));
+        int width, height;
+        glfwGetWindowSize(this->window, &width, &height);
+        ImGui::SetNextWindowSize(ImVec2(width, height));
+        Debug::update();
     }
 
     void Window::end_update() {
-//        ImGui::Render();
-//        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(this->window);
     }
