@@ -84,4 +84,14 @@ namespace OddityEngine::Graphics {
         }
         return true;
     }
+
+    mat4 transform(vec3 translation, vec3 rotation, vec3 scale) {
+        return translate(mat4(1), translation) * glm::toMat4(quat(rotation)) * glm::scale(mat4(1), scale);
+    }
+
+    mat4 rotate(vec3 rotation) {
+        return glm::toMat4(quat(rotation));
+    }
+
+
 }

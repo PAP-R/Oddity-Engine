@@ -16,6 +16,9 @@ namespace OddityEngine::Graphics {
 
     Window* create_window(const char *name, int width, int height);
     Tracer* create_tracer(Window* window, size_t width, size_t height);
+
+    mat4 transform(vec3 translation = vec3(0), vec3 rotation = vec3(0), vec3 scale = vec3(1));
+    mat4 rotate(vec3 rotation);
 };
 
 

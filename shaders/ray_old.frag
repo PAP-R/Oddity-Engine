@@ -1,8 +1,7 @@
 #version 460 core
 
 const uint SPHERE = 0;
-const uint CUBE = 1;
-const uint MESH = 2;
+const uint MESH = 1;
 
 const uint MAX_STACK = 8;
 const float FALLOFF = 0.0;
@@ -25,9 +24,7 @@ struct buffermaterial {
 
 struct buffervertex {
     vec4 pos;
-    vec4 color;
-    vec4 normal;
-    vec2 uv;
+    uint material;
 };
 
 struct Ray {
@@ -65,8 +62,6 @@ uniform uint bounces;
 uniform uint spread;
 uniform mat4 render_projection;
 uniform vec3 CAMERAPOS;
-
-uniform float cull;
 
 vec3 hsv2rgb(vec3 c)
 {
@@ -219,8 +214,6 @@ Ray mesh_collision(Ray ray, bufferobject object) {
         b = distance(mid, tri[1]);
         c = distance(mid, tri[2]);
         radius = a > b ? (a > c ? a : c) : (b > c ? b : c);
-        radius -= cull;
-        radius = radius > 0 ? radius : 0;
         dist = distance(ray.origin, mid.xyz);
         if (dist - radius <= result.len && sqrt(pow(dist, 2) - pow(dot(mid.xyz - ray.origin, ray.dir), 2)) <= radius) {
             checkcount++;
@@ -232,12 +225,6 @@ Ray mesh_collision(Ray ray, bufferobject object) {
     }
 
     result.checkcount = checkcount;
-
-    if (result.hit) {
-        ray.color = materials[object.material].color;
-        ray.emission = materials[object.material].emission;
-        ray.roughness = materials[object.material].roughness;
-    }
 
     return result;
 }
@@ -305,13 +292,13 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
 //            color *= vec4(vec3(current.len / 100), 1);
 //            color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 4.1, vertices.length()), 1, 1)), 1);
 //            color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 4.1, 1), 1, 1)), 1);
-            color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 8, 1), 1, 1)), 1);
+//            color *= vec4(hsv2rgb(vec3(mod(current.checkcount / vertices.length(), 1), 1, 1)), 1);
 //            color *= vec4(vec3(current.checkcount / vertices.length()), 1);
 
 
-//            emission += color;
+            emission += color;
             emission += vec4(current.emission.xyz * current.emission.w * color.xyz, current.emission.w);
-//            color *= current.color;
+            color *= current.color;
 
             if (current.count < count) {
                 if (current.roughness > 0) {

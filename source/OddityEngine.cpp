@@ -20,6 +20,7 @@ namespace OddityEngine {
             }
         }
     }
+
     void init() {
         Graphics::init();
         Debug::add_value([&](){ImGui::Text("%s", fmt::format("FPS: {:6.0f} = 1/{:6.6f}", Stat::fps, Stat::spf).c_str());});

@@ -8,19 +8,23 @@ const float FALLOFF = 0.0;
 const float tolerance = 1E-5;
 
 struct bufferobject {
-    vec4 color;
-    vec4 emission;
     mat4 transform;
+    float radius;
     uint type;
+    uint material;
     uint vertexstart;
     uint vertexcount;
 };
 
+struct buffermaterial {
+    vec4 color;
+    vec4 emission;
+    float roughness;
+};
+
 struct buffervertex {
     vec4 pos;
-    vec4 color;
-    vec4 normal;
-    vec2 uv;
+    uint material;
 };
 
 struct Ray {
@@ -33,25 +37,19 @@ struct Ray {
     uint count;
     vec4 color;
     vec4 emission;
+    float roughness;
+    float checkcount;
 };
-
-//struct Collision {
-//    bool hit;
-//    vec4 color;
-//    vec4 emission;
-//    vec3 pos;
-//    vec3 dir_in;
-//    vec3 dir_out;
-//    vec3 normal;
-//    uint count;
-//    int object;
-//};
 
 layout(std140, std430, binding = 3) buffer objectbuffer {
     bufferobject objects[];
 };
 
-layout(std140, std430, binding = 4) buffer verticexbuffer {
+layout(std140, std430, binding = 4) buffer materialbuffer {
+    buffermaterial materials[];
+};
+
+layout(std140, std430, binding = 5) buffer vertexbuffer {
     buffervertex vertices[];
 };
 
@@ -61,7 +59,8 @@ out vec4 color;
 
 uniform float TIME;
 uniform uint bounces;
-uniform mat4 MVP;
+uniform uint spread;
+uniform mat4 render_projection;
 uniform vec3 CAMERAPOS;
 
 uint pos_to_state(vec3 pos) {
@@ -208,8 +207,9 @@ Ray collision_ray(Ray ray) {
     }
 
     if (result.hit) {
-        result.color = objects[index].color;
-        result.emission = objects[index].emission;
+        ray.color = vec4(1);//materials[objects[index].material].color;
+        ray.emission = materials[objects[index].material].emission;
+        ray.roughness = materials[objects[index].material].roughness;
     }
 
     return result;
@@ -239,6 +239,7 @@ vec4 collision_multi_ray(Ray ray, uint count) {
 //            color *= vec4(abs(current.normal), 1);
 //            color *= vec4(current.pos, 1);
 //            color *= vec4(abs(current.pos), 1);
+            emission += current.color;
             emission += vec4(current.emission.xyz * current.emission.w * color.xyz, current.emission.w);
             color *= current.color;
             if (current.count < count) {

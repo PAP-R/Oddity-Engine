@@ -14,6 +14,7 @@ using namespace glm;
 #include "Shader.h"
 #include "buffer/Buffer.h"
 #include "Camera.h"
+#include "util/Loader.h"
 
 namespace OddityEngine::Graphics {
     enum Objecttype {
@@ -26,6 +27,7 @@ namespace OddityEngine::Graphics {
         mat4 transform;
         float radius;
         uint32 type;
+        uint32 material;
         uint32 vertexstart;
         uint32 vertexcount;
     };
@@ -34,6 +36,13 @@ namespace OddityEngine::Graphics {
         vec4 color;
         vec4 emission;
         float roughness;
+    };
+
+    struct alignas(16) buffervertex {
+        vec4 pos;
+        vec4 color;
+        vec4 normal;
+        vec2 uv;
     };
 
     class Tracer {
@@ -47,7 +56,11 @@ namespace OddityEngine::Graphics {
         Shader::Shader fragment_shader;
         GLuint program;
 
-        Buffer::Buffer screenbuffer;
+        size_t bounces = 1;
+        size_t spread = 2;
+        float cull = 0;
+
+        Buffer::Buffer screenbuffer = Buffer::Buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 
         vec<2, int> render_size;
 
@@ -57,9 +70,15 @@ namespace OddityEngine::Graphics {
         double time;
 
     public:
+        Buffer::Buffer objectbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW);
+        Buffer::Buffer materialbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW);
+        Buffer::Buffer vertexbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW);
+
         Tracer(Window* window, size_t width, size_t height);
         ~Tracer();
         void update();
+
+        static std::vector<buffervertex> obj_to_vert(Loader::Object object);
     };
 }
 

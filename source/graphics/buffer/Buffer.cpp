@@ -28,7 +28,7 @@ namespace OddityEngine::Graphics::Buffer {
 
         free(backup);
 
-        return total_size;
+        return buffersize;
     }
 
     void Buffer::set(size_t offset, size_t size, void *data) {

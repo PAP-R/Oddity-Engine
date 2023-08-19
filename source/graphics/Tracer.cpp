@@ -5,7 +5,7 @@
 #include "util/Time.h"
 
 namespace OddityEngine::Graphics {
-    Tracer::Tracer(Window* window, size_t width, size_t height) : window(window), render_size(width, height), vertex_shader(GL_VERTEX_SHADER, "shaders/simple.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/simple.frag"), screenbuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW) {
+    Tracer::Tracer(Window* window, size_t width, size_t height) : window(window), render_size(width, height), vertex_shader(GL_VERTEX_SHADER, "shaders/ray.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/ray.frag") {
         glfwMakeContextCurrent(this->window->get_window());
 
 //        Shader
@@ -30,9 +30,12 @@ namespace OddityEngine::Graphics {
 
         this->camera = new Camera();
 
-        Debug::add_value([&](){ImGui::Text("%s", fmt::format("Look at: [ {: 05.05f} / {: 05.05f} / {: 05.05f} ]", this->camera->direction().x, this->camera->direction().y, this->camera->direction().z).c_str());});
-        Debug::add_value([&](){ImGui::SliderFloat4("Quat", &this->camera->orientation[0], -1, 1);});
-        Debug::add_value([&](){ImGui::Text("%s", fmt::format("Time: [ {: 05.05f} ]", this->time).c_str());});
+        Debug::add_value([&](){ImGui::Text("%s", fmt::format("Front: [ {: 05.05f} / {: 05.05f} / {: 05.05f} ]", this->camera->direction().x, this->camera->direction().y, this->camera->direction().z).c_str());});
+        Debug::add_value([&](){ImGui::Text("%s", fmt::format("Up: [ {: 05.05f} / {: 05.05f} / {: 05.05f} ]", this->camera->up().x, this->camera->up().y, this->camera->up().z).c_str());});
+        Debug::add_value([&](){ImGui::SliderFloat4("Quat", &this->camera->orientation[0], -1.1, 1.1);});
+        Debug::add_value([&](){ImGui::SliderFloat3("Angle", &this->camera->angle[0], -361, 361);});
+        Debug::add_value([&](){ImGui::SliderFloat3("Position", &this->camera->position[0], -10, 10);});
+        Debug::add_value([&](){ImGui::SliderFloat("Cull", &this->cull, 0, 1);});
 
     }
 
@@ -51,16 +54,31 @@ namespace OddityEngine::Graphics {
 
         this->time = Time::get_runtime<std::chrono::milliseconds, float>();
 
-        glUniform1f(glGetUniformLocation(program, "TIME"), time);
+        glUniform1f(glGetUniformLocation(program, "TIME"), this->time);
 
 //        this->look_at = vec3(sin(time / 1000), 0, cos(time / 1000));
 
-        mat4 screen_projection = perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
+        mat4 screen_perspective = perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
+        mat4 screen_projection = screen_perspective * lookAt(vec3(0), vec3(0, 0, 1), vec3(0, 1, 0));
 
-//        mat4 vp = screen_projection * lookAt(vec3(0), this->look_at, vec3(0, 1, 0));
-        mat4 vp = screen_projection * lookAt(this->camera->position, this->camera->position + this->camera->direction(), this->camera->up());
+        glUniformMatrix4fv(glGetUniformLocation(program, "screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
 
-        glUniformMatrix4fv(glGetUniformLocation(program, "screen_projection"), 1, GL_FALSE, &vp[0][0]);
+
+        auto window_size = this->window->get_size();
+        mat4 render_perspective = perspective(this->camera->fov, static_cast<float>(window_size.y) / static_cast<float>(window_size.x), 0.1f, 100.0f);
+        mat4 render_projection = render_perspective * lookAt(vec3(0), this->camera->direction(), this->camera->up());
+
+        glUniformMatrix4fv(glGetUniformLocation(program, "render_projection"), 1, GL_FALSE, &render_projection[0][0]);
+
+        glUniform1ui(glGetUniformLocation(program, "bounces"), this->bounces);
+        glUniform1ui(glGetUniformLocation(program, "spread"), this->spread);
+        glUniform1f(glGetUniformLocation(program, "cull"), this->cull);
+
+        glUniform3f(glGetUniformLocation(program, "CAMERAPOS"), camera->position.x, camera->position.y, camera->position.z);
+
+        glBindBufferBase(this->objectbuffer.get_type(), 3, this->objectbuffer);
+        glBindBufferBase(this->materialbuffer.get_type(), 4, this->materialbuffer);
+        glBindBufferBase(this->vertexbuffer.get_type(), 5, this->vertexbuffer);
 
         glEnableVertexAttribArray(0);
 
@@ -70,10 +88,14 @@ namespace OddityEngine::Graphics {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glDisableVertexAttribArray(0);
-
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, this->fbo);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     }
 
+    std::vector<buffervertex> Tracer::obj_to_vert(Loader::Object object) {
+        std::vector<buffervertex> vertices;
+        for (auto f : object.faces) {
+            vertices.emplace_back(vec4(object.vertices[f[0] - 1], 1), vec4(object.colors[f[0] - 1], 1), vec4(object.normals[f[2] - 1], 1), object.uvs[f[1] - 1]);
+        }
 
+        return vertices;
+    }
 }

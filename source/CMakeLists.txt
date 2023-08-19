@@ -13,9 +13,10 @@ set(SOURCES
         util/Debug.h
         util/Value.cpp
         util/Value.h
+        util/Loader.cpp
+        util/Loader.h
         graphics/Shader.cpp
         graphics/Shader.h
-        graphics/buffer/Bufferobject.cpp
         graphics/buffer/Bufferobject.h
         graphics/buffer/Buffer.cpp
         graphics/buffer/Buffer.h
