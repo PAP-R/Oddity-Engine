@@ -35,7 +35,10 @@ namespace OddityEngine::Graphics {
         Debug::add_value([&](){ImGui::SliderFloat4("Quat", &this->camera->orientation[0], -1.1, 1.1);});
         Debug::add_value([&](){ImGui::SliderFloat3("Angle", &this->camera->angle[0], -361, 361);});
         Debug::add_value([&](){ImGui::SliderFloat3("Position", &this->camera->position[0], -10, 10);});
-        Debug::add_value([&](){ImGui::SliderFloat("Cull", &this->cull, 0, 1);});
+        Debug::add_value([&](){ImGui::SliderFloat("Cull", &this->cull, 0, 3);});
+        Debug::add_value([&](){ImGui::SliderFloat("Split", &this->split, -1, 1);});
+        Debug::add_value([&](){ImGui::SliderInt("Bounces", &this->bounces, 0, 5);});
+        Debug::add_value([&](){ImGui::SliderInt("Spread", &this->spread, 0, 5);});
 
     }
 
@@ -73,6 +76,7 @@ namespace OddityEngine::Graphics {
         glUniform1ui(glGetUniformLocation(program, "bounces"), this->bounces);
         glUniform1ui(glGetUniformLocation(program, "spread"), this->spread);
         glUniform1f(glGetUniformLocation(program, "cull"), this->cull);
+        glUniform1f(glGetUniformLocation(program, "split"), this->split);
 
         glUniform3f(glGetUniformLocation(program, "CAMERAPOS"), camera->position.x, camera->position.y, camera->position.z);
 

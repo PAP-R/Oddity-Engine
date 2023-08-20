@@ -56,9 +56,10 @@ namespace OddityEngine::Graphics {
         Shader::Shader fragment_shader;
         GLuint program;
 
-        size_t bounces = 1;
-        size_t spread = 2;
-        float cull = 0;
+        int bounces = 2;
+        int spread = 2;
+        float cull = 2;
+        float split = 0;
 
         Buffer::Buffer screenbuffer = Buffer::Buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 

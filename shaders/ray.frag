@@ -67,6 +67,7 @@ uniform mat4 render_projection;
 uniform vec3 CAMERAPOS;
 
 uniform float cull;
+uniform float split;
 
 vec3 hsv2rgb(vec3 c)
 {
@@ -205,28 +206,50 @@ Ray mesh_collision(Ray ray, bufferobject object) {
 
     float checkcount = 0;
 
-    lowp vec4 mid;
-    lowp float a, b, c, radius, dist;
-    lowp mat3x4 tri;
+    vec3 mid, midhit, median;
+    float a, b, c, radius, dist;
+    mat3x4 tri;
     for (uint i = object.vertexstart; i < vertexend; i += 3) {
          tri = object.transform * mat3x4(vertices[i].pos, vertices[i + 1].pos, vertices[i + 2].pos);
 //        first = object.transform * vertices[i].pos;
 //        second = object.transform * vertices[i + 1].pos;
 //        third =  object.transform * vertices[i + 2].pos;
 //        mid = (first + second + third) / 3;
-        mid = (tri[0] + tri[1] + tri[2]) / 3;
-        a = distance(mid, tri[0]);
-        b = distance(mid, tri[1]);
-        c = distance(mid, tri[2]);
-        radius = a > b ? (a > c ? a : c) : (b > c ? b : c);
-        radius -= cull;
-        radius = radius > 0 ? radius : 0;
-        dist = distance(ray.origin, mid.xyz);
-        if (dist - radius <= result.len && sqrt(pow(dist, 2) - pow(dot(mid.xyz - ray.origin, ray.dir), 2)) <= radius) {
-            checkcount++;
-            temp = triangle_collision(ray, object, vertices[i], vertices[i + 1], vertices[i + 2]);
-            if (temp.hit && temp.len <= result.len) {
-                result = temp;
+
+        if (true) {
+            mid = (tri[0] + tri[1] + tri[2]).xyz / 3;
+
+            a = distance(tri[0].xyz, mid) * cull;
+            a = a > 0 ? a : 0;
+            b = distance(tri[1].xyz, mid) * cull;
+            b = b > 0 ? b : 0;
+            c = distance(tri[2].xyz, mid) * cull;
+            c = c > 0 ? c : 0;
+
+            //        dist = distance(ray.origin, mid.xyz);
+            midhit = dot(mid.xyz - ray.origin, ray.dir) * ray.dir + ray.origin;
+            //        if (dist - radius <= result.len && sqrt(pow(dist, 2) - pow(dot(mid.xyz - ray.origin, ray.dir), 2)) <= radius) {
+            if (distance(tri[0].xyz, midhit) <= a && distance(tri[1].xyz, midhit) <= b && distance(tri[2].xyz, midhit) <= c) {
+                checkcount++;
+                temp = triangle_collision(ray, object, vertices[i], vertices[i + 1], vertices[i + 2]);
+                if (temp.hit && temp.len <= result.len) {
+                    result = temp;
+                }
+            }
+        }
+        else {
+            mid = (tri[0] + tri[1] + tri[2]).xyz / 3;
+            a = distance(mid, tri[0].xyz);
+            b = distance(mid, tri[1].xyz);
+            c = distance(mid, tri[2].xyz);
+            radius = a > b ? (a > c ? a : c) : (b > c ? b : c);
+            dist = distance(ray.origin, mid.xyz);
+            if (dist - radius <= result.len && sqrt(pow(dist, 2) - pow(dot(mid.xyz - ray.origin, ray.dir), 2)) <= radius) {
+                checkcount++;
+                temp = triangle_collision(ray, object, vertices[i], vertices[i + 1], vertices[i + 2]);
+                if (temp.hit && temp.len <= result.len) {
+                    result = temp;
+                }
             }
         }
     }
@@ -305,13 +328,17 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
 //            color *= vec4(vec3(current.len / 100), 1);
 //            color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 4.1, vertices.length()), 1, 1)), 1);
 //            color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 4.1, 1), 1, 1)), 1);
-            color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 8, 1), 1, 1)), 1);
+            if(current.dir.x > split) {
+                color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 8, 1), 1, 1)), 1);
+            }
 //            color *= vec4(vec3(current.checkcount / vertices.length()), 1);
 
 
 //            emission += color;
             emission += vec4(current.emission.xyz * current.emission.w * color.xyz, current.emission.w);
-//            color *= current.color;
+            if (current.dir.x <= split) {
+                color *= current.color;
+            }
 
             if (current.count < count) {
                 if (current.roughness > 0) {
