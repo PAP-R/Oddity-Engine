@@ -71,9 +71,9 @@ namespace OddityEngine::Graphics {
         double time;
 
     public:
-        Buffer::Buffer objectbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW);
-        Buffer::Buffer materialbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW);
-        Buffer::Buffer vertexbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_STATIC_DRAW);
+        Buffer::Buffer objectbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
+        Buffer::Buffer materialbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
+        Buffer::Buffer vertexbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
 
         Tracer(Window* window, size_t width, size_t height);
         ~Tracer();

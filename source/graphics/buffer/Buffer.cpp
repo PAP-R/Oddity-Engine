@@ -1,6 +1,7 @@
 #include "Buffer.h"
 
 #include <stdexcept>
+#include <cstring>
 
 namespace OddityEngine::Graphics::Buffer {
     Buffer::Buffer(GLuint type, GLuint usage) : type(type), usage(usage) {
@@ -22,7 +23,7 @@ namespace OddityEngine::Graphics::Buffer {
 
         glGetBufferSubData(this->type, 0, buffersize, backup);
 
-        memcpy((char*)backup + buffersize, data, size);
+        std::memcpy((char*)backup + buffersize, data, size);
 
         glBufferData(this->type, total_size, backup, this->usage);
 
