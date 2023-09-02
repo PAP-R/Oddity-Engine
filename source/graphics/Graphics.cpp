@@ -25,10 +25,6 @@ namespace OddityEngine::Graphics {
         fmt::print("{:4d} : {}\n", error_count++, message);
     }
 
-    void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-        glViewport(0, 0, width, height);
-    }
-
     std::vector<Window*> windows;
     std::vector<Tracer*> tracers;
 
@@ -40,8 +36,6 @@ namespace OddityEngine::Graphics {
 
     Window* create_window(const char *name, int width, int height) {
         auto window = new Window(&windows, name, width, height);
-
-        glfwSetFramebufferSizeCallback(window->get_window(), framebuffer_size_callback);
 
         windows.emplace_back(window);
 

@@ -49,21 +49,28 @@ namespace OddityEngine::Graphics {
     private:
         Camera * camera;
 
-        GLuint fbo = 0;
+        GLuint frame_buffer = 0;
+        GLuint render_texture = 0;
+
         GLuint rbo_color = 0;
         GLuint rbo_depth_stencil = 0;
         Shader::Shader vertex_shader;
         Shader::Shader fragment_shader;
         GLuint program;
 
-        int bounces = 2;
-        int spread = 2;
-        float cull = 2;
+        Shader::Shader view_vertex_shader;
+        Shader::Shader view_fragment_shader;
+        GLuint view_program;
+
+        int bounces = 1;
+        int spread = 1;
+        float cull = 1.8;
         float split = 0;
 
         Buffer::Buffer screenbuffer = Buffer::Buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 
         vec<2, int> render_size;
+        vec<2, int> view_size;
 
         Window* window;
 

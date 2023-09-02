@@ -4,7 +4,7 @@ const uint SPHERE = 0;
 const uint CUBE = 1;
 const uint MESH = 2;
 
-const uint MAX_STACK = 8;
+const uint MAX_STACK = 16;
 const float FALLOFF = 0.0;
 const float tolerance = 1E-3;
 
@@ -31,16 +31,14 @@ struct buffervertex {
 };
 
 struct Ray {
+    bool hit;
     vec3 origin;
     vec3 dir;
-    bool hit;
     vec3 pos;
     vec3 normal;
     float len;
     uint count;
-    vec4 color;
-    vec4 emission;
-    float roughness;
+    uint material;
     float checkcount;
 };
 
@@ -58,7 +56,8 @@ layout(std140, std430, binding = 5) buffer vertexbuffer {
 
 in vec3 fragmentpos;
 
-out vec4 color;
+layout(location = 0) out vec4 color;
+//out vec4 color;
 
 uniform float TIME;
 uniform uint bounces;
@@ -151,9 +150,7 @@ Ray sphere_collision(Ray ray, bufferobject object) {
 
             ray.normal = normalize(ray.pos - pos);
 
-            ray.color = materials[object.material].color;
-            ray.emission = materials[object.material].emission;
-            ray.roughness = materials[object.material].roughness;
+            ray.material = object.material;
         }
     }
 
@@ -192,9 +189,7 @@ Ray triangle_collision(Ray ray, bufferobject object, buffervertex v0, buffervert
         ray.len = t;
         ray.normal = normal;
 
-        ray.color = materials[object.material].color;
-        ray.emission = materials[object.material].emission;
-        ray.roughness = materials[object.material].roughness;
+        ray.material = object.material;
     }
 
     return ray;
@@ -216,40 +211,20 @@ Ray mesh_collision(Ray ray, bufferobject object) {
 //        third =  object.transform * vertices[i + 2].pos;
 //        mid = (first + second + third) / 3;
 
-        if (true) {
-            mid = (tri[0] + tri[1] + tri[2]).xyz / 3;
+        mid = (tri[0] + tri[1] + tri[2]).xyz / 3;
 
-            a = distance(tri[0].xyz, mid) * cull;
-            a = a > 0 ? a : 0;
-            b = distance(tri[1].xyz, mid) * cull;
-            b = b > 0 ? b : 0;
-            c = distance(tri[2].xyz, mid) * cull;
-            c = c > 0 ? c : 0;
+        a = distance(tri[0].xyz, mid) * cull;
+        b = distance(tri[1].xyz, mid) * cull;
+        c = distance(tri[2].xyz, mid) * cull;
 
-            //        dist = distance(ray.origin, mid.xyz);
-            midhit = dot(mid.xyz - ray.origin, ray.dir) * ray.dir + ray.origin;
-            //        if (dist - radius <= result.len && sqrt(pow(dist, 2) - pow(dot(mid.xyz - ray.origin, ray.dir), 2)) <= radius) {
-            if (distance(tri[0].xyz, midhit) <= a && distance(tri[1].xyz, midhit) <= b && distance(tri[2].xyz, midhit) <= c) {
-                checkcount++;
-                temp = triangle_collision(ray, object, vertices[i], vertices[i + 1], vertices[i + 2]);
-                if (temp.hit && temp.len <= result.len) {
-                    result = temp;
-                }
-            }
-        }
-        else {
-            mid = (tri[0] + tri[1] + tri[2]).xyz / 3;
-            a = distance(mid, tri[0].xyz);
-            b = distance(mid, tri[1].xyz);
-            c = distance(mid, tri[2].xyz);
-            radius = a > b ? (a > c ? a : c) : (b > c ? b : c);
-            dist = distance(ray.origin, mid.xyz);
-            if (dist - radius <= result.len && sqrt(pow(dist, 2) - pow(dot(mid.xyz - ray.origin, ray.dir), 2)) <= radius) {
-                checkcount++;
-                temp = triangle_collision(ray, object, vertices[i], vertices[i + 1], vertices[i + 2]);
-                if (temp.hit && temp.len <= result.len) {
-                    result = temp;
-                }
+        //        dist = distance(ray.origin, mid.xyz);
+        midhit = dot(mid.xyz - ray.origin, ray.dir) * ray.dir + ray.origin;
+        //        if (dist - radius <= result.len && sqrt(pow(dist, 2) - pow(dot(mid.xyz - ray.origin, ray.dir), 2)) <= radius) {
+        if (distance(tri[0].xyz, midhit) <= a && distance(tri[1].xyz, midhit) <= b && distance(tri[2].xyz, midhit) <= c) {
+            checkcount++;
+            temp = triangle_collision(ray, object, vertices[i], vertices[i + 1], vertices[i + 2]);
+            if (temp.hit && temp.len <= result.len) {
+                result = temp;
             }
         }
     }
@@ -257,9 +232,7 @@ Ray mesh_collision(Ray ray, bufferobject object) {
     result.checkcount = checkcount;
 
     if (result.hit) {
-        ray.color = materials[object.material].color;
-        ray.emission = materials[object.material].emission;
-        ray.roughness = materials[object.material].roughness;
+        ray.material = object.material;
     }
 
     return result;
@@ -307,14 +280,12 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
     int stack_index = 1;
 
     while (stack_index > 0) {
-        current = stack[stack_index - 1];
-        stack_index = (stack_index - 1);
+        stack_index -= 1;
+        current = collision_ray(stack[stack_index]);
 
-//        if (color.x == 0 && color.y == 0 && color.z == 0) {
-//            break;
-//        }
-
-        current = collision_ray(current);
+        //        if (color.x == 0 && color.y == 0 && color.z == 0) {
+        //            break;
+        //        }
 
         if (current.hit) {
 
@@ -328,22 +299,27 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
 //            color *= vec4(vec3(current.len / 100), 1);
 //            color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 4.1, vertices.length()), 1, 1)), 1);
 //            color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 4.1, 1), 1, 1)), 1);
-            if(current.dir.x > split) {
-                color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 8, 1), 1, 1)), 1);
-            }
 //            color *= vec4(vec3(current.checkcount / vertices.length()), 1);
-
-
 //            emission += color;
-            emission += vec4(current.emission.xyz * current.emission.w * color.xyz, current.emission.w);
-            if (current.dir.x <= split) {
-                color *= current.color;
-            }
+
+//            Slit
+//            if(current.dir.x > split) {
+//                color *= vec4(hsv2rgb(vec3(mod(current.checkcount / 8, 1), 1, 1)), 1);
+//            }
+//            emission += vec4(current.emission.xyz * current.emission.w * color.xyz, current.emission.w);
+//            if (current.dir.x <= split) {
+//                color *= current.color;
+//            }
+
+
+            emission += vec4(((materials[current.material].emission.xyz * materials[current.material].emission.w * color.xyz) / ((materials[current.material].roughness > 0 && spread > 0) ? spread : 1) ) / float(current.count + 1), materials[current.material].emission.w);
+
+            color *= materials[current.material].color;
 
             if (current.count < count) {
-                if (current.roughness > 0) {
-                    for (uint i = current.count; i < spread; i++) {
-                        stack[stack_index] = mkray(current.pos, random_direction_ratio(reflect(current.dir, current.normal), current.normal, state, 1. - current.roughness, 0, current.roughness), current.count + 1);
+                if (materials[current.material].roughness > 0) {
+                    for (uint i = 0; i < spread; i++) {
+                        stack[stack_index] = mkray(current.pos, random_direction_ratio(reflect(current.dir, current.normal), current.normal, state, 1. - materials[current.material].roughness, 0, materials[current.material].roughness), current.count + 1);
                         stack_index = (stack_index + 1);
                     }
                 }
@@ -352,7 +328,7 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
                     stack_index = (stack_index + 1);
                 }
 
-                if (current.color.w < 1) {
+                if (materials[current.material].color.w < 1) {
                     stack[stack_index] = mkray(current.pos, refract(current.dir, current.normal, 1.001), current.count + 1);
                     stack_index = (stack_index + 1);
                 }
