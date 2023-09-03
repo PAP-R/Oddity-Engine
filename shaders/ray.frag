@@ -37,6 +37,7 @@ struct Ray {
     vec3 pos;
     vec3 normal;
     float len;
+    float weight;
     uint count;
     uint material;
     float checkcount;
@@ -108,13 +109,14 @@ vec3 random_direction_ratio(vec3 direction, vec3 normal, inout uint state, float
     return normalize(direction * rdir + normal * rnormal + random_hemisphere_direction(direction, state) * rrandom);
 }
 
-Ray mkray(vec3 pos, vec3 dir, uint count) {
+Ray mkray(vec3 pos, vec3 dir, float weight, uint count) {
     Ray ray;
     ray.count = count;
     ray.origin = pos;
     ray.dir = normalize(dir);
     ray.len = 1. / 0.;
     ray.pos = vec3(ray.len);
+    ray.weight = weight;
     ray.hit = false;
     ray.checkcount = 0;
     return ray;
@@ -312,24 +314,26 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
 //            }
 
 
-            emission += vec4(((materials[current.material].emission.xyz * materials[current.material].emission.w * color.xyz) / ((materials[current.material].roughness > 0 && spread > 0) ? spread : 1) ) / float(current.count + 1), materials[current.material].emission.w);
+            emission += vec4(materials[current.material].emission.xyz * materials[current.material].emission.w * color.xyz * current.weight, materials[current.material].emission.w);
 
             color *= materials[current.material].color;
 
             if (current.count < count) {
-                if (materials[current.material].roughness > 0) {
-                    for (uint i = 0; i < spread; i++) {
-                        stack[stack_index] = mkray(current.pos, random_direction_ratio(reflect(current.dir, current.normal), current.normal, state, 1. - materials[current.material].roughness, 0, materials[current.material].roughness), current.count + 1);
+                if (materials[current.material].color.w > 0) {
+                    if (materials[current.material].roughness > 0) {
+                        for (uint i = 0; i < spread; i++) {
+                            stack[stack_index] = mkray(current.pos, random_direction_ratio(reflect(current.dir, current.normal), current.normal, state, 1. - materials[current.material].roughness, 0, materials[current.material].roughness), 1., current.count + 1);
+                            stack_index = (stack_index + 1);
+                        }
+                    }
+                    else {
+                        stack[stack_index] = mkray(current.pos, reflect(current.dir, current.normal), 1, current.count + 1);
                         stack_index = (stack_index + 1);
                     }
                 }
-                else {
-                    stack[stack_index] = mkray(current.pos, reflect(current.dir, current.normal), current.count + 1);
-                    stack_index = (stack_index + 1);
-                }
 
                 if (materials[current.material].color.w < 1) {
-                    stack[stack_index] = mkray(current.pos, refract(current.dir, current.normal, 1.001), current.count + 1);
+                    stack[stack_index] = mkray(current.pos, refract(current.dir, current.normal, 1.001), 1 - materials[current.material].color.w, current.count + 1);
                     stack_index = (stack_index + 1);
                 }
             }
@@ -340,5 +344,5 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
 }
 
 void main() {
-    color = collision_multi_ray(mkray(CAMERAPOS, fragmentpos, 0), bounces, spread);
+    color = collision_multi_ray(mkray(CAMERAPOS, fragmentpos, 1, 0), bounces, spread);
 }

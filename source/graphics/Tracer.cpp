@@ -5,7 +5,12 @@
 #include "util/Time.h"
 
 namespace OddityEngine::Graphics {
-    Tracer::Tracer(Window* window, size_t width, size_t height) : window(window), render_size(width, height), vertex_shader(GL_VERTEX_SHADER, "shaders/ray.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/ray.frag"), view_vertex_shader(GL_VERTEX_SHADER, "shaders/view.vert"), view_fragment_shader(GL_FRAGMENT_SHADER, "shaders/view.frag") {
+    void Tracer::texture_size() {
+        glBindTexture(GL_TEXTURE_2D, this->render_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->render_size.x, this->render_size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    }
+
+    Tracer::Tracer(Window* window, size_t height, float ratio) : window(window), render_size(height * ratio, height), vertex_shader(GL_VERTEX_SHADER, "shaders/ray.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/ray.frag"), view_vertex_shader(GL_VERTEX_SHADER, "shaders/view.vert"), view_fragment_shader(GL_FRAGMENT_SHADER, "shaders/view.frag") {
         glfwMakeContextCurrent(this->window->get_window());
 
 //        Shader
@@ -37,18 +42,18 @@ namespace OddityEngine::Graphics {
         Debug::add_value([&](){ImGui::Text("%s", fmt::format("Up: [ {: 05.05f} / {: 05.05f} / {: 05.05f} ]", this->camera->up().x, this->camera->up().y, this->camera->up().z).c_str());});
         Debug::add_value([&](){ImGui::SliderFloat4("Quat", &this->camera->orientation[0], -1.1, 1.1);});
         Debug::add_value([&](){ImGui::SliderFloat3("Angle", &this->camera->angle[0], -361, 361);});
-        Debug::add_value([&](){ImGui::SliderFloat3("Position", &this->camera->position[0], -10, 10);});
-        Debug::add_value([&](){ImGui::SliderFloat("Cull", &this->cull, 0, 10);});
+        Debug::add_value([&](){ImGui::SliderFloat3("Position", &this->camera->position[0], -20, 20);});
+        Debug::add_value([&](){ImGui::SliderFloat("Cull", &this->cull, 0, 5);});
         Debug::add_value([&](){ImGui::SliderInt("Bounces", &this->bounces, 0, 5);});
         Debug::add_value([&](){ImGui::SliderInt("Spread", &this->spread, 0, 5);});
+        Debug::add_value([&](){ImGui::SliderFloat("Ratio", &this->ratio, 0, 1);});
 
 
         glGenFramebuffers(1, &this->frame_buffer);
         glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer);
 
         glGenTextures(1, &this->render_texture);
-        glBindTexture(GL_TEXTURE_2D, this->render_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->render_size.x, this->render_size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        texture_size();
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -69,10 +74,17 @@ namespace OddityEngine::Graphics {
     }
 
     void Tracer::update() {
-        auto window_size = this->window->get_size();
+        vec2 window_size = this->window->get_size();
 
         if(window_size.x == 0 || window_size.y == 0) {
             return;
+        }
+
+        if(window_size.x != this->view_size.x || window_size.y != this->view_size.y || this->ratio != this->last_ratio) {
+            this->render_size = window_size * this->ratio + vec2(1);
+            texture_size();
+            this->view_size = window_size;
+            this->last_ratio = this->ratio;
         }
 
         glfwMakeContextCurrent(this->window->get_window());
@@ -88,8 +100,6 @@ namespace OddityEngine::Graphics {
         this->time = Time::get_runtime<std::chrono::milliseconds, float>();
 
         glUniform1f(glGetUniformLocation(program, "TIME"), this->time);
-
-//        this->look_at = vec3(sin(time / 1000), 0, cos(time / 1000));
 
         mat4 screen_perspective = perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
         mat4 screen_projection = screen_perspective * lookAt(vec3(0), vec3(0, 0, 1), vec3(0, 1, 0));
@@ -134,6 +144,7 @@ namespace OddityEngine::Graphics {
         glUniform1i(glGetUniformLocation(this->view_program, "render_texture"), 0);
 
         screen_perspective = perspective(radians(90.0f), static_cast<float>(window_size.x) / static_cast<float>(window_size.y), 0.1f, 100.0f);
+        screen_perspective = perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
         screen_projection = screen_perspective * lookAt(vec3(0), vec3(0, 0, 1), vec3(0, 1, 0));
         glUniformMatrix4fv(glGetUniformLocation(this->view_program, "screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
 

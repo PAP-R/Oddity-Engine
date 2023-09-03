@@ -64,8 +64,11 @@ namespace OddityEngine::Graphics {
 
         int bounces = 1;
         int spread = 1;
-        float cull = 1.8;
+        float cull = 2;
         float split = 0;
+
+        float ratio = 0.5;
+        float last_ratio = ratio;
 
         Buffer::Buffer screenbuffer = Buffer::Buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 
@@ -77,12 +80,14 @@ namespace OddityEngine::Graphics {
         vec3 look_at = vec3(0, 0, 1);
         double time;
 
+        void texture_size();
+
     public:
         Buffer::Buffer objectbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
         Buffer::Buffer materialbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
         Buffer::Buffer vertexbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
 
-        Tracer(Window* window, size_t width, size_t height);
+        Tracer(Window* window, size_t height, float ratio);
         ~Tracer();
         void update();
 
