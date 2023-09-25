@@ -55,6 +55,10 @@ layout(std140, std430, binding = 5) buffer vertexbuffer {
     buffervertex vertices[];
 };
 
+layout(std140, std430, binding = 6) buffer indexbuffer {
+    buffervertex indices[];
+};
+
 in vec3 fragmentpos;
 
 layout(location = 0) out vec4 color;

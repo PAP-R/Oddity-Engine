@@ -10,7 +10,7 @@ namespace OddityEngine::Graphics {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->render_size.x, this->render_size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     }
 
-    Tracer::Tracer(Window* window, size_t height, float ratio) : window(window), render_size(height * ratio, height), vertex_shader(GL_VERTEX_SHADER, "shaders/ray.vert"), fragment_shader(GL_FRAGMENT_SHADER, "shaders/ray.frag"), view_vertex_shader(GL_VERTEX_SHADER, "shaders/view.vert"), view_fragment_shader(GL_FRAGMENT_SHADER, "shaders/view.frag") {
+    Tracer::Tracer(Window* window, size_t height, float ratio) : window(window), render_size(height * ratio, height) {
         glfwMakeContextCurrent(this->window->get_window());
 
 //        Shader
@@ -121,6 +121,7 @@ namespace OddityEngine::Graphics {
         glBindBufferBase(this->objectbuffer.get_type(), 3, this->objectbuffer);
         glBindBufferBase(this->materialbuffer.get_type(), 4, this->materialbuffer);
         glBindBufferBase(this->vertexbuffer.get_type(), 5, this->vertexbuffer);
+        glBindBufferBase(this->indexbuffer.get_type(), 6, this->indexbuffer);
 
         glEnableVertexAttribArray(0);
 

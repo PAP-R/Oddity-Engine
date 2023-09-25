@@ -20,7 +20,8 @@ namespace OddityEngine::Graphics {
     enum Objecttype {
         SPHERE,
         CUBE,
-        MESH
+        MESH,
+        CURVE
     };
 
     struct alignas(16) bufferobject {
@@ -54,12 +55,12 @@ namespace OddityEngine::Graphics {
 
         GLuint rbo_color = 0;
         GLuint rbo_depth_stencil = 0;
-        Shader::Shader vertex_shader;
-        Shader::Shader fragment_shader;
+        Shader::Shader vertex_shader = Shader::Shader(GL_VERTEX_SHADER, "shaders/ray.vert");
+        Shader::Shader fragment_shader = Shader::Shader(GL_FRAGMENT_SHADER, "shaders/ray.frag");
         GLuint program;
 
-        Shader::Shader view_vertex_shader;
-        Shader::Shader view_fragment_shader;
+        Shader::Shader view_vertex_shader = Shader::Shader(GL_VERTEX_SHADER, "shaders/view.vert");
+        Shader::Shader view_fragment_shader = Shader::Shader(GL_FRAGMENT_SHADER, "shaders/view.frag");
         GLuint view_program;
 
         int bounces = 1;
@@ -86,6 +87,7 @@ namespace OddityEngine::Graphics {
         Buffer::Buffer objectbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
         Buffer::Buffer materialbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
         Buffer::Buffer vertexbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
+        Buffer::Buffer indexbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
 
         Tracer(Window* window, size_t height, float ratio);
         ~Tracer();
