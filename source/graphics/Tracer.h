@@ -48,40 +48,27 @@ namespace OddityEngine::Graphics {
 
     class Tracer {
     private:
+        Window* window;
         Camera * camera;
 
-        GLuint frame_buffer = 0;
-        GLuint render_texture = 0;
-
-        GLuint rbo_color = 0;
-        GLuint rbo_depth_stencil = 0;
         Shader::Shader vertex_shader = Shader::Shader(GL_VERTEX_SHADER, "shaders/ray.vert");
         Shader::Shader fragment_shader = Shader::Shader(GL_FRAGMENT_SHADER, "shaders/ray.frag");
         GLuint program;
 
-        Shader::Shader view_vertex_shader = Shader::Shader(GL_VERTEX_SHADER, "shaders/view.vert");
-        Shader::Shader view_fragment_shader = Shader::Shader(GL_FRAGMENT_SHADER, "shaders/view.frag");
-        GLuint view_program;
 
         int bounces = 1;
         int spread = 1;
         float cull = 2;
         float split = 0;
 
-        float ratio = 0.5;
+        float ratio = 0.4;
         float last_ratio = ratio;
 
         Buffer::Buffer screenbuffer = Buffer::Buffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 
-        vec<2, int> render_size;
-        vec<2, int> view_size;
-
-        Window* window;
-
         vec3 look_at = vec3(0, 0, 1);
         double time;
 
-        void texture_size();
 
     public:
         Buffer::Buffer objectbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);

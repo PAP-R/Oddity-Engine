@@ -26,6 +26,8 @@ set(SOURCES
         object/Object.h
         object/Transform.cpp
         object/Transform.h
+        object/Line.cpp
+        object/Line.h
 )
 
 add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})

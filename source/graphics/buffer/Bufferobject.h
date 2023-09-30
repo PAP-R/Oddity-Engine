@@ -37,7 +37,7 @@ namespace OddityEngine::Graphics::Buffer {
     };
 
     template<typename T>
-    std::vector<Bufferobject<T>> create_object_list(Buffer* buffer, vector<T> list) {
+    std::vector<Bufferobject<T>> create_object_list(Buffer* buffer, std::vector<T> list) {
         std::vector<Bufferobject<T>> objects;
         for (auto obj : list) {
             objects.emplace_back(buffer, obj);

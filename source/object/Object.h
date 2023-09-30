@@ -3,11 +3,33 @@
 
 #include "Transform.h"
 
+#define OBJECT 0
+
 namespace OddityEngine {
-    class Object {
-        Transform transform;
+    struct alignas(16) buffer_object {
+        uint32 type;
+        mat4 transform;
     };
 
-} // OddityEngine
+    class Object {
+    protected:
+        uint32 type;
+        Transform transform;
+    public:
+        Object();
+        Object(Transform transform);
+
+
+        struct data {
+            Object* parent;
+
+            struct object {
+                data* parent;
+                operator void*();
+                uint32 size();
+            } object;
+        } data;
+    };
+}
 
 #endif //ODDITYENGINE_OBJECT_H

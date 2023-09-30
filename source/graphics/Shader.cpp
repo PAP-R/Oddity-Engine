@@ -50,6 +50,7 @@ namespace OddityEngine::Graphics::Shader {
         return this->ID;
     }
 
+
     GLuint create_program(GLuint vertex, GLuint fragment) {
         GLuint program = glCreateProgram();
         glAttachShader(program, vertex);

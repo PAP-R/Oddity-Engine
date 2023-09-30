@@ -44,8 +44,8 @@ namespace OddityEngine::Graphics {
         return window;
     }
 
-    Tracer* create_tracer(Window* window, size_t width, size_t height) {
-        auto tracer = new Tracer(window, width, height);
+    Tracer* create_tracer(Window* window, size_t width, float ratio) {
+        auto tracer = new Tracer(window, width, ratio);
         tracers.emplace_back(tracer);
 
         return tracer;
