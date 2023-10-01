@@ -10,12 +10,7 @@
 
 #include "graphics/buffer/Bufferobject.h"
 
-int main() {
-    OddityEngine::init();
-
-    auto window = OddityEngine::Graphics::create_window("Oddity", 500, 500);
-    auto tracer = OddityEngine::Graphics::create_tracer(window, 400, 1.5);
-
+void mirror_ball(OddityEngine::Graphics::Tracer* tracer) {
     auto cube_vertices = OddityEngine::Graphics::Buffer::create_object_list(&tracer->vertexbuffer, OddityEngine::Graphics::Tracer::obj_to_vert(OddityEngine::Graphics::Loader::obj("models/cube.obj")));
     auto plane_vertices = OddityEngine::Graphics::Buffer::create_object_list(&tracer->vertexbuffer, OddityEngine::Graphics::Tracer::obj_to_vert(OddityEngine::Graphics::Loader::obj("models/plane.obj")));
     auto sphere_vertices = OddityEngine::Graphics::Buffer::create_object_list(&tracer->vertexbuffer, OddityEngine::Graphics::Tracer::obj_to_vert(OddityEngine::Graphics::Loader::obj("models/sphere.obj")));
@@ -55,6 +50,28 @@ int main() {
         outer_orb.set(OddityEngine::Graphics::bufferobject(OddityEngine::Graphics::transform(vec3(-sin(time), -cos(time), 3), vec3(0), vec3(0.2)), 1, OddityEngine::Graphics::MESH, glow_blue.get_index(), sphere_vertices[0].get_index(), sphere_vertices.size()));
 //        sphere.set(OddityEngine::Graphics::bufferobject(OddityEngine::Graphics::transform(vec3(0, 0, 0.7), vec3(sin(time), cos(time), sin(time)), vec3(1)), 1, OddityEngine::Graphics::MESH, glow_grey.get_index(), sphere_vertices[0].get_index(), sphere_vertices.size()));
     } while (OddityEngine::update());
+}
+
+void polyspheres(OddityEngine::Graphics::Tracer* tracer) {
+    auto sphere_vertices = OddityEngine::Graphics::Buffer::create_object_list(&tracer->vertexbuffer, OddityEngine::Graphics::Tracer::obj_to_vert(OddityEngine::Graphics::Loader::obj("models/sphere.obj")));
+
+    auto glow_white = OddityEngine::Graphics::Buffer::Bufferobject(&tracer->materialbuffer, OddityEngine::Graphics::buffermaterial(vec4(1), vec4(10), 1));
+
+    std::vector<OddityEngine::Graphics::Buffer::Bufferobject<OddityEngine::Graphics::bufferobject>> spheres;
+    for (int i = 0; i < 10; i++) {
+        spheres.emplace_back(&tracer->objectbuffer, OddityEngine::Graphics::bufferobject(OddityEngine::Graphics::transform(vec3(0, i, 0), vec3(0), vec3(1)), 1, OddityEngine::Graphics::MESH, glow_white.get_index(), sphere_vertices[0].get_index(), sphere_vertices.size()));
+    }
+
+    do {} while (OddityEngine::update());
+}
+
+int main() {
+    OddityEngine::init();
+
+    auto window = OddityEngine::Graphics::create_window("Oddity", 500, 500);
+    auto tracer = OddityEngine::Graphics::create_tracer(window, 400, 1.5);
+
+    polyspheres(tracer);
 
     OddityEngine::terminate();
 

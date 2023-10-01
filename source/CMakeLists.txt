@@ -28,6 +28,8 @@ set(SOURCES
         object/Transform.h
         object/Line.cpp
         object/Line.h
+        graphics/SDF_Tracer.cpp
+        graphics/SDF_Tracer.h
 )
 
 add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})

@@ -49,7 +49,7 @@ namespace OddityEngine::Graphics {
     class Tracer {
     private:
         Window* window;
-        Camera * camera;
+        Camera* camera;
 
         Shader::Shader vertex_shader = Shader::Shader(GL_VERTEX_SHADER, "shaders/ray.vert");
         Shader::Shader fragment_shader = Shader::Shader(GL_FRAGMENT_SHADER, "shaders/ray.frag");
@@ -78,7 +78,10 @@ namespace OddityEngine::Graphics {
 
         Tracer(Window* window, size_t height, float ratio);
         ~Tracer();
+
         void update();
+
+        Window* get_window();
 
         static std::vector<buffervertex> obj_to_vert(Loader::Object object);
     };

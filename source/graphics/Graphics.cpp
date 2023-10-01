@@ -68,7 +68,9 @@ namespace OddityEngine::Graphics {
             }
         }
         for (auto trace : tracers) {
-            trace->update();
+            if (trace->get_window()->is_open()) {
+                trace->update();
+            }
         }
         for (auto win : windows) {
             win->end_update();

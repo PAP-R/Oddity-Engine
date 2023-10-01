@@ -98,4 +98,8 @@ namespace OddityEngine::Graphics {
 
         return vertices;
     }
+
+    Window *Tracer::get_window() {
+        return this->window;
+    }
 }

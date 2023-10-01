@@ -29,7 +29,7 @@ namespace OddityEngine::Graphics {
     GLFWwindow* make_window(const char *name, int width, int height, ImGuiContext** context) {
         glfwWindowHint(GLFW_SAMPLES, 16);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
@@ -111,6 +111,7 @@ namespace OddityEngine::Graphics {
             throw std::runtime_error("Framebuffer not complete");
         }
 
+        Debug::add_value([&](){ImGui::SliderInt("Sample Size", &this->sample_size, 0, 100);});
         Debug::add_value([&](){ImGui::SliderFloat("Ratio", &this->ratio, 0, 1);});
     }
 
@@ -141,6 +142,12 @@ namespace OddityEngine::Graphics {
             return;
         }
 
+        this->size = get_size();
+
+        if(this->size.x == 0 || this->size.y == 0) {
+            return;
+        }
+
         glClear(GL_COLOR_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -148,21 +155,13 @@ namespace OddityEngine::Graphics {
         ImGui::NewFrame();
 
         ImGui::SetNextWindowPos(ImVec2(0, 0));
-        int width, height;
-        glfwGetWindowSize(this->window, &width, &height);
-        ImGui::SetNextWindowSize(ImVec2(width, height));
+        ImGui::SetNextWindowSize(ImVec2(this->size.x, this->size.y));
         Debug::update();
 
-        vec2 window_size = get_size();
-
-        if(window_size.x == 0 || window_size.y == 0) {
-            return;
-        }
-
-        if(window_size.x != this->view_size.x || window_size.y != this->view_size.y || this->ratio != this->last_ratio) {
-            this->render_size = window_size * this->ratio + vec2(1);
+        if(this->size.x != this->view_size.x || this->size.y != this->view_size.y || this->ratio != this->last_ratio) {
+            this->render_size = this->size * this->ratio + vec2(1);
             texture_size();
-            this->view_size = window_size;
+            this->view_size = this->size;
             this->last_ratio = this->ratio;
         }
     }
@@ -191,6 +190,7 @@ namespace OddityEngine::Graphics {
         glUniformMatrix4fv(glGetUniformLocation(this->view_program, "screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
 
         glUniform2f(glGetUniformLocation(this->view_program, "view_size"), this->render_size.x, this->render_size.y);
+        glUniform1f(glGetUniformLocation(this->view_program, "sample_size"), this->sample_size);
 
         glEnableVertexAttribArray(0);
 
@@ -200,7 +200,6 @@ namespace OddityEngine::Graphics {
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glDisableVertexAttribArray(0);
-
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -234,5 +233,9 @@ namespace OddityEngine::Graphics {
 
     vec<2, int> Window::get_render_size() const {
         return this->render_size;
+    }
+
+    bool Window::is_open() const {
+        return !(this->size.x == 0 || this->size.y == 0);
     }
 }

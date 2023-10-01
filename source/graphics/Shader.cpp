@@ -41,7 +41,16 @@ namespace OddityEngine::Graphics::Shader {
         if (result == GL_FALSE) {
             std::vector<char> shaderError(infolength + 1);
             glGetShaderInfoLog(ID, infolength, nullptr, &shaderError[0]);
-            fmt::print("{} : {}\n", infolength, &shaderError[0]);
+            fmt::print("{} Shader Error : {}\n", infolength, &shaderError[0]);
+
+            std::stringstream code(this->code);
+            std::string line;
+            int linenumber = 1;
+
+            while (std::getline(code, line)) {
+                fmt::print("{:3d} : {}\n", linenumber++, line);
+            }
+
             throw std::runtime_error(&shaderError[0]);
         }
     }

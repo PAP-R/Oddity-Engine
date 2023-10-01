@@ -34,10 +34,14 @@ namespace OddityEngine::Graphics {
 
         Buffer::Buffer screenbuffer;
 
+        vec2 size;
+
         float ratio = 0.4;
         float last_ratio = ratio;
         vec<2, int> render_size;
         vec<2, int> view_size;
+
+        int sample_size = 1;
 
         void texture_size() const;
 
@@ -51,6 +55,7 @@ namespace OddityEngine::Graphics {
 
         vec<2, size_t> get_pos();
         vec<2, size_t> get_size();
+        bool is_open() const;
 
         GLFWwindow* get_window();
         ImGuiContext* get_context();
