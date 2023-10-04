@@ -6,7 +6,7 @@
 
 #include "util/Value.h"
 
-#include "graphics/Tracer.h"
+#include "graphics/render/Tracer.h"
 
 #include "graphics/buffer/Bufferobject.h"
 
@@ -71,7 +71,7 @@ int main() {
     auto window = OddityEngine::Graphics::create_window("Oddity", 500, 500);
     auto tracer = OddityEngine::Graphics::create_tracer(window, 400, 1.5);
 
-    polyspheres(tracer);
+    mirror_ball(tracer);
 
     OddityEngine::terminate();
 

@@ -7,8 +7,8 @@ set(SOURCES
         OddityEngine.h
         util/Time.cpp
         util/Time.h
-        graphics/Tracer.cpp
-        graphics/Tracer.h
+        graphics/render/Tracer.cpp
+        graphics/render/Tracer.h
         util/Debug.cpp
         util/Debug.h
         util/Value.cpp
@@ -28,8 +28,10 @@ set(SOURCES
         object/Transform.h
         object/Line.cpp
         object/Line.h
-        graphics/SDF_Tracer.cpp
-        graphics/SDF_Tracer.h
+        graphics/render/SDF_Tracer.cpp
+        graphics/render/SDF_Tracer.h
+        graphics/render/Renderer.cpp
+        graphics/render/Renderer.h
 )
 
 add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})

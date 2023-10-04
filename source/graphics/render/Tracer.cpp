@@ -1,7 +1,7 @@
 #include "Tracer.h"
 
 #include "util/Debug.h"
-#include "buffer/Bufferobject.h"
+#include "graphics/buffer/Bufferobject.h"
 #include "util/Time.h"
 
 namespace OddityEngine::Graphics {

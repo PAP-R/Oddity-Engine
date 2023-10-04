@@ -163,6 +163,43 @@ Ray sphere_collision(Ray ray, bufferobject object) {
     return ray;
 }
 
+Ray box_collision(Ray ray, bufferobject object) {
+    mat4 transform = object.transform;
+
+    vec3 pos = transform[3].xyz;
+    float radius = length(transform[0].xyz) * object.radius;
+
+    vec3 poso = pos - ray.origin;
+
+    float len = dot(poso, ray.dir);
+
+    vec3 c = len * ray.dir;
+
+    float dstc = distance(poso, c);
+
+    if (dstc <= radius) {
+        float dst = sqrt(pow(radius, 2) - pow(dstc, 2));
+
+        if (len > -dst + tolerance) {
+            ray.hit = true;
+            float sign = 1;
+
+            if (len > dst + tolerance) {
+                sign = -1;
+            }
+
+            ray.len = len + sign * dst;
+            ray.pos = ray.origin + ray.dir * ray.len;
+
+            ray.normal = normalize(ray.pos - pos);
+
+            ray.material = object.material;
+        }
+    }
+
+    return ray;
+}
+
 Ray triangle_collision(Ray ray, bufferobject object, buffervertex v0, buffervertex v1, buffervertex v2) {
     ray.hit = false;
 

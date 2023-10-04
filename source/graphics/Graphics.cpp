@@ -17,7 +17,7 @@
 
 // OddityEngine
 #include "Window.h"
-#include "Tracer.h"
+#include "graphics/render/Tracer.h"
 
 namespace OddityEngine::Graphics {
     size_t error_count = 0;

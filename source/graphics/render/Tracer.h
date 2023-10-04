@@ -10,10 +10,10 @@
 #include "glm/gtx/quaternion.hpp"
 using namespace glm;
 
-#include "Window.h"
-#include "Shader.h"
-#include "buffer/Buffer.h"
-#include "Camera.h"
+#include "graphics/Window.h"
+#include "graphics/Shader.h"
+#include "graphics/buffer/Buffer.h"
+#include "graphics/Camera.h"
 #include "util/Loader.h"
 
 namespace OddityEngine::Graphics {
@@ -54,7 +54,6 @@ namespace OddityEngine::Graphics {
         Shader::Shader vertex_shader = Shader::Shader(GL_VERTEX_SHADER, "shaders/ray.vert");
         Shader::Shader fragment_shader = Shader::Shader(GL_FRAGMENT_SHADER, "shaders/ray.frag");
         GLuint program;
-
 
         int bounces = 1;
         int spread = 1;

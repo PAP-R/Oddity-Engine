@@ -6,7 +6,7 @@
 #include "imgui_internal.h"
 
 #include "Window.h"
-#include "Tracer.h"
+#include "graphics/render/Tracer.h"
 
 namespace OddityEngine::Graphics {
     void init();

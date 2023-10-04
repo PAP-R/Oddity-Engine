@@ -30,6 +30,8 @@ namespace OddityEngine::Debug {
         return add_value_interface(new Value(value));
     }
 
+    void error(std::string message);
+
     void update();
 
     void terminate();

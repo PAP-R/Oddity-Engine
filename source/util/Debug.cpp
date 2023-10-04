@@ -54,4 +54,8 @@ namespace OddityEngine::Debug {
         apply();
         ImGui::End();
     }
+
+    void error(std::string message) {
+        throw std::runtime_error(message);
+    }
 }
