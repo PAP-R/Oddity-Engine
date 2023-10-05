@@ -14,6 +14,8 @@ using namespace glm;
 
 #include "Shader.h"
 #include "buffer/Buffer.h"
+#include "buffer/Bufferobject.h"
+#include "render/Renderer.h"
 
 namespace OddityEngine::Graphics {
     class Window {
@@ -21,6 +23,8 @@ namespace OddityEngine::Graphics {
         GLFWwindow* window;
         ImGuiContext* context;
         std::vector<Window*>* list;
+
+        std::vector<OddityEngine::Graphics::Render::Renderer*> renderers;
 
         Shader::Shader view_vertex_shader = Shader::Shader(GL_VERTEX_SHADER, "shaders/view.vert");
         Shader::Shader view_fragment_shader = Shader::Shader(GL_FRAGMENT_SHADER, "shaders/view.frag");
@@ -33,13 +37,12 @@ namespace OddityEngine::Graphics {
         GLuint render_texture = 0;
 
         Buffer::Buffer screenbuffer;
+        Buffer::Buffer texture_transform_buffer;
 
         vec2 size;
-
-        float ratio = 0.4;
-        float last_ratio = ratio;
-        vec<2, int> render_size;
         vec<2, int> view_size;
+
+        GLsizei layers = 0;
 
         int sample_size = 1;
 
@@ -50,18 +53,20 @@ namespace OddityEngine::Graphics {
 
         ~Window();
 
-        void begin_update();
-        void end_update();
+        void update();
 
-        vec<2, size_t> get_pos();
-        vec<2, size_t> get_size();
+        uint add_renderer(Render::Renderer* renderer);
+
+        vec<2, GLsizei> get_pos();
+        vec<2, GLsizei> get_size();
         bool is_open() const;
 
         GLFWwindow* get_window();
         ImGuiContext* get_context();
 
         GLuint get_frame_buffer() const;
-        vec<2, int> get_render_size() const;
+
+        Buffer::Buffer* get_texture_transform_buffer();
     };
 
 }

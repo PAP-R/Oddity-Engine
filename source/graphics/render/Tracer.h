@@ -10,13 +10,13 @@
 #include "glm/gtx/quaternion.hpp"
 using namespace glm;
 
-#include "graphics/Window.h"
+#include "Renderer.h"
 #include "graphics/Shader.h"
 #include "graphics/buffer/Buffer.h"
 #include "graphics/Camera.h"
 #include "util/Loader.h"
 
-namespace OddityEngine::Graphics {
+namespace OddityEngine::Graphics::Render {
     enum Objecttype {
         SPHERE,
         CUBE,
@@ -46,9 +46,8 @@ namespace OddityEngine::Graphics {
         vec2 uv;
     };
 
-    class Tracer {
+    class Tracer : public Renderer {
     private:
-        Window* window;
         Camera* camera;
 
         Shader::Shader vertex_shader = Shader::Shader(GL_VERTEX_SHADER, "shaders/ray.vert");
@@ -75,12 +74,10 @@ namespace OddityEngine::Graphics {
         Buffer::Buffer vertexbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
         Buffer::Buffer indexbuffer = Buffer::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
 
-        Tracer(Window* window, size_t height, float ratio);
+        Tracer(Buffer::Buffer* texture_transform_buffer);
         ~Tracer();
 
-        void update();
-
-        Window* get_window();
+        GLuint render() override;
 
         static std::vector<buffervertex> obj_to_vert(Loader::Object object);
     };

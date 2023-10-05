@@ -5,27 +5,45 @@
 #include "../../util/Debug.h"
 
 namespace OddityEngine::Graphics::Render {
-    void Renderer::texture_size() const {
-        glBindTexture(GL_TEXTURE_2D, this->render_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this->size.x, this->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    }
-
-    Renderer::Renderer(GLsizei width, GLsizei height) : size(width, height) {
+    Renderer::Renderer(Buffer::Buffer* texture_transform_buffer) : texture_transform(texture_transform_buffer, vec4(0)) {
         glGenFramebuffers(1, &this->frame_buffer);
         glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer);
+    }
 
-        glGenTextures(1, &this->render_texture);
-        texture_size();
+    Renderer::~Renderer() {
+        glDeleteFramebuffers(1, &this->frame_buffer);
+        glDeleteRenderbuffers(1, &this->rbo_color);
+    }
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, this->render_texture, 0);
+    void Renderer::set_texture(GLuint texture, GLint index) {
+        glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0, index);
 
         glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             Debug::error("Framebuffer not complete");
         }
+    }
+
+
+    void Renderer::set_size(const vec2 &size) {
+        Renderer::size = size;
+        set_texture_transform();
+    }
+
+    void Renderer::set_screen_pos(const vec2 &screenPos) {
+        screen_pos = screenPos;
+        set_texture_transform();
+    }
+
+    void Renderer::set_screen_size(const vec2 &screenSize) {
+        screen_size = screenSize;
+        set_texture_transform();
+    }
+
+    void Renderer::set_texture_transform() {
+        vec2 ratio = size / screen_size;
+        texture_transform.set(vec4(screen_pos * ratio, ratio));
     }
 }

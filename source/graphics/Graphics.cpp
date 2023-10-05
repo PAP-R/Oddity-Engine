@@ -18,15 +18,14 @@
 // OddityEngine
 #include "Window.h"
 #include "graphics/render/Tracer.h"
+#include "util/Debug.h"
 
 namespace OddityEngine::Graphics {
-    size_t error_count = 0;
     void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
-        fmt::print("{:4d} : {}\n", error_count++, message);
+        Debug::message(message);
     }
 
     std::vector<Window*> windows;
-    std::vector<Tracer*> tracers;
 
     void init() {
         if (!glfwInit()) {
@@ -44,14 +43,6 @@ namespace OddityEngine::Graphics {
         return window;
     }
 
-    Tracer* create_tracer(Window* window, size_t width, float ratio) {
-        auto tracer = new Tracer(window, width, ratio);
-        tracers.emplace_back(tracer);
-
-        return tracer;
-    }
-
-
     void terminate() {
         while (!windows.empty()) {
             delete(windows.front());
@@ -62,18 +53,7 @@ namespace OddityEngine::Graphics {
 
     bool update() {
         for (auto win : windows) {
-            win->begin_update();
-            if (windows.empty()) {
-                return false;
-            }
-        }
-        for (auto trace : tracers) {
-            if (trace->get_window()->is_open()) {
-                trace->update();
-            }
-        }
-        for (auto win : windows) {
-            win->end_update();
+            win->update();
             if (windows.empty()) {
                 return false;
             }

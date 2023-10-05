@@ -14,6 +14,8 @@ namespace OddityEngine::Debug {
     std::vector<ValueInterface*> values;
     std::string console_text;
 
+    size_t error_count = 0;
+
 
     std::vector<point> points;
 
@@ -53,6 +55,10 @@ namespace OddityEngine::Debug {
         ImGui::Begin("Debug", nullptr, 0 | (ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration));
         apply();
         ImGui::End();
+    }
+
+    void message(std::string message) {
+        fmt::print("{:4d} : {}\n", error_count++, message);
     }
 
     void error(std::string message) {

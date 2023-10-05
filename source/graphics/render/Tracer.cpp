@@ -4,10 +4,8 @@
 #include "graphics/buffer/Bufferobject.h"
 #include "util/Time.h"
 
-namespace OddityEngine::Graphics {
-    Tracer::Tracer(Window* window, size_t height, float ratio) : window(window) {
-        glfwMakeContextCurrent(this->window->get_window());
-
+namespace OddityEngine::Graphics::Render {
+    Tracer::Tracer(Buffer::Buffer* texture_transform_buffer) : Renderer(texture_transform_buffer) {
 //        Shader
         this->vertex_shader.compile();
         this->fragment_shader.compile();
@@ -43,16 +41,14 @@ namespace OddityEngine::Graphics {
         delete(this->camera);
     }
 
-    void Tracer::update() {
-        glfwMakeContextCurrent(this->window->get_window());
-
-        glBindFramebuffer(GL_FRAMEBUFFER, this->window->get_frame_buffer());
+    GLuint Tracer::render() {
+        glBindFramebuffer(GL_FRAMEBUFFER, this->frame_buffer);
 
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(program);
 
-        glViewport(0, 0, this->window->get_render_size().x, this->window->get_render_size().y);
+        glViewport(0, 0, this->size.x, this->size.y);
 
         this->time = Time::get_runtime<std::chrono::milliseconds, float>();
 
@@ -63,7 +59,7 @@ namespace OddityEngine::Graphics {
 
         glUniformMatrix4fv(glGetUniformLocation(program, "screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
 
-        mat4 render_perspective = perspective(this->camera->fov, static_cast<float>(this->window->get_render_size().y) / static_cast<float>(this->window->get_render_size().x), 0.1f, 100.0f);
+        mat4 render_perspective = perspective(this->camera->fov, static_cast<float>(this->screen_size.y) / static_cast<float>(this->screen_size.x), 0.1f, 100.0f);
         mat4 render_projection = render_perspective * lookAt(vec3(0), this->camera->direction(), this->camera->up());
 
         glUniformMatrix4fv(glGetUniformLocation(program, "render_projection"), 1, GL_FALSE, &render_projection[0][0]);
@@ -97,9 +93,5 @@ namespace OddityEngine::Graphics {
         }
 
         return vertices;
-    }
-
-    Window *Tracer::get_window() {
-        return this->window;
     }
 }

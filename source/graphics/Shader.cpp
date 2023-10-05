@@ -7,7 +7,7 @@
 #include "fmt/core.h"
 
 namespace OddityEngine::Graphics::Shader {
-    Shader::Shader(GLuint type, const std::string &path) : type(type), ID(glCreateShader(type)) {
+    Shader::Shader(GLuint type, const std::string &path) : type(type), ID(glCreateShader(type)), path(path) {
         std::stringstream shader_code;
 
         std::ifstream shader_stream(path, std::ios::in);
@@ -46,6 +46,8 @@ namespace OddityEngine::Graphics::Shader {
             std::stringstream code(this->code);
             std::string line;
             int linenumber = 1;
+
+            fmt::print("{} :\n", this->path);
 
             while (std::getline(code, line)) {
                 fmt::print("{:3d} : {}\n", linenumber++, line);

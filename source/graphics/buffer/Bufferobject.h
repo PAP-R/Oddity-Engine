@@ -1,6 +1,8 @@
 #ifndef ODDITYENGINE_BUFFEROBJECT_H
 #define ODDITYENGINE_BUFFEROBJECT_H
 
+#include <vector>
+
 #include "Buffer.h"
 
 namespace OddityEngine::Graphics::Buffer {

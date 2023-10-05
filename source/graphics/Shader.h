@@ -27,6 +27,7 @@ namespace OddityEngine::Graphics::Shader {
         GLuint ID;
         GLuint type;
 
+        std::string path;
         std::string code;
 
     public:
