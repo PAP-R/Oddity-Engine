@@ -32,6 +32,10 @@ set(SOURCES
         graphics/render/SDF_Tracer.h
         graphics/render/Renderer.cpp
         graphics/render/Renderer.h
+        graphics/render/Raysterizer.cpp
+        graphics/render/Raysterizer.h
+        graphics/render/Object.cpp
+        graphics/render/Object.h
 )
 
 add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})
