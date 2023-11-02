@@ -59,7 +59,7 @@ void polyspheres(OddityEngine::Graphics::Render::Tracer* tracer) {
 
     std::vector<OddityEngine::Graphics::Buffer::Bufferobject<OddityEngine::Graphics::Render::bufferobject>> spheres;
     for (int i = 0; i < 10; i++) {
-        spheres.emplace_back(&tracer->objectbuffer, OddityEngine::Graphics::Render::bufferobject(OddityEngine::Graphics::transform(vec3(0, i, 0), vec3(0), vec3(1)), 1, OddityEngine::Graphics::Render::MESH, glow_white.get_index(), sphere_vertices[0].get_index(), sphere_vertices.size()));
+        spheres.emplace_back(&tracer->objectbuffer, OddityEngine::Graphics::Render::bufferobject(OddityEngine::Graphics::transform(vec3(0, i * 3, 0), vec3(0), vec3(1)), 1, OddityEngine::Graphics::Render::MESH, glow_white.get_index(), sphere_vertices[0].get_index(), sphere_vertices.size()));
     }
 
     do {} while (OddityEngine::update());
@@ -74,7 +74,8 @@ int main() {
 
     window->add_renderer(&tracer);
 
-    mirror_ball(&tracer);
+    polyspheres(&tracer);
+//    mirror_ball(&tracer);
 
     OddityEngine::terminate();
 
