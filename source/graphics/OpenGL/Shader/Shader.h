@@ -6,7 +6,6 @@
 #define ODDITYENGINE_SHADER_H
 
 #include "GL/glew.h"
-
 #include "GLFW/glfw3.h"
 
 #include <string>
@@ -20,6 +19,7 @@ namespace OddityEngine {
             GLuint type;
 
         public:
+            Shader() = default;
             /**
              * Creates and compiles an Opengl shader from a source file with #include combinations
              * @param type shader type
@@ -29,11 +29,12 @@ namespace OddityEngine {
 
             ~Shader();
 
+            GLuint get_ID() const;
             /**
              * Inserts ID for shader
              * @return shader ID
              */
-            explicit operator GLuint() const;
+            operator GLuint() const;
         };
 
     } // OddityEngine

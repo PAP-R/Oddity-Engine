@@ -1,12 +1,17 @@
 #include "Shader.h"
 
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
+
 #include <sstream>
-#include "../../Util/file.h"
+#include <Util/file.h>
 
 #include <fmt/core.h>
 
 #include <algorithm>
 #include <vector>
+
+#include <Util/Debug.h>
 
 namespace OddityEngine {
     namespace Graphics {
@@ -27,17 +32,17 @@ namespace OddityEngine {
                         version_inserted = true;
                     }
                 }
-                else if (line.contains("#include")) {
+                if (line.contains("#include")) {
                     auto first = line.find('<');
                     auto last = line.find('>');
                     std::string sub_path = line.substr(first, last-first);
                     if (std::find(paths.begin(), paths.end(), sub_path) != paths.end()) {
                         throw std::runtime_error(fmt::format("Recursive Inclusion in Shaders {} | {}", path, sub_path));
                     } else {
-                        shader_code += read_shader(sub_path);
+                        shader_code += read_shader(sub_path) + '\n';
                     }
                 } else {
-                    shader_code += line;
+                    shader_code += line + '\n';
                 }
             }
 
@@ -49,6 +54,14 @@ namespace OddityEngine {
             version_inserted = false;
 
             std::string shader_code = read_shader(path);
+
+            fmt::print("\t{} :\n", path);
+            std::stringstream shader_stream(shader_code);
+            std::string line;
+            for (int i = 1; std::getline(shader_stream, line); i++) {
+                fmt::print("{:3d} \t: {}\n", i, line);
+            }
+            fmt::print("\n");
 
             GLint result = GL_FALSE;
 
@@ -65,15 +78,15 @@ namespace OddityEngine {
 
                 std::vector<char> shaderError(info_length + 1);
                 glGetShaderInfoLog(ID, info_length, nullptr, &shaderError[0]);
-                fmt::print("{} Shader Error : {}\n", info_length, &shaderError[0]);
+                fmt::print("Shader Error: {}\n", info_length, &shaderError[0]);
 
                 std::stringstream shader_stream(shader_code);
                 std::string line;
                 for (int i = 1; std::getline(shader_stream, line); i++) {
-                    fmt::print("{:3d} \t: {}", i, line);
+                    fmt::print("{:3d} \t: {}\n", i, line);
                 }
 
-                throw std::runtime_error(&shaderError[0]);
+                Debug::error(&shaderError[0]);
             }
 
             paths.clear();
@@ -84,6 +97,10 @@ namespace OddityEngine {
         }
 
         Shader::operator GLuint() const {
+            return ID;
+        }
+
+        GLuint Shader::get_ID() const {
             return ID;
         }
     } // OddityEngine

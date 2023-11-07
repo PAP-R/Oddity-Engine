@@ -1,5 +1,14 @@
-#include <iostream>
+#include <OddityEngine.h>
+#include <Graphics/OpenGL/Window.h>
 
 int main() {
-    std::cout << "Hallo" << std::endl;
+    OddityEngine::init();
+
+    auto window = new OddityEngine::Graphics::Window("Oddity", 400, 400);
+
+    do {
+
+    } while (OddityEngine::update());
+
+    OddityEngine::terminate();
 }
