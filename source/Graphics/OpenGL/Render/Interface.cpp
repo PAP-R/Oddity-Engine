@@ -48,7 +48,7 @@ namespace OddityEngine {
 
             void Interface::set_texture_transform() {
                 glm::vec2 scale = size / screen_size;
-                texture_transform.set(glm::vec4(screen_pos * scale, scale));
+                texture_transform.set(glm::vec4(screen_pos / screen_size, scale));
             }
         } // OddityEngine
     } // Graphics

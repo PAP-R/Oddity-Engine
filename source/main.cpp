@@ -5,6 +5,7 @@
 #include <Graphics/OpenGL/Buffer/Bufferobject.h>
 #include <Util/Transform.h>
 #include <Util/Debug.h>
+#include <Util/Debug.h>
 
 int main() {
     OddityEngine::init();
@@ -28,8 +29,11 @@ int main() {
     auto box = OddityEngine::Graphics::Bufferobject(tracer->objectbuffer, OddityEngine::Graphics::Render::bufferobject(OddityEngine::Util::transform({0, 0, 0}, {0, 0, 0}, {5, 5, 5}), 1, OddityEngine::Graphics::Render::MESH, basic_white.get_index(), cube_vertices[0].get_index(), cube_vertices.size()));
     auto glow_box = OddityEngine::Graphics::Bufferobject(tracer->objectbuffer, OddityEngine::Graphics::Render::bufferobject(OddityEngine::Util::transform({0, 0, 1}, {0, 0, 0}, {1, 1, 1}), 1, OddityEngine::Graphics::Render::MESH, glow_white.get_index(), cube_vertices[0].get_index(), cube_vertices.size()));
 
-    do {
+    float roughness = 0;
+    OddityEngine::Debug::add_value([&](){ImGui::SliderFloat("Roughness", &roughness, 0, 1);});
 
+    do {
+        basic_white.set(OddityEngine::Graphics::Render::buffermaterial(glm::vec4(1), glm::vec4(0), roughness));
     } while (OddityEngine::update());
 
     OddityEngine::terminate();

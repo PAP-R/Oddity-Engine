@@ -29,6 +29,8 @@ set(SOURCES
         Graphics/Loader.h
         Util/Transform.h
         Util/File.cpp
+        Util/Input.cpp
+        Util/Input.h
 )
 
 add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})

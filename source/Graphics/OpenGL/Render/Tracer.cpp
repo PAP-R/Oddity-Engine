@@ -9,8 +9,8 @@
 namespace OddityEngine {
     namespace Graphics {
         namespace Render {
-
-            void Tracer::init() {std::vector<float> screen = {
+            void Tracer::init() {
+                std::vector<float> screen = {
                         -1.0f, -1.0f, 1.0f,
                         1.0f, -1.0f, 1.0f,
                         -1.0f, 1.0f, 1.0f,
