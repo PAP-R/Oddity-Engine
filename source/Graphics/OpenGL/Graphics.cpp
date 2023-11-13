@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 
-#include <util/Debug.h>
+#include <Util/Debug.h>
 #include "Window.h"
 
 namespace OddityEngine {

@@ -68,7 +68,7 @@ uniform float TIME;
 uniform uint bounces;
 uniform uint spread;
 uniform mat4 render_projection;
-uniform vec3 CAMERAPOS;
+uniform vec3 camera_pos;
 
 uniform float cull;
 uniform float split;
@@ -386,5 +386,5 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
 
 void main() {
     uint state = uint(TIME * pos_to_state(fragmentpos));
-    color = collision_multi_ray(mkray(CAMERAPOS, random_direction_ratio(fragmentpos, fragmentpos, state, 1, 1, 0.001), 1, 0), bounces, spread);
+    color = collision_multi_ray(mkray(camera_pos, random_direction_ratio(fragmentpos, fragmentpos, state, 1, 1, 0.001), 1, 0), bounces, spread);
 }

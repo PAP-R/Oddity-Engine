@@ -43,6 +43,12 @@ namespace OddityEngine {
             glNamedBufferSubData(ID, offset, size, data);
         }
 
+        void Buffer::remove(size_t offset, size_t size) {
+            if (offset + size >= this->size) {
+                resize(offset);
+            }
+        }
+
         GLuint Buffer::get_type() {
             return type;
         }

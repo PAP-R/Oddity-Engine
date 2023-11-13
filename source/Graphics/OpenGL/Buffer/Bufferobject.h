@@ -17,16 +17,30 @@ namespace OddityEngine {
             size_t size;
             size_t index;
 
-            Buffer* buffer;
+            Buffer* buffer = nullptr;
         public:
-            Bufferobject(Buffer* buffer, T object, size_t size = 0) : buffer(buffer), object(object) {
-                this->size = size == 0 ? sizeof(object) : size;
-                offset = buffer->add(this->size, &object);
+            Bufferobject(T object, size_t size = 0) : object(object), size(size == 0 ? sizeof(object) : size) {}
+
+            Bufferobject(Buffer* buffer, T object, size_t size = 0) : Bufferobject(object, size) {
+                if (buffer)
+                    offset = buffer->add(this->size, &object);
+                this->buffer = buffer;
                 index = offset / this->size;
             }
 
+            void set_buffer(Buffer* buffer) {
+                if (this->buffer)
+                    this->buffer->remove(offset, size);
+                if (buffer) {
+                    offset = buffer->add(size, &object);
+                    index = offset / size;
+                }
+                this->buffer = buffer;
+            }
+
             void set(T object) {
-                buffer->set(offset, size, &object);
+                if (buffer)
+                    buffer->set(offset, size, &object);
                 this->object = object;
             }
 
@@ -37,7 +51,6 @@ namespace OddityEngine {
             size_t get_index() {
                 return index;
             }
-
         };
 
         template<typename T>

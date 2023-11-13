@@ -21,6 +21,7 @@ namespace OddityEngine {
             Buffer(GLuint type, GLuint usage);
             size_t add(size_t size, void* data);
             void set(size_t offset, size_t size, void* data);
+            void remove(size_t offset, size_t size);
             GLuint get_type();
 
             operator GLuint() const;

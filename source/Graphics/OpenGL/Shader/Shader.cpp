@@ -4,7 +4,7 @@
 #include "GLFW/glfw3.h"
 
 #include <sstream>
-#include <Util/file.h>
+#include <Util/File.h>
 
 #include <fmt/core.h>
 

@@ -1,9 +1,6 @@
 #version 460 core
 
-in vec3 fragmentpos;
 in vec2 uv;
-
-uniform float TIME;
 
 out vec4 color;
 

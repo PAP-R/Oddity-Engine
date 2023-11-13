@@ -2,7 +2,7 @@ set(SOURCES
         main.cpp
         Graphics/OpenGL/Shader/Shader.cpp
         Graphics/OpenGL/Shader/Shader.h
-        Util/file.h
+        Util/File.h
         Graphics/OpenGL/Shader/Program.cpp
         Graphics/OpenGL/Shader/Program.h
         OddityEngine.cpp
@@ -18,6 +18,17 @@ set(SOURCES
         Graphics/OpenGL/Buffer/Buffer.cpp
         Graphics/OpenGL/Buffer/Buffer.h
         Graphics/OpenGL/Buffer/Bufferobject.h
+        Graphics/OpenGL/Render/Scene.cpp
+        Graphics/OpenGL/Render/Scene.h
+        Graphics/OpenGL/Render/Tracer.cpp
+        Graphics/OpenGL/Render/Tracer.h
+        Graphics/Camera.cpp
+        Graphics/Camera.h
+        Util/Value.h
+        Graphics/Loader.cpp
+        Graphics/Loader.h
+        Util/Transform.h
+        Util/File.cpp
 )
 
 add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})

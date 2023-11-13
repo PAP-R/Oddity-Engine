@@ -13,6 +13,7 @@
 #include <Graphics/OpenGL/Shader/Program.h>
 #include <Graphics/OpenGL/Buffer/Buffer.h>
 #include <Graphics/OpenGL/Render/Interface.h>
+#include "Graphics/OpenGL/Render/Scene.h"
 
 namespace OddityEngine {
     namespace Graphics {
@@ -22,30 +23,18 @@ namespace OddityEngine {
             GLFWwindow* window;
             ImGuiContext* context;
 
-            std::vector<Render::Interface*> renderers;
-
             Shader view_vertex_shader;
             Shader view_fragment_shader;
             Program view_program;
 
-            GLuint rbo_color;
-            GLuint rbo_depth_stencil;
-
-            GLuint framebuffer;
-            GLuint render_texture;
-
             Buffer screenbuffer;
-            Buffer texture_transform_buffer;
 
             glm::vec<2, int> size;
 
-            GLsizei layers = 1;
-
-            int sample_size = 1;
+            Render::Scene* scene = nullptr;
 
             bool is_open = true;
 
-            void texture_size() const;
             static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
         public:
@@ -63,10 +52,9 @@ namespace OddityEngine {
             GLFWwindow* get_window();
             ImGuiContext* get_context();
 
-            GLuint get_framebuffer() const;
-            Buffer* get_texture_transform_buffer();
-
             static bool update_all();
+
+            void set_scene(Render::Scene* scene);
         };
 
     } // OddityEngine

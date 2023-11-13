@@ -18,11 +18,6 @@ namespace OddityEngine {
             Debug::message(message);
         }
 
-        void Window::texture_size() const {
-            glBindTexture(GL_TEXTURE_2D_ARRAY, render_texture);
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, size.x, size.y, layers, 0, GL_RGBA, GL_FLOAT, nullptr);
-        }
-
         void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height) {
             for (auto w : windows) {
                 if (w->get_window() == window) {
@@ -31,9 +26,8 @@ namespace OddityEngine {
 
                     w->is_open = width != 0 && height != 0;
 
-                    w->texture_size();
-                    for (auto r : w->renderers) {
-                        r->set_screen_size(w->size);
+                    if (w->scene != nullptr) {
+                        w->scene->set_size(w->size);
                     }
                 }
             }
@@ -78,7 +72,7 @@ namespace OddityEngine {
             return window;
         }
 
-        Window::Window(const char *name, int width, int height) : size(width, height), window(make_window(name, width, height, &context)), view_vertex_shader(GL_VERTEX_SHADER, "view.vert"), view_fragment_shader(GL_FRAGMENT_SHADER, "view.frag"), view_program(view_vertex_shader, view_fragment_shader), screenbuffer(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW), texture_transform_buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW) {
+        Window::Window(const char *name, int width, int height) : size(width, height), window(make_window(name, width, height, &context)), view_vertex_shader(GL_VERTEX_SHADER, "view.vert"), view_fragment_shader(GL_FRAGMENT_SHADER, "view.frag"), view_program(view_vertex_shader, view_fragment_shader), screenbuffer(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW) {
             windows.emplace_back(this);
             glfwMakeContextCurrent(window);
 
@@ -95,15 +89,6 @@ namespace OddityEngine {
             };
 
             create_buffer_object_list(&screenbuffer, screen);
-
-            glGenTextures(1, &render_texture);
-            texture_size();
-
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE);
         }
 
         Window::~Window() {
@@ -141,35 +126,38 @@ namespace OddityEngine {
             ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
             Debug::update();
 
-            for (auto r : renderers) {
-                r->render();
+            if (scene != nullptr && scene->get_layers() > 0) {
+                scene->update();
+
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+                glViewport(0, 0, size.x, size.y);
+
+                glUseProgram(view_program);
+
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, scene->get_render_texture());
+                glBindSampler(0, 0);
+                int layers = scene->get_layers();
+                glUniform1ui(view_program.uniform_location("texture_count"), scene->get_layers());
+
+                glBindBufferBase(scene->get_texture_transform_buffer()->get_type(), 3, *scene->get_texture_transform_buffer());
+
+                glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 2.0f);
+                glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+                glUniformMatrix4fv(view_program.uniform_location("screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
+
+                glUniform2f(view_program.uniform_location("view_size"), size.x, size.y);
+
+                glEnableVertexAttribArray(0);
+
+                glBindBuffer(screenbuffer.get_type(), screenbuffer);
+
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+
+                glDisableVertexAttribArray(0);
             }
-
-            glViewport(0, 0, size.x, size.y);
-
-            glUseProgram(view_program);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, render_texture);
-            glBindSampler(0, 0);
-            glUniform1ui(view_program.uniform_location("texture_count"), renderers.size());
-
-            glBindBufferBase(texture_transform_buffer.get_type(), 3, texture_transform_buffer);
-
-            glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 2.0f);
-            glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
-            glUniformMatrix4fv(view_program.uniform_location("screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
-
-            glUniform2f(view_program.uniform_location("view_size"), size.x, size.y);
-
-            glEnableVertexAttribArray(0);
-
-            glBindBuffer(screenbuffer.get_type(), screenbuffer);
-
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-
-            glDisableVertexAttribArray(0);
 
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -199,10 +187,6 @@ namespace OddityEngine {
             return context;
         }
 
-        Buffer *Window::get_texture_transform_buffer() {
-            return &texture_transform_buffer;
-        }
-
         bool Window::update_all() {
             for (auto w : windows) {
                 if (!w->update()) {
@@ -212,6 +196,11 @@ namespace OddityEngine {
             }
 
             return !windows.empty();
+        }
+
+        void Window::set_scene(Render::Scene *scene) {
+            this->scene = scene;
+            scene->set_size(size);
         }
 
 
