@@ -1,19 +1,19 @@
 #ifndef ODDITYENGINE_WINDOW_H
 #define ODDITYENGINE_WINDOW_H
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <imgui_internal.h>
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
+#include "imgui_internal.h"
 
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 
 #include <vector>
 
-#include <Graphics/OpenGL/Shader/Shader.h>
-#include <Graphics/OpenGL/Shader/Program.h>
-#include <Graphics/OpenGL/Buffer/Buffer.h>
-#include <Graphics/OpenGL/Render/Interface.h>
-#include "Graphics/OpenGL/Render/Scene.h"
+#include "Graphics/Shader/Shader.h"
+#include "Graphics/Shader/Program.h"
+#include "Graphics/Buffer/Buffer.h"
+#include "Graphics/Render/Interface.h"
+#include "Graphics/Render/Scene.h"
 
 namespace OddityEngine {
     namespace Graphics {
@@ -27,7 +27,7 @@ namespace OddityEngine {
             Shader view_fragment_shader;
             Program view_program;
 
-            Buffer screenbuffer;
+            Buffer<float> screenbuffer;
 
             glm::vec<2, int> size;
 

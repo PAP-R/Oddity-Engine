@@ -5,7 +5,7 @@ namespace OddityEngine {
         namespace Render {
             Scene::Scene() {
                 glGenTextures(1, &render_texture);
-                texture_size();
+                glBindTexture(GL_TEXTURE_2D_ARRAY, render_texture);
 
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -15,8 +15,8 @@ namespace OddityEngine {
             }
 
             void Scene::texture_size() const {
-                glBindTexture(GL_TEXTURE_2D_ARRAY, render_texture);
                 if (!renderers.empty()) {
+                    glBindTexture(GL_TEXTURE_2D_ARRAY, render_texture);
                     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, size.x, size.y, renderers.size(), 0, GL_RGBA, GL_FLOAT, nullptr);
                 }
             }
@@ -53,7 +53,7 @@ namespace OddityEngine {
                 return renderers.size();
             }
 
-            Buffer* Scene::get_texture_transform_buffer() {
+            Buffer<glm::vec4>* Scene::get_texture_transform_buffer() {
                 return &texture_transform_buffer;
             }
 

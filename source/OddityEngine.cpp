@@ -5,7 +5,9 @@
 
 #include <vector>
 
-#include <Graphics/OpenGL/Graphics.h>
+#include "Graphics/Graphics.h"
+#include <Object/Object.h>
+#include <Util/Time.h>
 #include <Util/Debug.h>
 
 namespace OddityEngine {
@@ -46,7 +48,9 @@ namespace OddityEngine {
     }
 
     bool update() {
+        Time::update();
         Stat::update();
+        Object::update_all();
         return Graphics::update();
     }
 } // OddityEngine

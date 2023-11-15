@@ -1,14 +1,14 @@
 #include "Window.h"
 
-#include <backends/imgui_impl_glfw.h>
-#include <backends/imgui_impl_opengl3.h>
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 
 #include <algorithm>
 
-#include <Util/Debug.h>
-#include <Graphics/OpenGL/Buffer/Bufferobject.h>
+#include "Util/Debug.h"
+#include "Graphics/Buffer/Bufferobject.h"
 
 namespace OddityEngine {
     namespace Graphics {
@@ -62,6 +62,9 @@ namespace OddityEngine {
             glEnable(GL_BLEND);
             glEnable(GL_MULTISAMPLE);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LESS);
+            glEnable(GL_CULL_FACE);
 
             glClearColor(0, 0, 0, 1);
 
@@ -138,7 +141,7 @@ namespace OddityEngine {
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, scene->get_render_texture());
                 glBindSampler(0, 0);
-                int layers = scene->get_layers();
+
                 glUniform1ui(view_program.uniform_location("texture_count"), scene->get_layers());
 
                 glBindBufferBase(scene->get_texture_transform_buffer()->get_type(), 3, *scene->get_texture_transform_buffer());

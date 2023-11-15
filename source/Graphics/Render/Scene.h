@@ -2,7 +2,7 @@
 #define ODDITYENGINE_SCENE_H
 
 #include <vector>
-#include <Graphics/OpenGL/Render/Interface.h>
+#include "Interface.h"
 
 namespace OddityEngine {
     namespace Graphics {
@@ -13,7 +13,7 @@ namespace OddityEngine {
 
                 std::vector<Interface*> renderers;
 
-                Buffer texture_transform_buffer = Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
+                Buffer<glm::vec4> texture_transform_buffer = Buffer<glm::vec4>(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
 
                 glm::vec<2, int> size;
 
@@ -29,7 +29,7 @@ namespace OddityEngine {
                 size_t add_renderer(Interface* renderer);
 
                 size_t get_layers();
-                Buffer* get_texture_transform_buffer();
+                Buffer<glm::vec4>* get_texture_transform_buffer();
                 GLuint get_render_texture();
             };
         } // OddityEngine

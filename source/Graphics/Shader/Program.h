@@ -1,9 +1,9 @@
 #ifndef ODDITYENGINE_PROGRAM_H
 #define ODDITYENGINE_PROGRAM_H
 
-#include <GL/glew.h>
+#include "GL/glew.h"
 
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 #include <string>
 

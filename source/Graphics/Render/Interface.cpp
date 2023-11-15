@@ -1,6 +1,7 @@
 #include "Interface.h"
 
-#include <Util/Debug.h>
+#include "Graphics/Loader.h"
+#include "Util/Debug.h"
 
 namespace OddityEngine {
     namespace Graphics {
@@ -9,7 +10,7 @@ namespace OddityEngine {
                 glGenFramebuffers(1, &framebuffer);
             }
 
-            Interface::Interface(Buffer *texture_transform_buffer) : texture_transform(texture_transform_buffer, glm::vec4(0)) {
+            Interface::Interface(Buffer<glm::vec4> *texture_transform_buffer) : texture_transform(texture_transform_buffer, glm::vec4(0)) {
             }
 
             Interface::~Interface() {
@@ -27,7 +28,7 @@ namespace OddityEngine {
                 }
             }
 
-            void Interface::set_texture_transform_buffer(Buffer *texture_transform_buffer) {
+            void Interface::set_texture_transform_buffer(Buffer<glm::vec4> *texture_transform_buffer) {
                 texture_transform.set_buffer(texture_transform_buffer);
             }
 
@@ -49,6 +50,15 @@ namespace OddityEngine {
             void Interface::set_texture_transform() {
                 glm::vec2 scale = size / screen_size;
                 texture_transform.set(glm::vec4(screen_pos / screen_size, scale));
+            }
+
+            std::vector<buffervertex> obj_to_vert(Loader::Object object) {
+                std::vector<buffervertex> vertices;
+                for (auto f : object.faces) {
+                    vertices.emplace_back(glm::vec4(object.vertices[f[0] - 1], 1), glm::vec4(object.colors[f[0] - 1], 1), glm::vec4(object.normals[f[2] - 1], 1), object.uvs[f[1] - 1]);
+                }
+
+                return vertices;
             }
         } // OddityEngine
     } // Graphics

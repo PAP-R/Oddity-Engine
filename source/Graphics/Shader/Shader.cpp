@@ -4,14 +4,14 @@
 #include "GLFW/glfw3.h"
 
 #include <sstream>
-#include <Util/File.h>
+#include "Util/File.h"
 
-#include <fmt/core.h>
+#include "fmt/core.h"
 
 #include <algorithm>
 #include <vector>
 
-#include <Util/Debug.h>
+#include "Util/Debug.h"
 
 namespace OddityEngine {
     namespace Graphics {

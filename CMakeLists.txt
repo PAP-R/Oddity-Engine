@@ -35,10 +35,6 @@ add_definitions(
         -D_CRT_SECURE_NO_WARNINGS
 )
 
-target_link_libraries(${PROJECT_NAME}_run
-        ${LIBS}
-)
-
 target_link_libraries(${PROJECT_NAME}
         ${LIBS}
 )

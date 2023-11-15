@@ -1,27 +1,25 @@
 set(SOURCES
-        main.cpp
-        Graphics/OpenGL/Shader/Shader.cpp
-        Graphics/OpenGL/Shader/Shader.h
+        Graphics/Shader/Shader.cpp
+        Graphics/Shader/Shader.h
         Util/File.h
-        Graphics/OpenGL/Shader/Program.cpp
-        Graphics/OpenGL/Shader/Program.h
+        Graphics/Shader/Program.cpp
+        Graphics/Shader/Program.h
         OddityEngine.cpp
         OddityEngine.h
-        Graphics/OpenGL/Graphics.cpp
-        Graphics/OpenGL/Graphics.h
+        Graphics/Graphics.cpp
+        Graphics/Graphics.h
         Util/Debug.cpp
         Util/Debug.h
-        Graphics/OpenGL/Window.cpp
-        Graphics/OpenGL/Window.h
-        Graphics/OpenGL/Render/Interface.cpp
-        Graphics/OpenGL/Render/Interface.h
-        Graphics/OpenGL/Buffer/Buffer.cpp
-        Graphics/OpenGL/Buffer/Buffer.h
-        Graphics/OpenGL/Buffer/Bufferobject.h
-        Graphics/OpenGL/Render/Scene.cpp
-        Graphics/OpenGL/Render/Scene.h
-        Graphics/OpenGL/Render/Tracer.cpp
-        Graphics/OpenGL/Render/Tracer.h
+        Graphics/Window.cpp
+        Graphics/Window.h
+        Graphics/Render/Interface.cpp
+        Graphics/Render/Interface.h
+        Graphics/Buffer/Buffer.h
+        Graphics/Buffer/Bufferobject.h
+        Graphics/Render/Scene.cpp
+        Graphics/Render/Scene.h
+        Graphics/Render/Tracer.cpp
+        Graphics/Render/Tracer.h
         Graphics/Camera.cpp
         Graphics/Camera.h
         Util/Value.h
@@ -31,10 +29,22 @@ set(SOURCES
         Util/File.cpp
         Util/Input.cpp
         Util/Input.h
+        Object/Object.cpp
+        Object/Object.h
+        Util/Time.cpp
+        Util/Time.h
+        Graphics/Render/Raysterizer.cpp
+        Graphics/Render/Raysterizer.h
+        Graphics/Object/Object.cpp
+        Graphics/Object/Object.h
+        Graphics/Object/Material.cpp
+        Graphics/Object/Material.h
+        Graphics/Texture/Atlas.cpp
+        Graphics/Texture/Atlas.h
+        Graphics/Object/Shape.cpp
+        Graphics/Object/Shape.h
 )
-
-add_executable(${PROJECT_NAME}_run main.cpp ${SOURCES})
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
-set_target_properties(${PROJECT_NAME}_run ${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)
+set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)

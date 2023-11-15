@@ -1,11 +1,11 @@
 #include "Graphics.h"
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
 
 #include <stdexcept>
 
-#include <Util/Debug.h>
+#include "Util/Debug.h"
 #include "Window.h"
 
 namespace OddityEngine {

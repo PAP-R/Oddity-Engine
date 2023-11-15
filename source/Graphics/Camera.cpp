@@ -21,19 +21,24 @@ namespace OddityEngine {
             orientation *= glm::angleAxis(glm::radians(angle.x), glm::vec3(0, 1, 0));
         }
 
+        glm::vec3 qrot(glm::quat q, glm::vec3 v) {
+            glm::vec3 qv(q.x, q.y, q.z);
+            return v + 2.0f * glm::cross(qv, cross(qv, v) + q.w * v);
+        }
+
         glm::vec3 Camera::front() {
             normalize();
-            return orientation * glm::vec3(0, 0, 1);
+            return qrot(orientation, glm::vec3(0, 0, 1));
         }
 
         glm::vec3 Camera::right() {
             normalize();
-            return orientation * glm::vec3(1, 0, 0);
+            return qrot(orientation, glm::vec3(1, 0, 0));
         }
 
         glm::vec3 Camera::up() {
             normalize();
-            return orientation * glm::vec3(0, 1, 0);
+            return qrot(orientation, glm::vec3(0, 1, 0));
         }
     } // OddityEngine
 } // Graphics

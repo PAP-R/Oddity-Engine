@@ -1,8 +1,8 @@
 #include <OddityEngine.h>
-#include <Graphics/OpenGL/Window.h>
-#include <Graphics/OpenGL/Render/Tracer.h>
-#include <Graphics/OpenGL/Buffer/Buffer.h>
-#include <Graphics/OpenGL/Buffer/Bufferobject.h>
+#include "Graphics/Window.h"
+#include <Graphics/Render/Tracer.h>
+#include <Graphics/Buffer/Buffer.h>
+#include <Graphics/Buffer/Bufferobject.h>
 #include <Util/Transform.h>
 #include <Util/Debug.h>
 #include <Util/Debug.h>
@@ -16,12 +16,7 @@ int main() {
     auto tracer = new OddityEngine::Graphics::Render::Tracer();
     scene->add_renderer(tracer);
 
-    tracer->objectbuffer = new OddityEngine::Graphics::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
-    tracer->materialbuffer = new OddityEngine::Graphics::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
-    tracer->vertexbuffer = new OddityEngine::Graphics::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
-    tracer->indexbuffer = new OddityEngine::Graphics::Buffer(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
-
-    auto cube_vertices = OddityEngine::Graphics::create_buffer_object_list(tracer->vertexbuffer, OddityEngine::Graphics::Render::Tracer::obj_to_vert(OddityEngine::Graphics::Loader::obj("models/cube.obj")));
+    auto cube_vertices = OddityEngine::Graphics::create_buffer_object_list(tracer->vertexbuffer, OddityEngine::Graphics::Render::obj_to_vert(OddityEngine::Graphics::Loader::obj("models/cube.obj")));
 
     auto basic_white = OddityEngine::Graphics::Bufferobject(tracer->materialbuffer, OddityEngine::Graphics::Render::buffermaterial(glm::vec4(1), glm::vec4(0), 0));
     auto glow_white = OddityEngine::Graphics::Bufferobject(tracer->materialbuffer, OddityEngine::Graphics::Render::buffermaterial(glm::vec4(1), glm::vec4(1), 0));

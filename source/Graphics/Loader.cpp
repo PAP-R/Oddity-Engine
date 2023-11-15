@@ -5,7 +5,7 @@
 namespace OddityEngine {
     namespace Graphics {
         namespace Loader {
-            Object obj(const std::string& path) {
+            Object obj_file(const std::string& path) {
                 Object object;
 
                 auto objectstream = Util::File::stream(path);
@@ -43,7 +43,9 @@ namespace OddityEngine {
                 return object;
             }
 
-
+            Graphics::Object* object(const std::string &path) {
+                auto object = new Graphics::Object();
+            }
         } // Loader
     } // OddityEngine
 } // Graphics

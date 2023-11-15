@@ -1,8 +1,8 @@
 #ifndef ODDITYENGINE_GRAPHICS_H
 #define ODDITYENGINE_GRAPHICS_H
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
 
 namespace OddityEngine {
     namespace Graphics {

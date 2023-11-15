@@ -387,4 +387,5 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
 void main() {
     uint state = uint(TIME * pos_to_state(fragmentpos));
     color = collision_multi_ray(mkray(camera_pos, random_direction_ratio(fragmentpos, fragmentpos, state, 1, 1, 0.001), 1, 0), bounces, spread);
+    color = vec4(fragmentpos, 1);
 }

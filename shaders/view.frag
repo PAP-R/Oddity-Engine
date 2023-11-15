@@ -14,7 +14,7 @@ layout(std140, std430, binding = 3) buffer Rendererbuffer {
 void main() {
     color = vec4(0);
     for (int i = 0; i < texture_count; i++) {
-        vec2 pos = (uv + texture_transform[i].xy) * texture_transform[i].zw;
+        vec2 pos = (uv + texture_transform[i].xy) * texture_transform[i].zw * 0.1;
 
         color += texture(textures, vec3(pos, i));
     }
