@@ -1,5 +1,7 @@
 #include "Atlas.h"
 
+#include <fmt/core.h>
+
 namespace OddityEngine {
     namespace Graphics {
         namespace Texture {
@@ -11,6 +13,22 @@ namespace OddityEngine {
                     for (int i = 0; i < texture_data_list.size(); i++) {
                         glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, texture_offset_list[i].x, texture_offset_list[i].y, texture_offset_list[i].z, texture_size_list[i].x, texture_size_list[i].y, texture_size_list[i].z, GL_RGBA, GL_FLOAT, texture_data_list[i].data());
                     }
+
+                    size_t buffer_size = max_size.x * max_size.y * max_size.z;
+
+                    std::vector<glm::vec4> pixels(buffer_size);
+
+                    glGetnTexImage(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, GL_FLOAT, buffer_size * sizeof(glm::vec4), pixels.data());
+                    for (int z = 0; z < max_size.z; z++) {
+                        for (int y = 0; y < max_size.y; y++) {
+                            for (int x = 0; x < max_size.x; x++) {
+                                fmt::print("[ {} | {} | {} | {} ]", pixels[z * max_size.y * max_size.x + y * max_size.x + x].x, pixels[z * max_size.y * max_size.x + y * max_size.x + x].y, pixels[z * max_size.y * max_size.x + y * max_size.x + x].z, pixels[z * max_size.y * max_size.x + y * max_size.x + x].w);
+                            }
+                            fmt::print("\n");
+                        }
+                        fmt::print("\n");
+                    }
+                    fmt::print("\n");
                 }
             }
 
@@ -55,7 +73,7 @@ namespace OddityEngine {
             void Atlas::activate(int to_unit) {
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-                glBindSampler(GL_TEXTURE0, 0);
+                glBindSampler(0, 0);
             }
         } // OddityEngine
     } // Graphics

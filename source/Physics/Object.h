@@ -9,7 +9,7 @@
 #define Gravity 9.81f
 #define Air_Density 1.0f
 
-namespace OddityEngine {
+namespace OddityEngine::Physics {
 
     class Object {
     protected:
@@ -29,7 +29,7 @@ namespace OddityEngine {
 
         bool on_ground = false;
 
-        Object();
+        explicit Object(glm::vec3 position = {0, 0, 0}, glm::vec3 angle = {0, 0, 0});
 
         virtual void update();
 

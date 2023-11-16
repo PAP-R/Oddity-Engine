@@ -13,9 +13,9 @@ namespace OddityEngine {
         class Bufferobject {
         protected:
             T object;
-            size_t offset;
-            size_t size;
-            size_t index;
+            GLuint offset;
+            GLuint size;
+            GLuint index;
 
             Buffer<T>* buffer = nullptr;
         public:
@@ -25,8 +25,8 @@ namespace OddityEngine {
                     offset = buffer->add(this->size, &object);
                 index = offset / this->size;
             }
-            Bufferobject(T object, size_t size = 0) : object(object), size(size == 0 ? sizeof(T) : size) {}
-            Bufferobject(Buffer<T>* buffer, T object, size_t size = 0) : Bufferobject(object, size) {
+            Bufferobject(T object, GLuint size = 0) : object(object), size(size == 0 ? sizeof(T) : size) {}
+            Bufferobject(Buffer<T>* buffer, T object, GLuint size = 0) : Bufferobject(object, size) {
                 if (buffer)
                     offset = buffer->add(this->size, &object);
                 this->buffer = buffer;
@@ -53,7 +53,7 @@ namespace OddityEngine {
                 return object;
             }
 
-            size_t get_index() {
+            GLuint get_index() {
                 return index;
             }
         };

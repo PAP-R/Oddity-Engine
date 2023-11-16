@@ -38,18 +38,20 @@ namespace OddityEngine {
 
         Object::Object(const glm::mat4 &transform, Shape *shape, Material *material) : shape(shape), material(material) {
             if (active_object_buffer == nullptr) create_object_buffer();
-            if(active_transform_buffer == nullptr) create_transform_buffer();
+            if (active_transform_buffer == nullptr) create_transform_buffer();
+
 
             this->transform = new Bufferobject(active_transform_buffer, transform);
 
-            object.set({
-                    transform,
-                    shape != nullptr ? shape->index() : 0,
-                    material != nullptr ? material->index() : 0
+            object = new Bufferobject<bufferobject>(active_object_buffer, {
+                    this->transform->get_index(),
+                    shape == nullptr ? 0 : shape->index(),
+                    material == nullptr ? 0 : material->index()
             });
         }
 
         Object::~Object() {
+            delete(object);
             delete(transform);
         }
     } // OddityEngine

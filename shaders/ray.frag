@@ -4,23 +4,41 @@ const uint SPHERE = 0;
 const uint CUBE = 1;
 const uint MESH = 2;
 
+const uint SCREEN = 0;
+const uint OBJECT = 1;
+const uint TRANSFORM = 2;
+const uint SHAPE = 3;
+const uint VERTEX = 4;
+const uint NORMAL = 5;
+const uint UV = 6;
+const uint MATERIAL = 7;
+
 const uint MAX_STACK = 16;
 const float FALLOFF = 0.0;
 const float tolerance = 1E-3;
 
 struct bufferobject {
-    mat4 transform;
-    float radius;
-    uint type;
+    uint transform;
+    uint shape;
     uint material;
-    uint vertexstart;
-    uint vertexcount;
+};
+
+struct buffershape {
+    uint shape;
+    uint vertex_start;
+    uint vertex_size;
+    uint normal_start;
+    uint normal_size;
+    uint uv_start;
+    uint uv_size;
+    vec3 bounding_box_center;
+    vec3 bounding_box_size;
 };
 
 struct buffermaterial {
-    vec4 color;
-    vec4 emission;
-    float roughness;
+    uint albedo;
+    uint emission;
+    uint normal_shine;
 };
 
 struct buffervertex {
@@ -43,21 +61,51 @@ struct Ray {
     float checkcount;
 };
 
-layout(std140, std430, binding = 3) buffer objectbuffer {
+layout(std140, std430, binding = OBJECT) buffer objectbuffer {
     bufferobject objects[];
 };
 
-layout(std140, std430, binding = 4) buffer materialbuffer {
-    buffermaterial materials[];
+layout(std140, std430, binding = TRANSFORM) buffer transformbuffer {
+    mat4 transforms[];
 };
 
-layout(std140, std430, binding = 5) buffer vertexbuffer {
+layout(std140, std430, binding = SHAPE) buffer shapebuffer {
+    buffershape shapes[];
+};
+
+layout(std140, std430, binding = VERTEX) buffer vertexbuffer {
     buffervertex vertices[];
 };
 
-layout(std140, std430, binding = 6) buffer indexbuffer {
-    buffervertex indices[];
+layout(std140, std430, binding = NORMAL) buffer normalbuffer {
+    vec3 normals[];
 };
+
+layout(std140, std430, binding = UV) buffer uvbuffer {
+    vec3 uvs[];
+};
+
+layout(std140, std430, binding = MATERIAL) buffer materialbuffer {
+    buffermaterial materials[];
+};
+
+layout(binding = 0) uniform sampler2DArray textures;
+
+vec4 get_albedo(buffermaterial material, vec3 uv) {
+    return texture(textures, vec3(0, 0, material.albedo) + uv);
+}
+
+vec4 get_emission(buffermaterial material, vec3 uv) {
+    return texture(textures, vec3(0, 0, material.emission) + uv);
+}
+
+vec3 get_normal(buffermaterial material, vec3 uv) {
+    return texture(textures, vec3(0, 0, material.normal_shine) + uv).xyz;
+}
+
+float get_shine(buffermaterial material, vec3 uv) {
+    return texture(textures, vec3(0, 0, material.normal_shine) + uv).w;
+}
 
 in vec3 fragmentpos;
 
@@ -72,6 +120,14 @@ uniform vec3 camera_pos;
 
 uniform float cull;
 uniform float split;
+
+vec3 transform2pos(mat4 transform) {
+    return transform[3].xyz;
+}
+
+vec3 transform2scale(mat4 transform) {
+    return vec3(length(transform[0].xyz), length(transform[1].xyz), length(transform[2].xyz));
+}
 
 vec3 hsv2rgb(vec3 c)
 {
@@ -127,10 +183,10 @@ Ray mkray(vec3 pos, vec3 dir, float weight, uint count) {
 }
 
 Ray sphere_collision(Ray ray, bufferobject object) {
-    mat4 transform = object.transform;
+    mat4 transform = transforms[object.transform];
 
     vec3 pos = transform[3].xyz;
-    float radius = length(transform[0].xyz) * object.radius;
+    float radius = transform2scale(transform).x;
 
     vec3 poso = pos - ray.origin;
 
@@ -164,10 +220,10 @@ Ray sphere_collision(Ray ray, bufferobject object) {
 }
 
 Ray box_collision(Ray ray, bufferobject object) {
-    mat4 transform = object.transform;
+    mat4 transform = transforms[object.transform];
 
     vec3 pos = transform[3].xyz;
-    float radius = length(transform[0].xyz) * object.radius;
+    float radius = transform2scale(transform).x;
 
     vec3 poso = pos - ray.origin;
 
@@ -239,7 +295,8 @@ Ray triangle_collision(Ray ray, bufferobject object, buffervertex v0, buffervert
 }
 
 Ray mesh_collision(Ray ray, bufferobject object) {
-    float vertexend = object.vertexstart + object.vertexcount - object.vertexcount % 3;
+    buffershape shape = shapes[object.shape];
+    float vertexend = shape.vertex_start + shape.vertex_size - (shape.vertex_size % 3);
     Ray temp, result = ray;
 
     float checkcount = 0;
@@ -247,7 +304,7 @@ Ray mesh_collision(Ray ray, bufferobject object) {
     vec3 mid, midhit, median;
     float a, b, c, radius, dist;
     mat3x4 tri;
-    for (uint i = object.vertexstart; i < vertexend; i += 3) {
+    for (uint i = shape.vertex_start; i < vertexend; i += 3) {
          tri = object.transform * mat3x4(vertices[i].pos, vertices[i + 1].pos, vertices[i + 2].pos);
 //        first = object.transform * vertices[i].pos;
 //        second = object.transform * vertices[i + 1].pos;
@@ -289,8 +346,9 @@ Ray collision_ray(Ray ray) {
 
     for (uint i = 0; i < objects.length(); i++) {
         bufferobject object = objects[i];
-        if (distance(ray.origin, object.transform[3].xyz) - object.radius < result.len) {
-            switch(object.type) {
+        mat4 transform = transforms[object.transform];
+        if (distance(ray.origin, transform2pos(transform)) - length(transform2scale) < result.len) {
+            switch(shapes[object.shape].type) {
                 case SPHERE:
                     temp = sphere_collision(ray, object);
                     checkcount++;
@@ -355,13 +413,13 @@ vec4 collision_multi_ray(Ray ray, uint count, uint spread) {
 //            }
 
 
-            emission += vec4(materials[current.material].emission.xyz * materials[current.material].emission.w * color.xyz * current.weight, materials[current.material].emission.w);
+            emission += vec4(get_emission(current.material, vec3(0)).xyz * get_emission(current.material, vec3(0)).w * color.xyz * current.weight, get_emission(current.material, vec3(0)).w);
 
-            color *= materials[current.material].color;
+            color *= get_albedo(current.material, vec3(0));
 
             if (current.count < count) {
                 if (materials[current.material].color.w > 0) {
-                    if (materials[current.material].roughness > 0) {
+                    if (get_shine(current.material) > 0) {
                         for (uint i = 0; i < spread; i++) {
                             stack[stack_index] = mkray(current.pos, random_direction_ratio(reflect(current.dir, current.normal), current.normal, state, 1. - materials[current.material].roughness, 0, materials[current.material].roughness), 1., current.count + 1);
                             stack_index = (stack_index + 1);

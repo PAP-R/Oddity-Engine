@@ -4,11 +4,13 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 
+#include <algorithm>
+#include <vector>
+
 namespace OddityEngine {
     namespace Graphics {
         enum BufferIndex {
-            SCREEN,
-            OBJECT,
+            OBJECT = 3,
             TRANSFORM,
             SHAPE,
             VERTEX,
@@ -31,12 +33,12 @@ namespace OddityEngine {
                 glGenBuffers(1, &new_buffer);
 
                 glBindBuffer(GL_COPY_READ_BUFFER, ID);
-                GLint buffersize = this->size;
+                size_t buffersize = this->size;
 
                 glBindBuffer(GL_COPY_WRITE_BUFFER, new_buffer);
                 glNamedBufferData(new_buffer, size, nullptr, usage);
 
-                glCopyNamedBufferSubData(ID, new_buffer, 0, 0, buffersize);
+                glCopyNamedBufferSubData(ID, new_buffer, 0, 0, std::min(size, buffersize));
 
                 glDeleteBuffers(1, &ID);
 
@@ -72,6 +74,15 @@ namespace OddityEngine {
                 if (offset + size >= this->size) {
                     resize(offset);
                 }
+            }
+
+            std::vector<T> get_data() {
+                std::vector<T> data(size / sizeof(T));
+
+                glBindBuffer(type, ID);
+                glGetBufferSubData(type, 0, size, data.data());
+
+                return data;
             }
 
             GLuint get_type() {

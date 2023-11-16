@@ -59,14 +59,14 @@ namespace OddityEngine {
             glewExperimental = true;
 
             glEnable(GL_DEBUG_OUTPUT);
-            glEnable(GL_BLEND);
-            glEnable(GL_MULTISAMPLE);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_LESS);
-            glEnable(GL_CULL_FACE);
+            // glEnable(GL_BLEND);
+            // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            // glEnable(GL_MULTISAMPLE);
+            // glEnable(GL_DEPTH_TEST);
+            // glDepthFunc(GL_LESS);
+            // glEnable(GL_CULL_FACE);
 
-            glClearColor(0, 0, 0, 1);
+            glClearColor(0, 0, 0, 0);
 
             GLuint vertex_array_ID;
             glGenVertexArrays(1, &vertex_array_ID);
@@ -83,12 +83,12 @@ namespace OddityEngine {
             glDebugMessageCallback(MessageCallback, nullptr);
 
             std::vector<float> screen = {
-                    -1.0f, -1.0f, 1.0f,
-                    1.0f, -1.0f, 1.0f,
-                    -1.0f, 1.0f, 1.0f,
-                    1.0f, 1.0f, 1.0f,
-                    1.0f, -1.0f, 1.0f,
-                    -1.0f, 1.0f, 1.0f,
+                    0.0f, 0.0f, -1.0f,
+                    0.0f, 1.0f, -1.0f,
+                    1.0f, 0.0f, -1.0f,
+                    1.0f, 1.0f, -1.0f,
+                    0.0f, 1.0f, -1.0f,
+                    1.0f, 0.0f, -1.0f,
             };
 
             create_buffer_object_list(&screenbuffer, screen);
@@ -147,7 +147,7 @@ namespace OddityEngine {
                 glBindBufferBase(scene->get_texture_transform_buffer()->get_type(), 3, *scene->get_texture_transform_buffer());
 
                 glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 2.0f);
-                glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+                glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.5, 0.5, -1), glm::vec3(0, 1, 0));
                 glUniformMatrix4fv(view_program.uniform_location("screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
 
                 glUniform2f(view_program.uniform_location("view_size"), size.x, size.y);

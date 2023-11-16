@@ -31,7 +31,7 @@ namespace OddityEngine {
 
         public:
             Material(glm::vec4 albedo, glm::vec4 emission, glm::vec3 normal, float shine);
-            Material(Texture::Texture albedo, Texture::Texture emission, Texture::Texture normal_shine);
+            Material(const Texture::Texture& albedo, const Texture::Texture& emission, const Texture::Texture& normal_shine);
 
             GLuint index();
         };

@@ -6,11 +6,12 @@
 
 #include <Util/Time.h>
 
-namespace OddityEngine {
+namespace OddityEngine::Physics {
     std::vector<Object*> Object::instances;
 
-    Object::Object() {
+    Object::Object(glm::vec3 position, glm::vec3 angle) : position(position), angle(angle) {
         instances.emplace_back(this);
+        normalize();
     }
 
     void Object::update() {
@@ -52,23 +53,28 @@ namespace OddityEngine {
             angle[i] = fmod(angle[i], 360);
         }
 
-        orientation = glm::angleAxis(glm::radians(angle.y), glm::vec3(1, 0, 0));
-        orientation *= glm::angleAxis(glm::radians(angle.x), glm::vec3(0, 1, 0));
+        orientation = glm::angleAxis(glm::radians(angle.x), glm::vec3(0, 1, 0));
+        orientation *= glm::angleAxis(glm::radians(angle.y), glm::vec3(1, 0, 0));
+    }
+
+    glm::vec3 qrot(glm::quat q, glm::vec3 v) {
+        glm::vec3 qv(q.x, q.y, q.z);
+        return v + 2.0f * glm::cross(qv, cross(qv, v) + q.w * v);
     }
 
     glm::vec3 Object::front() {
         normalize();
-        return orientation * glm::vec3(0, 0, 1);
+        return qrot(orientation, glm::vec3(0, 0, -1));
     }
 
     glm::vec3 Object::right() {
         normalize();
-        return orientation * glm::vec3(1, 0, 0);
+        return qrot(orientation, glm::vec3(1, 0, 0));
     }
 
     glm::vec3 Object::up() {
         normalize();
-        return orientation * glm::vec3(0, 1, 0);
+        return qrot(orientation, glm::vec3(0, 1, 0));
     }
 
     void Object::update_all() {

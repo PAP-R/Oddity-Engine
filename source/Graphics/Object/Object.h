@@ -10,8 +10,8 @@
 
 namespace OddityEngine {
     namespace Graphics {
-        struct alignas(16) bufferobject {
-            glm::mat4 transform;
+        struct bufferobject {
+            GLuint transform;
             GLuint shape_index;
             GLuint material_index;
         };
@@ -37,7 +37,7 @@ namespace OddityEngine {
             Shape* shape;
             Material* material;
 
-            Bufferobject<bufferobject> object;
+            Bufferobject<bufferobject>* object;
 
         public:
             Object(const glm::mat4& transform = glm::mat4(1), Shape* shape = nullptr, Material* material = nullptr);

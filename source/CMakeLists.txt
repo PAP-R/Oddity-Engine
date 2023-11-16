@@ -29,8 +29,8 @@ set(SOURCES
         Util/File.cpp
         Util/Input.cpp
         Util/Input.h
-        Object/Object.cpp
-        Object/Object.h
+        Physics/Object.cpp
+        Physics/Object.h
         Util/Time.cpp
         Util/Time.h
         Graphics/Render/Raysterizer.cpp

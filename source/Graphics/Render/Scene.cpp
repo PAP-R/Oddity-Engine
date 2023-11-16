@@ -1,5 +1,7 @@
 #include "Scene.h"
 
+#include <fmt/core.h>
+
 namespace OddityEngine {
     namespace Graphics {
         namespace Render {
@@ -28,6 +30,20 @@ namespace OddityEngine {
                 for (auto r : renderers) {
                     r->render();
                 }
+
+                // size_t buf_size = size.x * size.y * renderers.size() * 4;
+                // std::vector<float> pixels(buf_size);
+                //
+                // glBindTexture(GL_TEXTURE_2D_ARRAY, render_texture);
+                // glGetTexImage(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, GL_FLOAT, pixels.data());
+                //
+                // pixels.shrink_to_fit();
+                //
+                // for (auto p : pixels) {
+                //     fmt::print("| {:+1.2f} |", p);
+                // }
+                // fmt::print("\n\t=\t=\t=\t=\t=\n");
+
                 return true;
             }
 

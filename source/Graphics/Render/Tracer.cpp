@@ -1,5 +1,7 @@
 #include "Tracer.h"
 
+#include <glm/gtx/quaternion.hpp>
+
 #include "imgui.h"
 
 #include "fmt/core.h"
@@ -12,12 +14,12 @@ namespace OddityEngine {
         namespace Render {
             void Tracer::init() {
                 std::vector<float> screen = {
-                        -1.0f, -1.0f, 1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        -1.0f, 1.0f, 1.0f,
-                        1.0f, 1.0f, 1.0f,
-                        1.0f, -1.0f, 1.0f,
-                        -1.0f, 1.0f, 1.0f,
+                        -1.0f, -1.0f, -1.0f,
+                        1.0f, -1.0f, -1.0f,
+                        -1.0f, 1.0f, -1.0f,
+                        1.0f, 1.0f, -1.0f,
+                        1.0f, -1.0f, -1.0f,
+                        -1.0f, 1.0f, -1.0f,
                 };
 
                 create_buffer_object_list(&screenbuffer, screen);
@@ -44,7 +46,7 @@ namespace OddityEngine {
 
             void Tracer::render() {
                 if (ratio != last_ratio) {
-                    set_screen_size(screen_size);
+                    set_size(screen_size * ratio);
                     last_ratio = ratio;
                 }
 
@@ -58,19 +60,38 @@ namespace OddityEngine {
 
                 glUniform1f(program.uniform_location("TIME"), Time::get());
 
-                glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.0f, 1.0f);
-                glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+                glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+                glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0)) * glm::mat4(1);
+
                 glUniformMatrix4fv(program.uniform_location("screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
 
-                glm::mat4 render_perspective = glm::infinitePerspective(camera->fov, static_cast<float>(screen_size.x) / static_cast<float>(screen_size.y), 0.01f);
-                glm::mat4 render_projection = render_perspective * glm::lookAt(glm::vec3(0), camera->front(), camera->up());
-                glUniformMatrix4fv(program.uniform_location("render_projection"), 1, GL_FALSE, &render_projection[0][0]);
+                float aspect = static_cast<float>(screen_size.y) / static_cast<float>(screen_size.x);
+                // float fov = glm::radians(camera->fov);
+                float fov = camera->fov / 90.0f;
+
+                auto render_projection = glm::mat4(1);
+                render_projection[0][0] = fov / aspect;
+                render_projection[1][1] = fov;
+                auto render_view = glm::toMat4(camera->orientation);
+                glm::mat4 render_mvp = render_view * render_projection * glm::mat4(1);
+
+                auto front = glm::normalize(glm::vec3(render_mvp * glm::vec4(0, 0, -1, 1)));
+
+                // fmt::print("[ {:+1.2f} | {:+1.2f} | {:+1.2f} ]\n[ {:+1.2f} | {:+1.2f} | {:+1.2f} ]\n\t=\t=\t=\t=\t=\n", front.x, front.y, front.z, camera->front().x, camera->front().y, camera->front().z);
+
+                glUniformMatrix4fv(program.uniform_location("render_projection"), 1, GL_FALSE, &render_mvp[0][0]);
 
                 glUniform1ui(program.uniform_location("bounces"), bounces);
                 glUniform1ui(program.uniform_location("spread"), spread);
                 glUniform1f(program.uniform_location("cull"), cull);
 
                 glUniform3f(program.uniform_location("camera_pos"), camera->position.x, camera->position.y, camera->position.z);
+                glUniform3f(program.uniform_location("camera_front"), camera->front().x, camera->front().y, camera->front().z);
+
+                Object::bind_buffer();
+                Shape::bind_buffer();
+                Material::bind_buffer();
+                Material::activate(0);
 
                 glEnableVertexAttribArray(0);
 

@@ -16,6 +16,7 @@
 namespace OddityEngine {
     namespace Graphics {
         std::vector<std::string> paths;
+        std::vector<std::string> uniforms;
         bool version_inserted;
 
         std::string read_shader(const std::string &path) {
@@ -25,6 +26,10 @@ namespace OddityEngine {
             std::string shader_code;
 
             for (std::string line; std::getline(shader_stream, line); ) {
+                size_t first_char =  line.find_first_not_of(" \t\n");
+                if (line.contains("  ")) {
+                    line.erase(std::unique(line.begin() + first_char, line.end(), [](unsigned char a, unsigned char b){return std::isspace(a) && std::isspace(b);}), line.end());
+                }
                 if (line.contains("#version")) {
                     if (version_inserted) {
                         continue;
@@ -32,16 +37,22 @@ namespace OddityEngine {
                         version_inserted = true;
                     }
                 }
-                if (line.contains("#include")) {
-                    auto first = line.find('<');
+                if (line.rfind("#include", first_char) != std::string::npos) {
+                    auto first = line.find('<') + 1;
                     auto last = line.find('>');
                     std::string sub_path = line.substr(first, last-first);
-                    if (std::find(paths.begin(), paths.end(), sub_path) != paths.end()) {
-                        throw std::runtime_error(fmt::format("Recursive Inclusion in Shaders {} | {}", path, sub_path));
-                    } else {
+                    if (std::find(paths.begin(), paths.end(), sub_path) == paths.end()) {
                         shader_code += read_shader(sub_path) + '\n';
                     }
-                } else {
+                }
+                else if (line.rfind("uniform", first_char) != std::string::npos) {
+                    std::string uniform_line = line.substr(first_char, line.find_last_not_of(" \t\n") + 1);
+                    if (std::find(uniforms.begin(), uniforms.end(), uniform_line) == uniforms.end()) {
+                        shader_code += uniform_line + '\n';
+                        uniforms.emplace_back(uniform_line);
+                    }
+                }
+                else {
                     shader_code += line + '\n';
                 }
             }
@@ -51,6 +62,7 @@ namespace OddityEngine {
 
         Shader::Shader(GLuint type, const std::string &path) : type(type), ID(glCreateShader(type)) {
             paths.clear();
+            uniforms.clear();
             version_inserted = false;
 
             std::string shader_code = read_shader(path);
