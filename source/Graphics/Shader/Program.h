@@ -6,6 +6,9 @@
 #include "GLFW/glfw3.h"
 
 #include <string>
+#include <vector>
+
+#include "Util/Value.h"
 
 namespace OddityEngine {
     namespace Graphics {
@@ -13,6 +16,10 @@ namespace OddityEngine {
         class Program {
         protected:
             GLuint ID;
+
+            std::vector<Util::ValueInterface*> values;
+
+            size_t add_value_interface(Util::ValueInterface* value_interface);
 
         public:
             Program() = default;
@@ -22,6 +29,7 @@ namespace OddityEngine {
              * @param fragment fragment shader
              */
             Program(GLuint vertex, GLuint fragment);
+            // Program(std::string vertex, std::string fragment);
             ~Program();
 
             /***
@@ -30,6 +38,13 @@ namespace OddityEngine {
              * @return location
              */
             GLint uniform_location(const std::string& name);
+
+            template<typename T>
+            size_t add_value(T value) {
+                return add_value_interface(new Util::Value(value));
+            }
+
+            void apply();
 
             /**
              * Inserts ID for program

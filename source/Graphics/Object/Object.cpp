@@ -54,5 +54,17 @@ namespace OddityEngine {
             delete(object);
             delete(transform);
         }
+
+        glm::mat4 Object::get_transform() {
+            return transform->get();
+        }
+
+        Shape* Object::get_shape() {
+            return shape;
+        }
+
+        Material* Object::get_material() {
+            return material;
+        }
     } // OddityEngine
 } // Graphics

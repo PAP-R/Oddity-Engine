@@ -15,11 +15,11 @@ namespace OddityEngine {
         struct buffershape {
             GLuint shape;
             GLuint vertex_start;
-            GLuint vertex_size;
+            GLuint vertex_count;
             GLuint normal_start;
-            GLuint normal_size;
+            GLuint normal_count;
             GLuint uv_start;
-            GLuint uv_size;
+            GLuint uv_count;
             glm::vec4 bounding_box_center;
             glm::vec4 bounding_box_size;
         };
@@ -71,6 +71,8 @@ namespace OddityEngine {
 //            Shape(Shapes shape, std::vector<Bufferobject<glm::vec4>>* vertices, std::vector<Bufferobject<glm::vec4>>* normals, std::vector<Bufferobject<glm::vec4>>* uvs);
 
             GLuint index();
+            GLuint vertex_start();
+            GLuint vertex_count();
         };
 
     } // OddityEngine

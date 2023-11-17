@@ -1,10 +1,17 @@
 #include "Program.h"
 
 #include <vector>
+
+#include "Shader.h"
 #include "fmt/core.h"
 
 namespace OddityEngine {
     namespace Graphics {
+        size_t Program::add_value_interface(Util::ValueInterface* value_interface) {
+            values.emplace_back(value_interface);
+            return values.size() - 1;
+        }
+
         Program::Program(GLuint vertex, GLuint fragment) {
             ID = glCreateProgram();
             glAttachShader(ID, vertex);
@@ -28,8 +35,23 @@ namespace OddityEngine {
             }
         }
 
+        // Program::Program(std::string vertex, std::string fragment) : Program(Shader(GL_VERTEX_SHADER, vertex), Shader(GL_FRAGMENT_SHADER, fragment)) {
+        // }
+
         Program::~Program() {
+            for (auto v : values) {
+                delete(v);
+            }
             glDeleteProgram(ID);
+        }
+
+        void Program::apply() {
+            glUseProgram(*this);
+            for (auto v : values) {
+                if (v->show) {
+                    v->apply();
+                }
+            }
         }
 
         Program::operator GLuint() const {

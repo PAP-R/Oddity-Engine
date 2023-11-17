@@ -12,11 +12,11 @@ namespace OddityEngine {
         namespace Render {
 
             class Tracer : public Interface {
-            private:
+            protected:
                 Camera* camera;
 
-                Shader vertex_shader = Shader(GL_VERTEX_SHADER, "ray.vert");
-                Shader fragment_shader = Shader(GL_FRAGMENT_SHADER, "ray.frag");
+                Shader vertex_shader = Shader(GL_VERTEX_SHADER, "simple.vert");
+                Shader fragment_shader = Shader(GL_FRAGMENT_SHADER, "simple.frag");
                 Program program = Program(vertex_shader, fragment_shader);
 
                 int bounces = 1;
@@ -34,9 +34,8 @@ namespace OddityEngine {
                 void init();
 
             public:
-                Tracer(Camera* camera = new Camera());
-                Tracer(Buffer<glm::vec4>* texture_transform_buffer, Camera* camera = new Camera());
-                ~Tracer();
+                explicit Tracer(Camera* camera = new Camera());
+                explicit Tracer(Buffer<glm::vec4>* texture_transform_buffer, Camera* camera = new Camera());
 
                 void render() override;
 

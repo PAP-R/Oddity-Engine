@@ -42,6 +42,10 @@ namespace OddityEngine {
         public:
             Object(const glm::mat4& transform = glm::mat4(1), Shape* shape = nullptr, Material* material = nullptr);
             ~Object();
+
+            glm::mat4 get_transform();
+            Shape* get_shape();
+            Material* get_material();
         };
     } // OddityEngine
 } // Graphics
