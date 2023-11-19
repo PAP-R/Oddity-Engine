@@ -28,7 +28,7 @@ namespace OddityEngine {
              * @param vertex vertex shader
              * @param fragment fragment shader
              */
-            Program(GLuint vertex, GLuint fragment);
+            Program(std::initializer_list<GLuint> shaders);
             // Program(std::string vertex, std::string fragment);
             ~Program();
 

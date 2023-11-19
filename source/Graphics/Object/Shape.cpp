@@ -59,10 +59,10 @@ namespace OddityEngine::Graphics {
     }
 
     void Shape::bind_buffer() {
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, SHAPE, *active_shape_buffer);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, VERTEX, *active_vertex_buffer);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, NORMAL, *active_normal_buffer);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, UV, *active_uv_buffer);
+        glBindBufferBase(active_shape_buffer->get_type(), SHAPE, *active_shape_buffer);
+        glBindBufferBase(active_vertex_buffer->get_type(), VERTEX, *active_vertex_buffer);
+        glBindBufferBase(active_normal_buffer->get_type(), NORMAL, *active_normal_buffer);
+        glBindBufferBase(active_uv_buffer->get_type(), UV, *active_uv_buffer);
     }
 
     Shape::Shape(Shapes shape, const std::vector<glm::vec4>& vertices, const std::vector<glm::vec4>& normals, const std::vector<glm::vec4>& uvs) {

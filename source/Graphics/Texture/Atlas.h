@@ -29,7 +29,7 @@ namespace OddityEngine {
                 glm::vec<3, GLsizei> max_size = {0, 0, 0};
                 glm::vec<3, GLsizei> last_max_size = {0, 0, 0};
 
-                Buffer<glm::vec3> texture_transform_buffer = Buffer<glm::vec3>(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
+                Buffer<glm::vec4> texture_transform_buffer = Buffer<glm::vec4>(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
 
                 void retexture();
 
@@ -38,6 +38,7 @@ namespace OddityEngine {
                 ~Atlas();
 
                 GLuint add(const Texture& texture);
+                GLuint get_texture();
 
                 void activate(int to_unit);
             };

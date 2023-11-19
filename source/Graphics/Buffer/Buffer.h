@@ -17,6 +17,7 @@ namespace OddityEngine {
             NORMAL,
             UV,
             MATERIAL,
+            TEXTURE_TRANSFORM
         };
 
         template<typename T>
@@ -55,9 +56,7 @@ namespace OddityEngine {
                 resize(0);
             }
 
-            size_t add(T* data, size_t size = 0) {
-                if (size == 0) size = sizeof(T);
-
+            size_t add(size_t size, void* data) {
                 glBindBuffer(type, ID);
                 GLint buffersize = this->size;
 

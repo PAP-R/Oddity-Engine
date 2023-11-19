@@ -16,7 +16,7 @@ namespace OddityEngine {
         class Material {
         protected:
             static Buffer<buffermaterial>* active_material_buffer;
-            static Texture::Atlas texture_atlas;
+            static Texture::Atlas* texture_atlas;
 
         public:
             static Buffer<buffermaterial>* create_material_buffer();

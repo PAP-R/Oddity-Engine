@@ -12,10 +12,11 @@ namespace OddityEngine {
             return values.size() - 1;
         }
 
-        Program::Program(GLuint vertex, GLuint fragment) {
+        Program::Program(std::initializer_list<GLuint> shaders) {
             ID = glCreateProgram();
-            glAttachShader(ID, vertex);
-            glAttachShader(ID, fragment);
+            for (auto s : shaders) {
+                glAttachShader(ID, s);
+            }
             glLinkProgram(ID);
 
             GLint result = GL_FALSE;

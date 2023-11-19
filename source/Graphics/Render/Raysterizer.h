@@ -2,6 +2,7 @@
 #define TESTSPIEL_RAYSTERIZER_H
 
 #include <vector>
+#include <map>
 
 #include "Interface.h"
 #include <Graphics/Camera.h>
@@ -16,12 +17,10 @@ namespace OddityEngine {
             protected:
                 Camera* camera;
 
-                std::vector<std::pair<Program*, Graphics::Object*>> program_object_list;
+                std::map<Program*, std::vector<Graphics::Object*>> program_object_map;
 
                 float ratio = 1;
                 float last_ratio = ratio;
-
-                Buffer<float> screenbuffer = Buffer<float>(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 
             public:
                 explicit Raysterizer(Camera* camera = new Camera());
@@ -29,7 +28,7 @@ namespace OddityEngine {
 
                 void render() override;
 
-                size_t add_object(Program* program, Graphics::Object* object);
+                void add_object(Program* program, Graphics::Object* object);
 
                 void set_screen_size(const glm::vec2 &size) override;
             };

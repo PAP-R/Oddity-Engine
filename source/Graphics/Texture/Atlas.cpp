@@ -8,12 +8,12 @@ namespace OddityEngine {
             void Atlas::retexture() {
                 if (!texture_data_list.empty()) {
                     if (max_size != last_max_size) {
-                        max_size = last_max_size;
+                        last_max_size = max_size;
                         texture_transform_buffer.clear();
 
                         for (auto s : texture_size_list) {
-                            glm::vec3 scale = glm::vec3(s) / glm::vec3(max_size);
-                            texture_transform_buffer.add(&scale);
+                            glm::vec4 scale = glm::vec4(s, 1) / glm::vec4(max_size, 1);
+                            texture_transform_buffer.add(sizeof(glm::vec4), &scale);
                         }
                     }
 
@@ -80,10 +80,17 @@ namespace OddityEngine {
                 return index;
             }
 
+            GLuint Atlas::get_texture() {
+                return texture;
+            }
+
             void Atlas::activate(int to_unit) {
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
                 glBindSampler(0, 0);
+
+                glBindBuffer(texture_transform_buffer.get_type(), texture_transform_buffer);
+                glBindBufferBase(texture_transform_buffer.get_type(), TEXTURE_TRANSFORM, texture_transform_buffer);
             }
         } // OddityEngine
     } // Graphics

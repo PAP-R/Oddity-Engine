@@ -62,8 +62,8 @@ namespace OddityEngine {
             // glEnable(GL_BLEND);
             // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             // glEnable(GL_MULTISAMPLE);
-            // glEnable(GL_DEPTH_TEST);
-            // glDepthFunc(GL_LESS);
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LESS);
             // glEnable(GL_CULL_FACE);
 
             glClearColor(0, 0, 0, 0);
@@ -75,7 +75,7 @@ namespace OddityEngine {
             return window;
         }
 
-        Window::Window(const char *name, int width, int height) : size(width, height), window(make_window(name, width, height, &context)), view_vertex_shader(GL_VERTEX_SHADER, "view.vert"), view_fragment_shader(GL_FRAGMENT_SHADER, "view.frag"), view_program(view_vertex_shader, view_fragment_shader), screenbuffer(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW) {
+        Window::Window(const char *name, int width, int height) : size(width, height), window(make_window(name, width, height, &context)), view_vertex_shader(GL_VERTEX_SHADER, "view.vert"), view_fragment_shader(GL_FRAGMENT_SHADER, "view.frag"), view_program({view_vertex_shader, view_fragment_shader}), screenbuffer(GL_ARRAY_BUFFER, GL_DYNAMIC_DRAW) {
             windows.emplace_back(this);
             glfwMakeContextCurrent(window);
 
@@ -119,7 +119,7 @@ namespace OddityEngine {
                 return true;
             }
 
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
@@ -146,7 +146,7 @@ namespace OddityEngine {
 
                 glBindBufferBase(scene->get_texture_transform_buffer()->get_type(), 3, *scene->get_texture_transform_buffer());
 
-                glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 2.0f);
+                glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
                 glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.5, 0.5, -1), glm::vec3(0, 1, 0));
                 glUniformMatrix4fv(view_program.uniform_location("screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
 

@@ -43,6 +43,8 @@ set(SOURCES
         Graphics/Texture/Atlas.h
         Graphics/Object/Shape.cpp
         Graphics/Object/Shape.h
+        Graphics/Render/LayerRayer.cpp
+        Graphics/Render/LayerRayer.h
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})

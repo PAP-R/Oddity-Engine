@@ -31,6 +31,12 @@ namespace OddityEngine {
                     r->render();
                 }
 
+                size_t buffer_size = size.x * size.y * renderers.size();
+
+                std::vector<glm::vec4> pixels(buffer_size);
+
+                glGetnTexImage(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, GL_FLOAT, buffer_size * sizeof(glm::vec4), pixels.data());
+
                 // size_t buf_size = size.x * size.y * renderers.size() * 4;
                 // std::vector<float> pixels(buf_size);
                 //

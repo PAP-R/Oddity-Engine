@@ -39,6 +39,7 @@ namespace OddityEngine {
 
             void Interface::set_screen_size(const glm::vec2 &size) {
                 this->screen_size = size;
+                this->size = size;
                 set_texture_transform();
             }
 
