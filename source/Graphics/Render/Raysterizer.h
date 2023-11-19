@@ -30,6 +30,8 @@ namespace OddityEngine {
                 void render() override;
 
                 size_t add_object(Program* program, Graphics::Object* object);
+
+                void set_screen_size(const glm::vec2 &size) override;
             };
 
         } // OddityEngine

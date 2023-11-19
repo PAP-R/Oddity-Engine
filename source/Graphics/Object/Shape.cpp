@@ -55,7 +55,6 @@ namespace OddityEngine::Graphics {
     }
 
     Buffer<glm::vec4> *Shape::get_uv_buffer() {
-        set_uv_buffer(new Buffer<glm::vec4>());
         return active_uv_buffer;
     }
 

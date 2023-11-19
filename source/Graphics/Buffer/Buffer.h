@@ -51,7 +51,13 @@ namespace OddityEngine {
                 glGenBuffers(1, &ID);
             }
 
-            size_t add(size_t size, void* data) {
+            void clear() {
+                resize(0);
+            }
+
+            size_t add(T* data, size_t size = 0) {
+                if (size == 0) size = sizeof(T);
+
                 glBindBuffer(type, ID);
                 GLint buffersize = this->size;
 

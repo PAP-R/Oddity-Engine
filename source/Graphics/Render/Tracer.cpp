@@ -47,20 +47,20 @@ namespace OddityEngine {
                     render_projection[0][0] = fov / aspect;
                     render_projection[1][1] = fov;
                     auto render_view = glm::toMat4(camera->orientation);
+                    // auto render_view = glm::lookAt(glm::vec3(0), camera->front(), camera->up());
                     glm::mat4 render_mvp = render_view * render_projection * glm::mat4(1);
 
                     auto front = glm::normalize(glm::vec3(render_mvp * glm::vec4(0, 0, -1, 1)));
 
                     // fmt::print("[ {:+1.2f} | {:+1.2f} | {:+1.2f} ]\n[ {:+1.2f} | {:+1.2f} | {:+1.2f} ]\n\t=\t=\t=\t=\t=\n", front.x, front.y, front.z, camera->front().x, camera->front().y, camera->front().z);
 
-                    glUniformMatrix4fv(program.uniform_location("render_projection"), 1, GL_FALSE, &render_mvp[0][0]);
+                    glUniformMatrix4fv(program.uniform_location("mvp"), 1, GL_FALSE, &render_mvp[0][0]);
 
                     glUniform1ui(program.uniform_location("bounces"), bounces);
                     glUniform1ui(program.uniform_location("spread"), spread);
                     glUniform1f(program.uniform_location("cull"), cull);
 
                     glUniform3f(program.uniform_location("camera_pos"), camera->position.x, camera->position.y, camera->position.z);
-                    glUniform3f(program.uniform_location("camera_front"), camera->front().x, camera->front().y, camera->front().z);
                 });
             }
 

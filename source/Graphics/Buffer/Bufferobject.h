@@ -22,13 +22,13 @@ namespace OddityEngine {
             Bufferobject() : size(sizeof(T)) {}
             Bufferobject(Buffer<T>* buffer) : buffer(buffer), size(sizeof(T)) {
                 if (buffer)
-                    offset = buffer->add(this->size, &object);
+                    offset = buffer->add(&object, this->size);
                 index = offset / this->size;
             }
             Bufferobject(T object, GLuint size = 0) : object(object), size(size == 0 ? sizeof(T) : size) {}
             Bufferobject(Buffer<T>* buffer, T object, GLuint size = 0) : Bufferobject(object, size) {
                 if (buffer)
-                    offset = buffer->add(this->size, &object);
+                    offset = buffer->add(&object, this->size);
                 this->buffer = buffer;
                 index = offset / this->size;
             }
@@ -37,7 +37,7 @@ namespace OddityEngine {
                 if (this->buffer)
                     this->buffer->remove(offset, size);
                 if (buffer) {
-                    offset = buffer->add(size, &object);
+                    offset = buffer->add(&object, size);
                     index = offset / size;
                 }
                 this->buffer = buffer;

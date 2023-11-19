@@ -7,6 +7,16 @@ namespace OddityEngine {
         namespace Texture {
             void Atlas::retexture() {
                 if (!texture_data_list.empty()) {
+                    if (max_size != last_max_size) {
+                        max_size = last_max_size;
+                        texture_transform_buffer.clear();
+
+                        for (auto s : texture_size_list) {
+                            glm::vec3 scale = glm::vec3(s) / glm::vec3(max_size);
+                            texture_transform_buffer.add(&scale);
+                        }
+                    }
+
                     glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
                     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, max_size.x, max_size.y, max_size.z, 0, GL_RGBA, GL_FLOAT, nullptr);
 

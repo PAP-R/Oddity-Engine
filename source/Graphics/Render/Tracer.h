@@ -15,8 +15,8 @@ namespace OddityEngine {
             protected:
                 Camera* camera;
 
-                Shader vertex_shader = Shader(GL_VERTEX_SHADER, "simple.vert");
-                Shader fragment_shader = Shader(GL_FRAGMENT_SHADER, "simple.frag");
+                Shader vertex_shader = Shader(GL_VERTEX_SHADER, "screen_ray.vert");
+                Shader fragment_shader = Shader(GL_FRAGMENT_SHADER, "screen_ray.frag");
                 Program program = Program(vertex_shader, fragment_shader);
 
                 int bounces = 1;

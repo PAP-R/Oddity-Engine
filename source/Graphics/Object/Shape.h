@@ -30,6 +30,7 @@ namespace OddityEngine {
                 SPHERE,
                 CUBE,
                 MESH,
+                MESH_FLAT,
                 CURVE,
             };
 

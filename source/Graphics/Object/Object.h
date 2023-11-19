@@ -43,7 +43,10 @@ namespace OddityEngine {
             Object(const glm::mat4& transform = glm::mat4(1), Shape* shape = nullptr, Material* material = nullptr);
             ~Object();
 
+            GLuint get_index();
+
             glm::mat4 get_transform();
+            void set_transform(glm::mat4 transform);
             Shape* get_shape();
             Material* get_material();
         };

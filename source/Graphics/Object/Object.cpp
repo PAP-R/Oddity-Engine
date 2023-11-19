@@ -55,8 +55,16 @@ namespace OddityEngine {
             delete(transform);
         }
 
+        GLuint Object::get_index() {
+            return object->get_index();
+        }
+
         glm::mat4 Object::get_transform() {
             return transform->get();
+        }
+
+        void Object::set_transform(glm::mat4 transform) {
+            this->transform->set(transform);
         }
 
         Shape* Object::get_shape() {
