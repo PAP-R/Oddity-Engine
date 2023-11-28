@@ -1,29 +1,7 @@
 #include "LayerRayer.h"
 
-namespace OddityEngine {
-namespace Graphics {
-namespace Render {
-    void LayerRayer::retexture() {
-        glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, size.x, size.y, layers, 0, GL_RGBA, GL_FLOAT, nullptr);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, layered_framebuffer);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texture, 0);
-    }
-
+namespace OddityEngine::Graphics::Render {
     LayerRayer::LayerRayer(size_t layers, Camera* camera) : layers(layers), camera(camera) {
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D_ARRAY,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE);
-
-        glGenFramebuffers(1, &layered_framebuffer);
-
         std::vector<float> screen = {
             0.0f, 0.0f, -1.0f,
             0.0f, 1.0f, -1.0f,
@@ -103,6 +81,4 @@ namespace Render {
         Interface::set_size(size * screen_ratio);
         Interface::set_screen_size(size);
     }
-} // Render
-} // Graphics
-} // OddityEngine
+}

@@ -41,7 +41,7 @@ namespace OddityEngine {
                 std::vector<glm::vec4> get_normals() {
                     std::vector<glm::vec4> _normals;
                     for (auto i : get_normal_indices()) {
-                        _normals.emplace_back(normals[i], 1);
+                        _normals.emplace_back(normals[i], 0);
                     }
                     return _normals;
                 }
