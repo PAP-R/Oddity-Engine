@@ -67,6 +67,16 @@ namespace OddityEngine {
 
             return objects;
         }
+
+        template<typename T>
+        static std::vector<Bufferobject<T>>* create_empty_buffer_object_list(Buffer<T> * buffer, size_t count) {
+            auto objects = new std::vector<Bufferobject<T>>;
+            for (int i = 0; i < count; i++) {
+                objects->emplace_back(buffer, T());
+            }
+
+            return objects;
+        }
     } // OddityEngine
 } // Graphics
 

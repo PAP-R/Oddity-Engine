@@ -18,7 +18,7 @@ namespace OddityEngine {
             return active_material_buffer;
         }
 
-        Material::Material(glm::vec4 albedo, glm::vec4 emission, glm::vec3 normal, float shine) {
+        Material::Material(const glm::vec4& albedo, const glm::vec4& emission, const glm::vec3& normal, float shine) {
             if (active_material_buffer == nullptr) create_material_buffer();
             if (texture_atlas == nullptr) texture_atlas = new Texture::Atlas();
 

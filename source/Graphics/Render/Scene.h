@@ -28,7 +28,7 @@ namespace OddityEngine {
 
                 size_t add_renderer(Interface* renderer);
 
-                size_t get_layers();
+                [[nodiscard]] GLsizei layer_count() const;
                 Buffer<glm::vec4>* get_texture_transform_buffer();
                 GLuint get_render_texture();
             };

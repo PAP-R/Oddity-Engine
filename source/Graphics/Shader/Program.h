@@ -46,6 +46,8 @@ namespace OddityEngine {
 
             void apply();
 
+            GLuint get_ID() const;
+
             /**
              * Inserts ID for program
              * @return program ID

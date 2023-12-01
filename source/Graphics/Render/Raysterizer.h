@@ -21,7 +21,7 @@ namespace OddityEngine {
 
                 GLuint depthbuffer = 0;
 
-                float ratio = 1;
+                float ratio = 0.3;
                 float last_ratio = ratio;
 
                 void create_depthbuffer();

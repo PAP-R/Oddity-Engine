@@ -42,7 +42,7 @@ namespace OddityEngine::Graphics {
     }
 
     Buffer<glm::vec4> *Shape::get_normal_buffer() {
-        return active_vertex_buffer;
+        return active_normal_buffer;
     }
 
     Buffer<glm::vec4> *Shape::create_uv_buffer() {

@@ -55,8 +55,12 @@ namespace OddityEngine {
             }
         }
 
-        Program::operator GLuint() const {
+        GLuint Program::get_ID() const {
             return ID;
+        }
+
+        Program::operator GLuint() const {
+            return get_ID();
         }
 
         GLint Program::uniform_location(const std::string& name) {

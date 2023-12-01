@@ -9,11 +9,13 @@ namespace OddityEngine {
         double start = now;
         double last = now;
         double delta;
+        size_t frame = 0;
 
         void update() {
             now = glfwGetTime();
             delta = now - last;
             last = now;
+            frame++;
         }
 
         double get() {
@@ -26,6 +28,10 @@ namespace OddityEngine {
 
         double get_delta() {
             return delta;
+        }
+
+        size_t get_frame() {
+            return frame;
         }
     } // Time
 } // OddityEngine

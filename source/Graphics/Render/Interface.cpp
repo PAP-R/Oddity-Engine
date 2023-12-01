@@ -6,20 +6,22 @@
 namespace OddityEngine {
     namespace Graphics {
         namespace Render {
-            Interface::Interface() : texture_transform(glm::vec4(0)) {
+            Interface::Interface(size_t layers) : texture_transform(*create_empty_buffer_object_list<glm::vec4>(nullptr, layers)), layer_count(layers) {
                 glGenFramebuffers(1, &framebuffer);
             }
 
-            Interface::Interface(Buffer<glm::vec4> *texture_transform_buffer) : texture_transform(texture_transform_buffer, glm::vec4(0)) {
+            Interface::Interface(Buffer<glm::vec4> *texture_transform_buffer, size_t layers) : texture_transform(*create_empty_buffer_object_list(texture_transform_buffer, layers)), layers(layers) {
             }
 
             Interface::~Interface() {
                 glDeleteFramebuffers(1, &framebuffer);
             }
 
-            void Interface::set_texture(GLuint texture, GLuint layer) {
+            void Interface::set_texture(GLuint texture, const std::vector<GLuint>&layers) {
+                this->layers = layers;
+
                 glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-                glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0, layer);
+                glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0, layers[0]);
 
                 glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
@@ -29,7 +31,9 @@ namespace OddityEngine {
             }
 
             void Interface::set_texture_transform_buffer(Buffer<glm::vec4> *texture_transform_buffer) {
-                texture_transform.set_buffer(texture_transform_buffer);
+                for (auto& t : texture_transform) {
+                    t.set_buffer(texture_transform_buffer);
+                }
             }
 
             void Interface::set_size(const glm::vec2 &size) {
@@ -39,7 +43,6 @@ namespace OddityEngine {
 
             void Interface::set_screen_size(const glm::vec2 &size) {
                 this->screen_size = size;
-                this->size = size;
                 set_texture_transform();
             }
 
@@ -48,9 +51,15 @@ namespace OddityEngine {
                 set_texture_transform();
             }
 
+            GLsizei Interface::get_layers() {
+                return layer_count;
+            }
+
             void Interface::set_texture_transform() {
-                glm::vec2 scale = size / screen_size;
-                texture_transform.set(glm::vec4(screen_pos / screen_size, scale));
+                for (int i = 0; i < layer_count; i++) {
+                    auto scale = size * static_cast<float>(pow(layer_ratio, i)) / screen_size;
+                    texture_transform[i].set(glm::vec4(screen_pos / screen_size, scale));
+                }
             }
 
             std::vector<buffervertex> obj_to_vert(Loader::Object object) {

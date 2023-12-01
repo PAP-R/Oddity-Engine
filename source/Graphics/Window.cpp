@@ -56,6 +56,10 @@ namespace OddityEngine {
                 Debug::error("Failed to initialize GLEW");
             }
 
+            if (!GLEW_ARB_shader_viewport_layer_array) {
+                Debug::error("Extension not available");
+            }
+
             glewExperimental = true;
 
             glEnable(GL_DEBUG_OUTPUT);
@@ -129,7 +133,7 @@ namespace OddityEngine {
             ImGui::SetNextWindowSize(ImVec2(size.x, size.y));
             Debug::update();
 
-            if (scene != nullptr && scene->get_layers() > 0) {
+            if (scene != nullptr && scene->layer_count() > 0) {
                 scene->update();
 
                 glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -142,7 +146,7 @@ namespace OddityEngine {
                 glBindTexture(GL_TEXTURE_2D_ARRAY, scene->get_render_texture());
                 glBindSampler(0, 0);
 
-                glUniform1ui(view_program.uniform_location("texture_count"), scene->get_layers());
+                glUniform1ui(view_program.uniform_location("texture_count"), scene->layer_count());
 
                 glBindBufferBase(scene->get_texture_transform_buffer()->get_type(), 3, *scene->get_texture_transform_buffer());
 

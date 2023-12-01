@@ -27,10 +27,10 @@ namespace OddityEngine {
             static void bind_buffer();
 
         protected:
-            Bufferobject<buffermaterial> material;
 
         public:
-            Material(glm::vec4 albedo, glm::vec4 emission, glm::vec3 normal, float shine);
+            Bufferobject<buffermaterial> material;
+            Material(const glm::vec4& albedo, const glm::vec4& emission, const glm::vec3& normal, float shine);
             Material(const Texture::Texture& albedo, const Texture::Texture& emission, const Texture::Texture& normal_shine);
 
             GLuint index();

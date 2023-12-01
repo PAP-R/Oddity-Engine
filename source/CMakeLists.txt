@@ -45,6 +45,8 @@ set(SOURCES
         Graphics/Object/Shape.h
         Graphics/Render/LayerRayer.cpp
         Graphics/Render/LayerRayer.h
+        Graphics/Object/Sphere.cpp
+        Graphics/Object/Sphere.h
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})

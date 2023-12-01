@@ -19,8 +19,16 @@ namespace OddityEngine {
             void Scene::texture_size() const {
                 if (!renderers.empty()) {
                     glBindTexture(GL_TEXTURE_2D_ARRAY, render_texture);
-                    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, size.x, size.y, renderers.size(), 0, GL_RGBA, GL_FLOAT, nullptr);
+                    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, size.x, size.y, layer_count(), 0, GL_RGBA, GL_FLOAT, nullptr);
                 }
+            }
+
+            GLsizei Scene::layer_count() const {
+                GLsizei layers = 0;
+                for (auto r : renderers) {
+                    layers += r->get_layers();
+                }
+                return layers;
             }
 
             bool Scene::update() {
@@ -30,25 +38,6 @@ namespace OddityEngine {
                 for (auto r : renderers) {
                     r->render();
                 }
-
-                size_t buffer_size = size.x * size.y * renderers.size();
-
-                std::vector<glm::vec4> pixels(buffer_size);
-
-                glGetnTexImage(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, GL_FLOAT, buffer_size * sizeof(glm::vec4), pixels.data());
-
-                // size_t buf_size = size.x * size.y * renderers.size() * 4;
-                // std::vector<float> pixels(buf_size);
-                //
-                // glBindTexture(GL_TEXTURE_2D_ARRAY, render_texture);
-                // glGetTexImage(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, GL_FLOAT, pixels.data());
-                //
-                // pixels.shrink_to_fit();
-                //
-                // for (auto p : pixels) {
-                //     fmt::print("| {:+1.2f} |", p);
-                // }
-                // fmt::print("\n\t=\t=\t=\t=\t=\n");
 
                 return true;
             }
@@ -62,17 +51,17 @@ namespace OddityEngine {
             }
 
             size_t Scene::add_renderer(Interface *renderer) {
-                size_t index = renderers.size();
+                size_t index = layer_count();
                 renderers.emplace_back(renderer);
                 texture_size();
                 renderer->set_texture_transform_buffer(&texture_transform_buffer);
                 renderer->set_screen_size(size);
-                renderer->set_texture(render_texture, index);
+                std::vector<GLuint> indices;
+                for (int i = 0; i < renderer->get_layers(); i ++) {
+                    indices.emplace_back(index + i);
+                }
+                renderer->set_texture(render_texture, indices);
                 return index;
-            }
-
-            size_t Scene::get_layers() {
-                return renderers.size();
             }
 
             Buffer<glm::vec4>* Scene::get_texture_transform_buffer() {

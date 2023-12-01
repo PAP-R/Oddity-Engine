@@ -37,28 +37,39 @@ namespace OddityEngine {
 
             class Interface {
             protected:
-                GLuint framebuffer;
+                GLuint framebuffer = 0;
 
+                GLsizei layer_count = 1;
+                std::vector<GLuint> layers;
+                GLuint texture = 0;
                 glm::vec2 size = {0, 0};
                 glm::vec2 screen_pos = {0, 0};
                 glm::vec2 screen_size = {0, 0};
 
-                Bufferobject<glm::vec4> texture_transform;
+                float layer_ratio = 1;
+                float ratio = 1;
+                float last_ratio = ratio;
+
+                std::vector<Bufferobject<glm::vec4>> texture_transform;
 
                 void set_texture_transform();
 
             public:
-                explicit Interface(Buffer<glm::vec4>* texture_transform_buffer);
-                explicit Interface();
-                ~Interface();
+                explicit Interface(Buffer<glm::vec4>* texture_transform_buffer, size_t layers = 1);
+                explicit Interface(size_t layers = 1);
+                virtual ~Interface();
 
                 virtual void render() = 0;
-                void set_texture(GLuint texture, GLuint layer);
+                void bind_framebuffer(GLuint layer);
+
+                virtual void set_texture(GLuint texture, const std::vector<GLuint>&layers);
                 void set_texture_transform_buffer(Buffer<glm::vec4>* texture_transform_buffer);
 
                 virtual void set_size(const glm::vec2 &size);
                 virtual void set_screen_size(const glm::vec2 &size);
                 virtual void set_screen_pos(const glm::vec2 &pos);
+
+                virtual GLsizei get_layers();
             };
 
             std::vector<buffervertex> obj_to_vert(Loader::Object object);

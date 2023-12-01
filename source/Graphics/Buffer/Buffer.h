@@ -17,7 +17,8 @@ namespace OddityEngine {
             NORMAL,
             UV,
             MATERIAL,
-            TEXTURE_TRANSFORM
+            TEXTURE_TRANSFORM,
+            LAYER,
         };
 
         template<typename T>
@@ -29,6 +30,7 @@ namespace OddityEngine {
             GLuint usage;
             size_t size = 0;
 
+        public:
             void resize(size_t size) {
                 GLuint new_buffer;
                 glGenBuffers(1, &new_buffer);
@@ -47,13 +49,19 @@ namespace OddityEngine {
                 this->size = size;
             }
 
-        public:
             explicit Buffer(GLuint type = GL_SHADER_STORAGE_BUFFER, GLuint usage = GL_DYNAMIC_DRAW) : type(type), usage(usage), ID() {
                 glGenBuffers(1, &ID);
             }
 
-            void clear() {
-                resize(0);
+            void clear(GLsizei size = 0, GLsizei offset = 0) {
+                if (size == 0) {
+                    glBindBuffer(type, ID);
+                    glBufferData(type, size, nullptr, usage);
+                }
+                else {
+                    glBindBuffer(type, ID);
+                    glBufferSubData(type, offset, size, nullptr);
+                }
             }
 
             size_t add(size_t size, void* data) {

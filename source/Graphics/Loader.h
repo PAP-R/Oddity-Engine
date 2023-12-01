@@ -57,7 +57,7 @@ namespace OddityEngine {
                 std::vector<glm::vec4> get_uvs() {
                     std::vector<glm::vec4> _uvs;
                     for (auto i : get_vertex_indices()) {
-                        _uvs.emplace_back(uvs[i], 0, 1);
+                        _uvs.emplace_back(uvs[i], 0, 0);
                     }
                     return _uvs;
                 }

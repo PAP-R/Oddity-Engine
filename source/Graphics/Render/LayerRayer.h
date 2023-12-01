@@ -18,34 +18,40 @@ class LayerRayer : public Interface {
 protected:
     Camera* camera;
 
-    GLuint texture = 0;
-    GLuint layered_framebuffer = 0;
+    std::vector<Graphics::Object*> object_list;
 
-    std::map<Program*, std::vector<Graphics::Object*>> program_object_map;
+    GLuint depthbuffer = 0;
 
-    size_t layers;
+    Buffer<float> screenbuffer = Buffer<float>(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 
-    float step_ratio = 0.5;
-    float screen_ratio = 1;
-    float last_ratio = screen_ratio;
+    GLuint screen_framebuffer = 0;
 
-    Buffer<float> screenbuffer;
+    Shader object_vertex_shader = Shader(GL_VERTEX_SHADER, "object_ray.vert");
+    Shader object_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_object_ray.frag");
+    Program object_program = Program({object_vertex_shader, object_fragment_shader});
 
-    Shader vertex_shader = Shader(GL_VERTEX_SHADER, "screen_ray.vert");
-    // Shader geometry_shader = Shader(GL_GEOMETRY_SHADER, "layered.geometry");
-    Shader fragment_shader = Shader(GL_FRAGMENT_SHADER, "screen_ray.frag");
-    Program screen_program = Program({vertex_shader, fragment_shader});
+    Shader screen_vertex_shader = Shader(GL_VERTEX_SHADER, "layered_screen_ray.vert");
+    Shader screen_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_screen_ray.frag");
+    Program screen_program = Program({screen_vertex_shader, screen_fragment_shader});
 
-    void retexture();
+    Buffer<glm::vec4> layer_buffer = Buffer<glm::vec4>();
+    GLuint layer_elements = 7;
+
+    void create_buffers();
+    void resize_buffers();
 
 public:
-    LayerRayer(size_t layers, Camera* camera = new Camera());
-    ~LayerRayer();
+    explicit LayerRayer(size_t layers, Camera* camera = new Camera());
+    explicit LayerRayer(size_t layers, float layer_ratio, Camera* camera = new Camera());
+    explicit LayerRayer(size_t layers, float ratio, float layer_ratio, Camera* camera = new Camera());
+    ~LayerRayer() override;
 
     void render() override;
 
     void add_object(Program* program, Graphics::Object* object);
+    void set_texture(GLuint texture, const std::vector<GLuint>&layers) override;
 
+    void set_size(const glm::vec2 &size) override;
     void set_screen_size(const glm::vec2 &size) override;
 };
 

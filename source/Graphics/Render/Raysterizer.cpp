@@ -44,7 +44,7 @@ namespace OddityEngine::Graphics::Render {
         Material::bind_buffer();
         Material::activate(0);
 
-        float aspect = static_cast<float>(screen_size.x) / static_cast<float>(screen_size.y);
+        float aspect = static_cast<float>(size.x) / static_cast<float>(size.y);
         float fov = glm::radians(camera->fov);
 
         auto projection = glm::perspective(fov, aspect, 0.1f, 100.0f);
@@ -55,6 +55,7 @@ namespace OddityEngine::Graphics::Render {
         auto view = glm::lookAt(camera->position, camera->position + camera->front(), camera->up());
         for (auto p : program_object_map) {
             p.first->apply();
+
 
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, *Shape::get_vertex_buffer());
@@ -75,7 +76,7 @@ namespace OddityEngine::Graphics::Render {
                 glUniform1ui(p.first->uniform_location("object"), o->get_index());
                 glUniform3f(p.first->uniform_location("camera_pos"), camera->position.x, camera->position.y, camera->position.z);
 
-                glUniform1ui(p.first->uniform_location("bounces"), 1);
+                glUniform1ui(p.first->uniform_location("bounces"), 2);
                 glUniform1ui(p.first->uniform_location("spread"), 1);
 
 
@@ -99,7 +100,7 @@ namespace OddityEngine::Graphics::Render {
 
 
     void Raysterizer::set_screen_size(const glm::vec2 &size) {
-        set_size(size * ratio);
         Interface::set_screen_size(size);
+        set_size(size * ratio);
     }
 }

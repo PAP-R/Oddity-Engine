@@ -7,6 +7,7 @@
 #include <Graphics/Buffer/Bufferobject.h>
 #include "Shape.h"
 #include "Material.h"
+#include <Graphics/Shader/Program.h>
 
 namespace OddityEngine {
     namespace Graphics {
