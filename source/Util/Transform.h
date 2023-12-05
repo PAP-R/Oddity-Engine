@@ -8,8 +8,12 @@
 
 namespace OddityEngine {
     namespace Util {
-        glm::mat4 transform(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale) {
+        inline glm::mat4 transform(glm::vec3 translation, glm::vec3 rotation, glm::vec3 scale) {
             return glm::translate(glm::mat4(1), translation) * glm::toMat4(glm::quat(rotation)) * glm::scale(glm::mat4(1), scale);
+        }
+
+        inline glm::mat4 transform(glm::vec3 translation, glm::quat rotation, glm::vec3 scale) {
+            return glm::translate(glm::mat4(1), translation) * glm::toMat4(rotation) * glm::scale(glm::mat4(1), scale);
         }
     }
 } // Transform
