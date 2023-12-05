@@ -96,6 +96,7 @@ namespace OddityEngine::Graphics::Render {
         glUniform2f(object_program.uniform_location("screen_size"), size.x, size.y);
         glUniform1ui(object_program.uniform_location("layer_elements"), layer_elements);
         glUniform1ui(object_program.uniform_location("frame_clock"), Time::get_frame());
+        glUniform1ui(object_program.uniform_location("bounces"), layer_count);
 
         for (auto o : object_list) {
             glm::mat4 mvp = projection * view * o->get_transform();
