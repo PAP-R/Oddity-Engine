@@ -30,6 +30,10 @@ protected:
     Shader object_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_object_ray.frag");
     Program object_program = Program({object_vertex_shader, object_fragment_shader});
 
+    // Shader object_vertex_shader = Shader(GL_VERTEX_SHADER, "object_ray.vert");
+    // Shader object_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_object_ray.frag");
+    // Program object_program = Program({object_vertex_shader, object_fragment_shader});
+
     Shader screen_vertex_shader = Shader(GL_VERTEX_SHADER, "layered_screen_ray.vert");
     Shader screen_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_screen_ray.frag");
     Program screen_program = Program({screen_vertex_shader, screen_fragment_shader});
