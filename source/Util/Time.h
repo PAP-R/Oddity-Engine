@@ -10,6 +10,7 @@ namespace OddityEngine {
         double get_start();
         double get_delta();
         size_t get_frame();
+        double get_fps();
     } // Time
 } // OddityEngine
 

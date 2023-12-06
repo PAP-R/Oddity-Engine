@@ -14,7 +14,7 @@ namespace OddityEngine {
     namespace Stat {
         float fps;
         double spf;
-        auto time = glfwGetTime();
+        auto time = Time::get();
         auto last_time = time;
 
         size_t frame_time_index = 0;
@@ -27,9 +27,9 @@ namespace OddityEngine {
         }
 
         void update() {
-            time = glfwGetTime();
-            spf = time - last_time;
-            fps = 1 / spf;
+            time = Time::get();
+            spf = Time::get_delta();
+            fps = Time::get_fps();
 
             frame_times[frame_time_index] = fps;
             frame_time_index = (frame_time_index + 1) % frame_time_max_index;

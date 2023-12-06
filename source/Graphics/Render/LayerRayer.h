@@ -39,7 +39,7 @@ protected:
     Program screen_program = Program({screen_vertex_shader, screen_fragment_shader});
 
     Buffer<glm::vec4> layer_buffer = Buffer<glm::vec4>();
-    GLuint layer_elements = 7;
+    GLuint layer_elements = 8;
 
     void create_buffers();
     void resize_buffers();

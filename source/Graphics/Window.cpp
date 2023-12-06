@@ -70,7 +70,7 @@ namespace OddityEngine {
             glDepthFunc(GL_LESS);
             // glEnable(GL_CULL_FACE);
 
-            glClearColor(0, 0, 0, 0);
+            glClearColor(0, 0, 0, 1);
 
             GLuint vertex_array_ID;
             glGenVertexArrays(1, &vertex_array_ID);

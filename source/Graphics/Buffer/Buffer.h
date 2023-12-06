@@ -55,8 +55,7 @@ namespace OddityEngine {
 
             void clear(GLsizei size = 0, GLsizei offset = 0) {
                 if (size == 0) {
-                    glBindBuffer(type, ID);
-                    glBufferData(type, size, nullptr, usage);
+                    resize(0);
                 }
                 else {
                     glBindBuffer(type, ID);

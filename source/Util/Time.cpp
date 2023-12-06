@@ -33,5 +33,9 @@ namespace OddityEngine {
         size_t get_frame() {
             return frame;
         }
+
+        double get_fps() {
+            return 1 / get_delta();
+        }
     } // Time
 } // OddityEngine

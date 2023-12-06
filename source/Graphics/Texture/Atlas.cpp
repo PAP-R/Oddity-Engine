@@ -12,7 +12,7 @@ namespace OddityEngine {
                         texture_transform_buffer.clear();
 
                         for (auto s : texture_size_list) {
-                            auto scale = glm::vec2(s / max_size);
+                            auto scale = glm::vec2(s) / glm::vec2(max_size);
                             texture_transform_buffer.add(sizeof(glm::vec2), &scale);
                         }
                     }

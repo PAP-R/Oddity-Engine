@@ -2,6 +2,7 @@
 
 #include "Graphics/Loader.h"
 #include "Util/Debug.h"
+#include "Util/Time.h"
 
 namespace OddityEngine {
     namespace Graphics {
@@ -34,6 +35,18 @@ namespace OddityEngine {
                 for (auto& t : texture_transform) {
                     t.set_buffer(texture_transform_buffer);
                 }
+            }
+
+            float Interface::get_ratio() {
+                return ratio;
+            }
+
+            void Interface::set_ratio(const float ratio) {
+                this->ratio = ratio;
+            }
+
+            void Interface::shift_ratio(float ratio) {
+                this->ratio += (ratio - this->ratio) * 0.1;
             }
 
             void Interface::set_size(const glm::vec2 &size) {

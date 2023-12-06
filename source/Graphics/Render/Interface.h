@@ -65,6 +65,9 @@ namespace OddityEngine {
                 virtual void set_texture(GLuint texture, const std::vector<GLuint>&layers);
                 void set_texture_transform_buffer(Buffer<glm::vec4>* texture_transform_buffer);
 
+                virtual float get_ratio();
+                virtual void set_ratio(float ratio);
+                virtual void shift_ratio(float ratio);
                 virtual void set_size(const glm::vec2 &size);
                 virtual void set_screen_size(const glm::vec2 &size);
                 virtual void set_screen_pos(const glm::vec2 &pos);
