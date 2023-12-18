@@ -24,8 +24,6 @@ namespace OddityEngine::Graphics::Render {
         resize_buffers();
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
-
-
     }
 
     void LayerRayer::resize_buffers() {
@@ -78,7 +76,7 @@ namespace OddityEngine::Graphics::Render {
 
         auto view = glm::lookAt(camera->position, camera->position + camera->front(), camera->up());
 
-        object_program.apply();
+        mesh_program.apply();
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, *Shape::get_vertex_buffer());
@@ -92,19 +90,69 @@ namespace OddityEngine::Graphics::Render {
         glBindBuffer(GL_ARRAY_BUFFER, *Shape::get_uv_buffer());
         glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-        glUniform3f(object_program.uniform_location("camera_pos"), camera->position.x, camera->position.y, camera->position.z);
-        glUniform2f(object_program.uniform_location("screen_size"), size.x, size.y);
-        glUniform1ui(object_program.uniform_location("layer_elements"), layer_elements);
-        glUniform1ui(object_program.uniform_location("frame_clock"), Time::get_frame());
-        glUniform1ui(object_program.uniform_location("bounces"), layer_count);
+        glUniform3f(mesh_program.uniform_location("camera_pos"), camera->position.x, camera->position.y, camera->position.z);
+        glUniform2f(mesh_program.uniform_location("screen_size"), size.x, size.y);
+        glUniform1ui(mesh_program.uniform_location("layer_elements"), layer_elements);
+        glUniform1ui(mesh_program.uniform_location("frame_clock"), Time::get_frame());
+        glUniform1ui(mesh_program.uniform_location("bounces"), layer_count);
 
         for (auto o : object_list) {
-            glm::mat4 mvp = projection * view * o->get_transform();
-            glUniformMatrix4fv(object_program.uniform_location("mvp"), 1, GL_FALSE, &mvp[0][0]);
-            glUniformMatrix4fv(object_program.uniform_location("model"), 1, GL_FALSE, &o->get_transform()[0][0]);
-            glUniform1ui(object_program.uniform_location("object"), o->get_index());
+            if (o->get_shape()->get_shape() == Shape::MESH) {
+                glm::mat4 mvp = projection * view * o->get_transform();
+                glUniformMatrix4fv(mesh_program.uniform_location("mvp"), 1, GL_FALSE, &mvp[0][0]);
+                glUniformMatrix4fv(mesh_program.uniform_location("model"), 1, GL_FALSE, &o->get_transform()[0][0]);
+                glUniform1ui(mesh_program.uniform_location("object"), o->get_index());
 
-            glDrawArrays(GL_TRIANGLES, o->get_shape()->vertex_start(), o->get_shape()->vertex_count());
+                glDrawArrays(GL_TRIANGLES, o->get_shape()->vertex_start(), o->get_shape()->vertex_count());
+            }
+        }
+
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+
+
+        point_program.apply();
+
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, *Shape::get_vertex_buffer());
+        glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, *Shape::get_normal_buffer());
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, *Shape::get_uv_buffer());
+        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        glUniform3f(point_program.uniform_location("camera_pos"), camera->position.x, camera->position.y, camera->position.z);
+        glUniform2f(point_program.uniform_location("screen_size"), size.x, size.y);
+        glUniform1ui(point_program.uniform_location("layer_elements"), layer_elements);
+        glUniform1ui(point_program.uniform_location("frame_clock"), Time::get_frame());
+        glUniform1ui(point_program.uniform_location("bounces"), layer_count);
+
+        auto render_projection = glm::mat4(1);
+        render_projection[0][0] = fov / aspect;
+        render_projection[1][1] = fov;
+        auto render_view = glm::toMat4(camera->orientation);
+
+        for (auto o : object_list) {
+            if (o->get_shape()->get_shape() == Shape::SPHERE) {
+                glm::mat4 screen_mvp = projection * view * o->get_transform();
+                glm::mat4 ray_mvp = projection * view * o->get_transform();
+                glm::mat4 v = glm::mat4(1) * view * glm::mat4(1);
+                glm::mat4 mp = projection * glm::mat4(1) * o->get_transform();
+                glUniformMatrix4fv(point_program.uniform_location("projection"), 1, GL_FALSE, &projection[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("mp"), 1, GL_FALSE, &mp[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("mvp"), 1, GL_FALSE, &screen_mvp[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("ray_mvp"), 1, GL_FALSE, &ray_mvp[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("view"), 1, GL_FALSE, &v[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("model"), 1, GL_FALSE, &o->get_transform()[0][0]);
+                glUniform1ui(point_program.uniform_location("object"), o->get_index());
+
+                glDrawArrays(GL_POINTS, o->get_shape()->vertex_start(), o->get_shape()->vertex_count());
+            }
         }
 
         glDisableVertexAttribArray(0);

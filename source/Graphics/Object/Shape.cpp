@@ -75,6 +75,7 @@ namespace OddityEngine::Graphics {
 
         float min_x = 0, max_x = 0, min_y = 0, max_y = 0, min_z = 0, max_z = 0;
 
+
         for (auto v : vertices) {
             if (v.x < min_x)
                 min_x = v.x;
@@ -93,7 +94,12 @@ namespace OddityEngine::Graphics {
         bounding_box_center = {(min_x + max_x) / 2, (min_y + max_y) / 2, (min_z + max_z) / 2, 0};
         bounding_box_size = {abs(min_x - max_x), abs(min_y - max_y), abs(min_z - max_z), 0};
 
-        this->vertices = create_buffer_object_list(active_vertex_buffer, vertices);
+        if (shape == SPHERE) {
+            this->vertices = create_buffer_object_list(active_vertex_buffer, {{0, 0, 0, 1}});
+        }
+        else {
+            this->vertices = create_buffer_object_list(active_vertex_buffer, vertices);
+        }
         this->normals = create_buffer_object_list(active_normal_buffer, normals);
         this->uvs = create_buffer_object_list(active_uv_buffer, uvs);
 
@@ -120,5 +126,9 @@ namespace OddityEngine::Graphics {
 
     GLuint Shape::vertex_count() {
         return shape.get().vertex_count;
+    }
+
+    GLuint Shape::get_shape() {
+        return shape.get().shape;
     }
 }

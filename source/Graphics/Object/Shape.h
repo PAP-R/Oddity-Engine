@@ -73,6 +73,7 @@ namespace OddityEngine::Graphics {
         GLuint index();
         GLuint vertex_start();
         GLuint vertex_count();
+        GLuint get_shape();
     };
 
 }

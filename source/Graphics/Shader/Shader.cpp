@@ -67,13 +67,13 @@ namespace OddityEngine {
 
             std::string shader_code = read_shader(path);
 
-            fmt::print("\t{} :\n", path);
-            std::stringstream shader_stream(shader_code);
-            std::string line;
-            for (int i = 1; std::getline(shader_stream, line); i++) {
-                fmt::print("{:3d} \t: {}\n", i, line);
-            }
-            fmt::print("\n");
+            // fmt::print("\t{} :\n", path);
+            // std::stringstream shader_stream(shader_code);
+            // std::string line;
+            // for (int i = 1; std::getline(shader_stream, line); i++) {
+            //     fmt::print("{:3d} \t: {}\n", i, line);
+            // }
+            // fmt::print("\n");
 
             GLint result = GL_FALSE;
 

@@ -26,13 +26,14 @@ protected:
 
     GLuint screen_framebuffer = 0;
 
-    Shader object_vertex_shader = Shader(GL_VERTEX_SHADER, "object_ray.vert");
-    Shader object_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_object_ray.frag");
-    Program object_program = Program({object_vertex_shader, object_fragment_shader});
+    Shader mesh_vertex_shader = Shader(GL_VERTEX_SHADER, "object_ray.vert");
+    Shader mesh_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_object_ray.frag");
+    Program mesh_program = Program({mesh_vertex_shader, mesh_fragment_shader});
 
-    // Shader object_vertex_shader = Shader(GL_VERTEX_SHADER, "object_ray.vert");
-    // Shader object_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_object_ray.frag");
-    // Program object_program = Program({object_vertex_shader, object_fragment_shader});
+    Shader point_vertex_shader = Shader(GL_VERTEX_SHADER, "point_ray.vert");
+    Shader point_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_point_ray.frag");
+    Shader point_geometry_shader = Shader(GL_GEOMETRY_SHADER, "layered_point_ray.geom");
+    Program point_program = Program({point_vertex_shader, point_fragment_shader, point_geometry_shader});
 
     Shader screen_vertex_shader = Shader(GL_VERTEX_SHADER, "layered_screen_ray.vert");
     Shader screen_fragment_shader = Shader(GL_FRAGMENT_SHADER, "layered_screen_ray.frag");
