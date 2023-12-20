@@ -134,7 +134,7 @@ namespace OddityEngine::Graphics::Render {
         glUniform1ui(point_program.uniform_location("bounces"), layer_count);
 
         auto ray_projection = glm::mat4(1);
-        ray_projection[0][0] = fov / aspect;
+        ray_projection[0][0] = fov * aspect;
         ray_projection[1][1] = fov;
 
         for (auto o : object_list) {
@@ -144,10 +144,12 @@ namespace OddityEngine::Graphics::Render {
                 glm::mat4 mv = glm::mat4(1) * view * o->get_transform();
                 glm::mat4 v = glm::mat4(1) * view * glm::mat4(1);
                 glm::mat4 p = projection * glm::mat4(1) * glm::mat4(1);
+                glm::mat4 vp = projection * view * glm::mat4(1);
                 glm::mat4 mp = projection * glm::mat4(1) * o->get_transform();
                 glUniformMatrix4fv(point_program.uniform_location("projection"), 1, GL_FALSE, &p[0][0]);
                 glUniformMatrix4fv(point_program.uniform_location("mp"), 1, GL_FALSE, &mp[0][0]);
                 glUniformMatrix4fv(point_program.uniform_location("mv"), 1, GL_FALSE, &mv[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("vp"), 1, GL_FALSE, &vp[0][0]);
                 glUniformMatrix4fv(point_program.uniform_location("mvp"), 1, GL_FALSE, &mvp[0][0]);
                 glUniformMatrix4fv(point_program.uniform_location("ray_mvp"), 1, GL_FALSE, &ray_mvp[0][0]);
                 glUniformMatrix4fv(point_program.uniform_location("view"), 1, GL_FALSE, &view[0][0]);
