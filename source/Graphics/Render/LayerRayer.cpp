@@ -127,27 +127,30 @@ namespace OddityEngine::Graphics::Render {
         glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         glUniform3f(point_program.uniform_location("camera_pos"), camera->position.x, camera->position.y, camera->position.z);
+        glUniform3f(point_program.uniform_location("camera_dir"), camera->front().x, camera->front().y, camera->front().z);
         glUniform2f(point_program.uniform_location("screen_size"), size.x, size.y);
         glUniform1ui(point_program.uniform_location("layer_elements"), layer_elements);
         glUniform1ui(point_program.uniform_location("frame_clock"), Time::get_frame());
         glUniform1ui(point_program.uniform_location("bounces"), layer_count);
 
-        auto render_projection = glm::mat4(1);
-        render_projection[0][0] = fov / aspect;
-        render_projection[1][1] = fov;
-        auto render_view = glm::toMat4(camera->orientation);
+        auto ray_projection = glm::mat4(1);
+        ray_projection[0][0] = fov / aspect;
+        ray_projection[1][1] = fov;
 
         for (auto o : object_list) {
             if (o->get_shape()->get_shape() == Shape::SPHERE) {
-                glm::mat4 screen_mvp = projection * view * o->get_transform();
-                glm::mat4 ray_mvp = projection * view * o->get_transform();
+                glm::mat4 mvp = projection * view * o->get_transform();
+                glm::mat4 ray_mvp = ray_projection * glm::toMat4(camera->orientation) * o->get_transform();
+                glm::mat4 mv = glm::mat4(1) * view * o->get_transform();
                 glm::mat4 v = glm::mat4(1) * view * glm::mat4(1);
+                glm::mat4 p = projection * glm::mat4(1) * glm::mat4(1);
                 glm::mat4 mp = projection * glm::mat4(1) * o->get_transform();
-                glUniformMatrix4fv(point_program.uniform_location("projection"), 1, GL_FALSE, &projection[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("projection"), 1, GL_FALSE, &p[0][0]);
                 glUniformMatrix4fv(point_program.uniform_location("mp"), 1, GL_FALSE, &mp[0][0]);
-                glUniformMatrix4fv(point_program.uniform_location("mvp"), 1, GL_FALSE, &screen_mvp[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("mv"), 1, GL_FALSE, &mv[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("mvp"), 1, GL_FALSE, &mvp[0][0]);
                 glUniformMatrix4fv(point_program.uniform_location("ray_mvp"), 1, GL_FALSE, &ray_mvp[0][0]);
-                glUniformMatrix4fv(point_program.uniform_location("view"), 1, GL_FALSE, &v[0][0]);
+                glUniformMatrix4fv(point_program.uniform_location("view"), 1, GL_FALSE, &view[0][0]);
                 glUniformMatrix4fv(point_program.uniform_location("model"), 1, GL_FALSE, &o->get_transform()[0][0]);
                 glUniform1ui(point_program.uniform_location("object"), o->get_index());
 
