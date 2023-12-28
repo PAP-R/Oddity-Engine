@@ -49,6 +49,14 @@ set(SOURCES
         Graphics/Object/Sphere.h
         Graphics/Render/OddBlock.cpp
         Graphics/Render/OddBlock.h
+        "Neural Network/Network.cpp"
+        "Neural Network/Network.h"
+        "Neural Network/Internal/Layer.h"
+        "Neural Network/Internal/Dense.h"
+        "Neural Network/Internal/Activation.h"
+        "Neural Network/Internal/Losses.h"
+        Math/Matrix.h
+        Math/Vector.h
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
