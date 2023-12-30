@@ -3,10 +3,10 @@
 
 #include <cmath>
 
-#include "Math/Vector.h"
+#include <Math/Vector.h>
 
 namespace OddityEngine::NeuralNetwork {
-    static float mse(Math::Vector<> value_true, Math::Vector<> value_predicted) {
+    static float mse(const Math::Vector<>& value_true, const Math::Vector<>& value_predicted) {
         float result = 0;
         for (int i = 0; i < value_true.size(); i++) {
             result += pow(value_true[i] - value_predicted[i], 2);
@@ -14,7 +14,7 @@ namespace OddityEngine::NeuralNetwork {
         return result / static_cast<float>(value_true.size());
     }
 
-    static Math::Vector<> mse_prime(Math::Vector<> value_true, Math::Vector<> value_predicted) {
+    static Math::Vector<> mse_prime(const Math::Vector<>& value_true, const Math::Vector<>& value_predicted) {
         return (value_predicted - value_true) / value_true.size() * 2;
     }
 }

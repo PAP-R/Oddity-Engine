@@ -1,47 +1,158 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <cstring>
-
-#include <Util/Debug.h>
-
 #include "Matrix.h"
 
-namespace OddityEngine::Math {
-    template<typename T = float>
-    class Vector : public Matrix<T> {
+namespace OddityEngine {
+    template<typename T = double>
+    class Vector : public Matrix<T>{
     protected:
-        using Matrix<T>::data;
+        using Matrix<T>::resize;
+        using Matrix<T>::resize_columns;
     public:
-        Vector(const Matrix<T>& base) : Matrix<T>(base) {}
+        Vector() = default;
 
-        explicit Vector(size_t initial_size = 1) : Matrix<T>(initial_size, 1) {}
+        explicit Vector(size_t size) : Matrix<T>(size, 1) {
+        }
 
-        Vector(std::initializer_list<T> list) : Matrix<T>(list.size(), 1) {
+        Vector(size_t size, T value) : Matrix<T>(size, 1, value) {
+        }
+
+        Vector(std::initializer_list<T> list) : Vector(list.size()) {
             int i = 0;
             for (auto o : list) {
                 (*this)[i++] = o;
             }
         }
 
-        Vector copy() {
-            return Matrix<T>::copy();
+        Vector& resize(size_t size) {
+            Matrix<T>::resize_rows(size);
+            return *this;
         }
 
-        void resize(size_t size) {
-            Matrix<T>::resize(size, 1);
+        T& operator [] (long long int index) const {
+            return Matrix<T>::data[index % Matrix<T>::rows()];
         }
 
-        T& operator [] (long long int index) {
-            return Matrix<T>::operator[](index, 0);
+        void insert(size_t index, T value) {
+            if (index > Matrix<T>::size()) {
+                return;
+            }
+            this->resize(Matrix<T>::size() + 1);
+            if (Matrix<T>::size() > 1) {
+                for (int i = Matrix<T>::size() - 1; i > index; i--) {
+                    (*this)[i] = (*this)[i - 1];
+                }
+            }
+
+            (*this)[index] = value;
         }
 
-        Vector& operator = (const Vector& other) {
-            this->resize(other.size());
-            memcpy(this->data, other.data, this->_rows * this->_columns * sizeof(T));
+        Vector(const Vector& other) : Matrix<T>{other} {
+        }
+
+        Vector(Vector&& other) noexcept : Matrix<T>{std::move(other)} {
+        }
+
+        Vector& operator=(const Vector& other) {
+            if (this == &other)
+                return *this;
+            Matrix<T>::operator =(other);
+            return *this;
+        }
+
+        Vector& operator=(Vector&& other) noexcept {
+            if (this == &other)
+                return *this;
+            Matrix<T>::operator =(std::move(other));
+            return *this;
+        }
+
+        Vector(const Matrix<T>& other) : Matrix<T>{other} {
+            Matrix<T>::resize(Matrix<T>::size(), 1);
+        }
+
+        Vector(Matrix<T>&& other) noexcept : Matrix<T>{std::move(other)} {
+            Matrix<T>::resize(Matrix<T>::size(), 1);
+        }
+
+        Vector& operator=(const Matrix<T>& other) {
+            if (this == &other)
+                return *this;
+            Matrix<T>::operator =(other);
+            Matrix<T>::resize(Matrix<T>::size(), 1);
+            return *this;
+        }
+
+        Vector& operator=(Matrix<T>&& other) noexcept {
+            if (this == &other)
+                return *this;
+            Matrix<T>::operator =(std::move(other));
+            Matrix<T>::resize(Matrix<T>::size(), 1);
+            return *this;
+        }
+
+        template<typename S = T, std::enable_if_t<std::is_arithmetic_v<S>, bool> = true>
+        Vector& operator *= (const Vector& other) {
+            if (this->rows() != other.rows()) {
+                Debug::error(fmt::format("Vector size mismatch : [{}] != [{}]", this->rows(), other.rows()));
+            }
+
+            for (int x = 0; x < Matrix<T>::rows(); x++) {
+                for (int y = 0; y < Matrix<T>::columns(); y++) {
+                    (*this)[x] *= other[x];
+                }
+            }
+
+            return *this;
+        }
+
+        template<typename S = T, std::enable_if_t<std::is_arithmetic_v<S>, bool> = true>
+        Vector& operator /= (const Vector& other) {
+            if (this->rows() != other.rows()) {
+                Debug::error(fmt::format("Vector size mismatch : [{}] != [{}]", this->rows(), other.rows()));
+            }
+
+            for (int x = 0; x < Matrix<T>::rows(); x++) {
+                for (int y = 0; y < Matrix<T>::columns(); y++) {
+                    (*this)[x] /= other[x];
+                }
+            }
+
             return *this;
         }
     };
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+    Vector<T> operator * (Vector<T> vector, const Vector<T>& other) {
+        return vector *= other;
+    }
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+    Vector<T> operator * (Matrix<T> matrix, const Vector<T>& other) {
+        try {
+            return matrix * static_cast<Matrix<T>>(other);
+        }
+        catch (...) {
+        }
+
+        if (matrix.rows() != other.rows()) {
+            Debug::error(fmt::format("Matrix Vector size mismatch : [{}] != [{}]\n{:s}\n!=\n{:s}", matrix.rows(), other.rows(), std::string(matrix), std::string(other)));
+        }
+
+        for (int x = 0; x < matrix.rows(); x++) {
+            for (int y = 0; y < matrix.columns(); y++) {
+                matrix[x][y] *= other[x];
+            }
+        }
+
+        return matrix;
+    }
+
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+    Vector<T> operator / (Vector<T> vector, const Vector<T>& other) {
+        return vector /= other;
+    }
 }
 
 #endif //VECTOR_H

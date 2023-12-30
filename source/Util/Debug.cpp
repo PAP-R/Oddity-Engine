@@ -34,7 +34,6 @@ namespace OddityEngine {
         }
 
         void error(const std::string& message) {
-            Debug::message(message);
             throw std::runtime_error(message);
         }
 
