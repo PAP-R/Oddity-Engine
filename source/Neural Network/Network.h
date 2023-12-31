@@ -46,8 +46,11 @@ namespace OddityEngine::NeuralNetwork {
                     l = Math::random<size_t>(0, net.layers.size() - 2);
                     net.resize(l, net.layers[l]->output_size() + 1);
                 }
+                else {
+                    l = Math::random<size_t>(0, net.layers.size() - 1);
+                    net.layers[l]->evolve(net.learning_rate);
+                }
 
-                net.layers[l]->evolve(net.learning_rate);
             }
 
             return net;
@@ -133,10 +136,17 @@ namespace OddityEngine::NeuralNetwork {
         double test(const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list) {
             double error = 0;
             for (int i = 0; i < input_list.size(); i++) {
-                error += (this->apply(input_list[i]).resize(output_count) - output_list[i]).abs().mean();
+                auto value = this->apply(input_list[i]);
+                if (value.size() != output_list[i].size()) {
+                    error = std::numeric_limits<double>::infinity();
+                }
+                else {
+                    error += (value - output_list[i]).abs().mean();
+                }
+                std::cout << i << "\n" << input_list[i] << " -> " << value << " : " << output_list[i] << " : " << error << "\n";
             }
 
-            return error / input_list.size();
+            return error / static_cast<double>(input_list.size());
         }
 
         double train(const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list) {
@@ -161,10 +171,15 @@ namespace OddityEngine::NeuralNetwork {
             SortableVector<Network*> best_nets(0);
 
             for (auto n : nets) {
-                best_nets.sorted_insert(n, n->test(input_list, output_list));
+                auto score = n->test(input_list, output_list);
+                best_nets.sorted_insert(n, score);
                 for (int i = 0; i < n->evolutions; i++) {
                     auto evo = evolve(n);
-                    best_nets.sorted_insert(evo, evo->test(input_list, output_list));
+                    score = evo->test(input_list, output_list);
+                    auto place = best_nets.sorted_insert(evo, score);
+                    if (score < best_nets.scores()[0]) {
+                        std::cout << place << " : " << score << "\n";
+                    }
                 }
             }
 

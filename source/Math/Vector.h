@@ -15,7 +15,7 @@ namespace OddityEngine {
         explicit Vector(size_t size) : Matrix<T>(size, 1) {
         }
 
-        Vector(size_t size, T value) : Matrix<T>(size, 1, value) {
+        Vector(size_t size, T value, bool use_default = false) : Matrix<T>(size, 1, value, use_default) {
         }
 
         Vector(std::initializer_list<T> list) : Vector(list.size()) {

@@ -22,7 +22,7 @@ namespace OddityEngine {
         }
 
         size_t sorted_insert(T value, S score) {
-            for (int i = 0; i < _scores.size(); i--) {
+            for (int i = 0; i < _scores.size(); i++) {
                 if (score < _scores[i]) {
                     _scores.insert(i, score);
                     Vector<T>::insert(i, value);
@@ -30,7 +30,8 @@ namespace OddityEngine {
                 }
             }
             _scores.insert(_scores.size(), score);
-            Vector<T>::insert(Vector<T>::size(), value);
+            this->insert(this->size(), value);
+            return this->size() - 1;
         }
 
         Vector<S> scores() {

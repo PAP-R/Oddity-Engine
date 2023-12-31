@@ -16,7 +16,8 @@ namespace OddityEngine {
         size_t _rows = 0;
         size_t _columns = 1;
         size_t _size = 0;
-        size_t _index = 0;
+        bool use_default = false;
+        T default_value;
         T* data = nullptr;
 
     public:
@@ -27,15 +28,24 @@ namespace OddityEngine {
         Matrix() : Matrix(1, 1) {
         }
 
-        Matrix(const size_t rows, const size_t columns, T value) : Matrix(rows, columns) {
+        Matrix(const size_t rows, const size_t columns, T value, bool use_default = false) : Matrix(rows, columns) {
+            this->use_default = use_default;
+            this->default_value = value;
             const size_t bigger = rows > columns ? rows : columns;
             auto cr = static_cast<long double>(columns) / rows;
             cr = cr < 1 ? cr : 1;
             auto rc = static_cast<long double>(rows) / columns;
             rc = rc < 1 ? rc : 1;
 
-            for (int i = 0; i < bigger; i++) {
-                data[static_cast<size_t>(i * rc) * this->_columns + static_cast<size_t>(i * cr)] = value;
+            if (use_default) {
+                for (int i = 0; i < rows * columns; i++) {
+                    data[i] = value;
+                }
+            }
+            else {
+                for (int i = 0; i < bigger; i++) {
+                    data[static_cast<size_t>(i * rc) * this->_columns + static_cast<size_t>(i * cr)] = value;
+                }
             }
         }
 
@@ -64,6 +74,14 @@ namespace OddityEngine {
                 this->data = static_cast<T*>(calloc(new_size, sizeof(T)));
                 if (this->data == nullptr) {
                     Debug::error("Failed to allocate Matrix Memomry");
+                }
+            }
+
+            if (this->use_default) {
+                for (int x = 0; x < rows; x++) {
+                    for (int y = 0; y < columns; y++) {
+                        data[x * columns + y] = default_value;
+                    }
                 }
             }
 
@@ -111,11 +129,14 @@ namespace OddityEngine {
         }
 
         T* operator [] (int index) const {
-            return data + ((index % _rows) * _columns);
+            if (this->size() > 0) {
+                return data + ((index % _rows) * _columns);
+            }
+            return nullptr;
         }
 
         bool operator == (const Matrix& other) const {
-            if (this->_rows != other._rows || this->_columns != other._columns || this->_index != other._index) {
+            if (this->_rows != other._rows || this->_columns != other._columns) {
                 return false;
             }
 
@@ -132,16 +153,21 @@ namespace OddityEngine {
             return !(*this == other);
         }
 
-        bool size_check(const Matrix& other) {
-            return this->_rows == other._rows && this->_columns == other._columns;
+        template<typename S>
+        bool size_check(const Matrix<S>& other) {
+            return this->_rows == other.rows() && this->_columns == other.columns();
         }
 
         Matrix(const Matrix& other) {
+            this->use_default = other.use_default;
+            this->default_value = other.default_value;
             resize(other._rows, other._columns);
             memcpy(data, other.data, other.size() * sizeof(T));
         }
 
         Matrix(Matrix&& other) noexcept {
+            this->use_default = other.use_default;
+            this->default_value = other.default_value;
             resize(other._rows, other._columns);
             memcpy(data, other.data, other.size() * sizeof(T));
         }
@@ -149,6 +175,8 @@ namespace OddityEngine {
         Matrix& operator=(const Matrix& other) {
             if (this == &other)
                 return *this;
+            this->use_default = other.use_default;
+            this->default_value = other.default_value;
             resize(other._rows, other._columns);
             memcpy(data, other.data, other.size() * sizeof(T));
             return *this;
@@ -157,9 +185,27 @@ namespace OddityEngine {
         Matrix& operator=(Matrix&& other) noexcept {
             if (this == &other)
                 return *this;
+            this->use_default = other.use_default;
+            this->default_value = other.default_value;
             resize(other._rows, other._columns);
             memcpy(data, other.data, other.size() * sizeof(T));
             return *this;
+        }
+
+        template<typename S>
+        Matrix<S> operator () (Matrix<S>  args) {
+            if (!size_check(args)) {
+                Debug::error("Matrix size mismatch");
+            }
+
+            Matrix<S> result(this->rows(), this->columns());
+            for (int x = 0; x < this->rows(); x++) {
+                for (int y = 0; y < this->columns(); y++) {
+                    result[x][y] = (*this)[x][y](args[x][y]);
+                }
+            }
+
+            return result;
         }
 
         operator std::string () const {
@@ -268,44 +314,59 @@ namespace OddityEngine {
         }
 
         /*** Iteration ***/
-        T& operator * () const {
-            return *(data + _index);
+        class Iterator {
+        protected:
+            size_t index;
+            T* data;
+
+        public:
+            Iterator(size_t index, T* data) : index(index), data(data) {}
+
+            bool operator == (const Iterator& other) const {
+                return index == other.index && data == other.data;
+            }
+
+            bool operator != (const Iterator& other) const {
+                return index != other.index || data != other.data;
+            }
+
+            T& operator * () const {
+                return *(data + index);
+            }
+
+            T* operator -> () const {
+                return data + index;
+            }
+
+            Iterator& operator ++ () {
+                index += 1;
+                return *this;
+            }
+
+            Iterator operator ++ (int) {
+                auto temp = *this;
+                ++(*this);
+                return temp;
+            }
+
+            Iterator& operator -- () {
+                index -= 1;
+                return *this;
+            }
+
+            Iterator operator -- (int) {
+                auto temp = *this;
+                --(*this);
+                return temp;
+            }
+        };
+
+        Iterator begin() {
+            return Iterator(0, data);
         }
 
-        T* operator -> () const {
-            return data + _index;
-        }
-
-        Matrix& operator ++ () {
-            _index += 1;
-            return *this;
-        }
-
-        Matrix operator ++ (int) {
-            auto temp = *this;
-            ++(*this);
-            return temp;
-        }
-
-        Matrix& operator -- () {
-            _index -= 1;
-            return *this;
-        }
-
-        Matrix operator -- (int) {
-            auto temp = *this;
-            --(*this);
-            return temp;
-        }
-
-        Matrix begin() {
-            return *this;
-        }
-
-        Matrix end() {
-            auto temp = *this;
-            temp._index = temp.size();
-            return temp;
+        Iterator end() {
+            return Iterator(this->size(), data);
         }
     };
 
