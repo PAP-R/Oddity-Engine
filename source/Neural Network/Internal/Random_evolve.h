@@ -8,6 +8,7 @@ namespace OddityEngine::NeuralNetwork {
     class Random_evolve : public Layer {
     protected:
         inline static Vector<double(*)(double)> available_functions = {
+            [](const double x){return x * x;},
             [](const double x){return sin(x);},
             [](const double x){return cos(x);},
             [](const double x){return tanh(x);},

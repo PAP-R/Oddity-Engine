@@ -50,7 +50,15 @@ namespace OddityEngine {
         }
 
         ~Matrix() {
+          this->clear(data);
             if (data != nullptr) free(data);
+        }
+
+        void clear(T* data, size_t count = 0) {
+            if (count == 0) count = this->size();
+            for (int i = 0; i < count; ++i) {
+                data[i].~T();
+            }
         }
 
         /*** Shape ***/

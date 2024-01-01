@@ -123,7 +123,9 @@ namespace OddityEngine::NeuralNetwork {
             return *this;
         }
 
-
+        Vector<Layer*>& get_layers() {
+          return layers;
+        }
 
         Vector<double> apply(Vector<double> input) {
             for (auto l : layers) {
@@ -143,7 +145,6 @@ namespace OddityEngine::NeuralNetwork {
                 else {
                     error += (value - output_list[i]).abs().mean();
                 }
-                std::cout << i << "\n" << input_list[i] << " -> " << value << " : " << output_list[i] << " : " << error << "\n";
             }
 
             return error / static_cast<double>(input_list.size());
@@ -176,10 +177,7 @@ namespace OddityEngine::NeuralNetwork {
                 for (int i = 0; i < n->evolutions; i++) {
                     auto evo = evolve(n);
                     score = evo->test(input_list, output_list);
-                    auto place = best_nets.sorted_insert(evo, score);
-                    if (score < best_nets.scores()[0]) {
-                        std::cout << place << " : " << score << "\n";
-                    }
+                    best_nets.sorted_insert(evo, score);
                 }
             }
 
@@ -187,8 +185,7 @@ namespace OddityEngine::NeuralNetwork {
                 delete(best_nets[i]);
             }
 
-            std::cout << best_nets.scores().resize(3).transpose() << "\n";
-
+            std::cout << best_nets.scores()[0] << "\n";
             return best_nets.resize(nets.size());
         }
 
@@ -196,7 +193,6 @@ namespace OddityEngine::NeuralNetwork {
             double error = 0;
             for (int i = 0; i < epochs; ++i) {
                 error = train(input_list, output_list);
-                std::cout << "Epoch [" << i << "]:" << error << "\n";
             }
 
             return error;
@@ -204,12 +200,29 @@ namespace OddityEngine::NeuralNetwork {
 
         static Vector<Network*> train(Vector<Network*> nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list, size_t epochs) {
             for (int i = 0; i < epochs; ++i) {
+                std::cout << "[" << i << "/" << epochs << "]: ";
                 nets = train(nets, input_list, output_list);
             }
 
             return nets;
         }
     };
+
+    template<size_t in, size_t out>
+    inline std::ostream& operator << (std::ostream& os, Network<in, out>& network) {
+        for (auto l : network.get_layers()) {
+            os << l << "\n";
+        }
+
+        return os;
+    }
+
+    template<size_t in, size_t out>
+    inline std::ostream& operator << (std::ostream& os, Network<in, out>* network) {
+        os << *network;
+
+        return os;
+    }
 }
 
 #endif //NETWORK_H
