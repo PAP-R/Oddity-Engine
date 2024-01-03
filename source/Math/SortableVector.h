@@ -21,7 +21,7 @@ namespace OddityEngine {
             return *this;
         }
 
-        size_t sorted_insert(T value, S score) {
+        size_t sorted_insert(const T& value, S score) {
             for (int i = 0; i < _scores.size(); i++) {
                 if (score < _scores[i]) {
                     _scores.insert(i, score);

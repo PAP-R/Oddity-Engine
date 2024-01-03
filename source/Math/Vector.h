@@ -30,11 +30,11 @@ namespace OddityEngine {
             return *this;
         }
 
-        T& operator [] (long long int index) const {
-            return Matrix<T>::data[index % Matrix<T>::rows()];
+        T& operator [] (size_t index) const {
+            return Matrix<T>::data.get()[index];
         }
 
-        void insert(size_t index, T value) {
+        void insert(size_t index, const T& value) {
             if (index > Matrix<T>::size()) {
                 return;
             }
@@ -48,10 +48,10 @@ namespace OddityEngine {
             (*this)[index] = value;
         }
 
-        Vector(const Vector& other) : Matrix<T>{other} {
+        Vector(const Vector& other) : Matrix<T>(std::move(other)) {
         }
 
-        Vector(Vector&& other) noexcept : Matrix<T>{std::move(other)} {
+        Vector(Vector&& other) noexcept : Matrix<T>(std::move(other)) {
         }
 
         Vector& operator=(const Vector& other) {

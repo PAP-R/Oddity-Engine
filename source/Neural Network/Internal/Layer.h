@@ -22,6 +22,7 @@ namespace OddityEngine::NeuralNetwork {
 
     public:
         Layer(const size_t input_count, const size_t output_count) : _input_size(input_count), _output_size(output_count), weights(output_count, input_count, default_weight), bias(output_count, default_bias), functions(output_count, [](const double x){return x;}, true), input(input_count), output(output_count) {}
+
         virtual ~Layer() = default;
 
         virtual void resize_input(const size_t size) {
@@ -46,7 +47,7 @@ namespace OddityEngine::NeuralNetwork {
             return _output_size;
         }
 
-        virtual Layer* copy() = 0;
+        virtual std::shared_ptr<Layer> copy() = 0;
 
         virtual void evolve(double rate) = 0;
         virtual Vector<double> forward(Vector<double> input) = 0;

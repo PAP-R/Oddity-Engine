@@ -52,11 +52,12 @@ set(SOURCES
         "Neural Network/Internal/Layer.h"
         Math/Matrix.h
         Math/Vector.h
-        "Neural Network/Network.h"
+        "Neural Network/Network_old.h"
         Math/basics.h
         Math/random.h
         "Neural Network/Internal/Random_evolve.h"
         Math/SortableVector.h
+        "Neural Network/Network.h"
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})

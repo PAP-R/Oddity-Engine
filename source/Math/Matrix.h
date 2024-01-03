@@ -2,6 +2,7 @@
 #define MATRIX_H
 
 #include <cstring>
+#include <memory>
 #include <sstream>
 #include <fmt/core.h>
 
@@ -18,7 +19,7 @@ namespace OddityEngine {
         size_t _size = 0;
         bool use_default = false;
         T default_value;
-        T* data = nullptr;
+        std::shared_ptr<T[]> data = nullptr;
 
     public:
         Matrix(const size_t rows, const size_t columns) {
@@ -49,18 +50,6 @@ namespace OddityEngine {
             }
         }
 
-        ~Matrix() {
-          this->clear(data);
-            if (data != nullptr) free(data);
-        }
-
-        void clear(T* data, size_t count = 0) {
-            if (count == 0) count = this->size();
-            for (int i = 0; i < count; ++i) {
-                data[i].~T();
-            }
-        }
-
         /*** Shape ***/
         [[nodiscard]] size_t rows() const {
             return _rows;
@@ -77,18 +66,13 @@ namespace OddityEngine {
         Matrix& resize(const size_t& rows, const size_t& columns) {
             if (rows == 0 || columns == 0) return *this;
             size_t new_size = rows * columns;
-            T* temp = this->data;
-            if (this->size() != new_size) {
-                this->data = static_cast<T*>(calloc(new_size, sizeof(T)));
-                if (this->data == nullptr) {
-                    Debug::error("Failed to allocate Matrix Memomry");
-                }
-            }
+            auto temp = this->data;
+            this->data = std::make_shared<T[]>(new_size);
 
             if (this->use_default) {
-                for (int x = 0; x < rows; x++) {
-                    for (int y = 0; y < columns; y++) {
-                        data[x * columns + y] = default_value;
+                for (int x = this->rows(); x < rows; x++) {
+                    for (int y = this->columns(); y < columns; y++) {
+                        (*this)[x][y] = default_value;
                     }
                 }
             }
@@ -98,10 +82,8 @@ namespace OddityEngine {
                 auto temp_columns = Math::min(columns, this->columns());
 
                 for (int x = 0; x < temp_rows; x++) {
-                    memcpy(this->data + x * columns, temp + x * this->columns(), temp_columns * sizeof(T));
+                    memcpy(&this->data[x], &temp[x], temp_columns * sizeof(T));
                 }
-
-                if (temp != this->data) free(temp);
             }
 
             this->_rows = rows;
@@ -136,11 +118,16 @@ namespace OddityEngine {
             return data[(x % _rows) * _columns + (y % _columns)];
         }
 
-        T* operator [] (int index) const {
-            if (this->size() > 0) {
-                return data + ((index % _rows) * _columns);
+        struct Row {
+            size_t _index;
+            std::shared_ptr<T[]> data;
+            T& operator [] (size_t index) const {
+                return data.get()[_index + index];
             }
-            return nullptr;
+        };
+
+        Row operator [] (size_t index) const {
+            return {index * this->_columns, data};
         }
 
         bool operator == (const Matrix& other) const {
@@ -166,37 +153,57 @@ namespace OddityEngine {
             return this->_rows == other.rows() && this->_columns == other.columns();
         }
 
-        Matrix(const Matrix& other) {
-            this->use_default = other.use_default;
-            this->default_value = other.default_value;
-            resize(other._rows, other._columns);
-            memcpy(data, other.data, other.size() * sizeof(T));
+        Matrix(const Matrix& other)
+            : _rows(other._rows),
+              _columns(other._columns),
+              _size(other._size),
+              use_default(other.use_default),
+              default_value(other.default_value),
+              data(std::make_shared<T[]>(other._size)) {
+            for (int i = 0; i < other._size; i++) {
+                data[i] = other.data[i];
+            }
         }
 
-        Matrix(Matrix&& other) noexcept {
-            this->use_default = other.use_default;
-            this->default_value = other.default_value;
-            resize(other._rows, other._columns);
-            memcpy(data, other.data, other.size() * sizeof(T));
+        Matrix(Matrix&& other) noexcept
+            : _rows(other._rows),
+              _columns(other._columns),
+              _size(other._size),
+              use_default(other.use_default),
+              default_value(std::move(other.default_value)),
+              data(std::make_shared<T[]>(other._size)) {
+            for (int i = 0; i < other._size; i++) {
+                data[i] = other.data[i];
+            }
         }
 
         Matrix& operator=(const Matrix& other) {
             if (this == &other)
                 return *this;
-            this->use_default = other.use_default;
-            this->default_value = other.default_value;
-            resize(other._rows, other._columns);
-            memcpy(data, other.data, other.size() * sizeof(T));
+            _rows = other._rows;
+            _columns = other._columns;
+            _size = other._size;
+            use_default = other.use_default;
+            default_value = other.default_value;
+            data = std::make_shared<T[]>(other._size);
+            for (int i = 0; i < other._size; i++) {
+                data[i] = other.data[i];
+            }
             return *this;
         }
 
         Matrix& operator=(Matrix&& other) noexcept {
             if (this == &other)
                 return *this;
-            this->use_default = other.use_default;
-            this->default_value = other.default_value;
-            resize(other._rows, other._columns);
-            memcpy(data, other.data, other.size() * sizeof(T));
+            _rows = other._rows;
+            _columns = other._columns;
+            _size = other._size;
+            use_default = other.use_default;
+            default_value = std::move(other.default_value);
+            data = std::make_shared<T[]>(other._size);
+            for (int i = 0; i < other._size; i++) {
+                data[i] = other.data[i];
+            }
             return *this;
         }
 
@@ -325,10 +332,10 @@ namespace OddityEngine {
         class Iterator {
         protected:
             size_t index;
-            T* data;
+            std::shared_ptr<T[]> data;
 
         public:
-            Iterator(size_t index, T* data) : index(index), data(data) {}
+            Iterator(size_t index, std::shared_ptr<T[]> data) : index(index), data(data) {}
 
             bool operator == (const Iterator& other) const {
                 return index == other.index && data == other.data;
@@ -339,11 +346,11 @@ namespace OddityEngine {
             }
 
             T& operator * () const {
-                return *(data + index);
+                return data[index];
             }
 
             T* operator -> () const {
-                return data + index;
+                return (data + index);
             }
 
             Iterator& operator ++ () {
@@ -389,22 +396,16 @@ namespace OddityEngine {
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
-    Matrix<T> operator * (const Matrix<T>& matrix, const Matrix<T>& other) {
-        if (matrix.columns() != other.rows()) {
-                Debug::error(fmt::format("Matrix size mismatch : [{}] != [{}]\n{:s}\n!=\n{:s}", matrix.columns(), other.rows(), std::string(matrix), std::string(other)));
-        }
-
-        Matrix<T> result(matrix.rows(), other.columns());
-
+    Matrix<T> operator * (Matrix<T> matrix, const Matrix<T>& other) {
         for (int x = 0; x < matrix.rows(); x++) {
             for (int y = 0; y < other.columns(); y++) {
                 for (int z = 0; z < matrix.columns(); z++) {
-                    result[x][y] += matrix[x][z] * other[z][y];
+                    matrix[x][y] *= other[z][y];
                 }
             }
         }
 
-        return result;
+        return matrix;
     }
 
     template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true,
