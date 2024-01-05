@@ -5,7 +5,7 @@
 #include <valarray>
 #include <variant>
 #include <Math/Vector.h>
-#include <Math/Matrix.h>
+#include <../Util/Matrix.h>
 
 #include "Internal/Layer.h"
 #include "Internal/Random_evolve.h"

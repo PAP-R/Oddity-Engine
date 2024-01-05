@@ -50,14 +50,15 @@ set(SOURCES
         Graphics/Render/OddBlock.cpp
         Graphics/Render/OddBlock.h
         "Neural Network/Internal/Layer.h"
-        Math/Matrix.h
-        Math/Vector.h
+        Util/Matrix.h
+        Util/Vector.h
         "Neural Network/Network_old.h"
         Math/basics.h
         Math/random.h
         "Neural Network/Internal/Random_evolve.h"
-        Math/SortableVector.h
+        Util/SortableVector.h
         "Neural Network/Network.h"
+        Util/Pointer.h
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})

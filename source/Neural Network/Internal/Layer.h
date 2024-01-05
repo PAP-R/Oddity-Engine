@@ -1,8 +1,8 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include <Math/Matrix.h>
-#include <Math/Vector.h>
+#include <Util/Matrix.h>
+#include <Util/Vector.h>
 
 namespace OddityEngine::NeuralNetwork {
     class Layer {
@@ -46,8 +46,6 @@ namespace OddityEngine::NeuralNetwork {
         [[nodiscard]] size_t output_size() const {
             return _output_size;
         }
-
-        virtual std::shared_ptr<Layer> copy() = 0;
 
         virtual void evolve(double rate) = 0;
         virtual Vector<double> forward(Vector<double> input) = 0;

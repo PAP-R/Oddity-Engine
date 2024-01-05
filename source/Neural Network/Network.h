@@ -1,16 +1,16 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
-#include <Math/Vector.h>
+#include <Util/Vector.h>
 #include "Internal/Layer.h"
 #include "Internal/Random_evolve.h"
-#include "Math/SortableVector.h"
+#include "../Util/SortableVector.h"
 
 namespace OddityEngine::NeuralNetwork {
     template<size_t input_count, size_t output_count>
     class Network {
     protected:
-        Vector<std::shared_ptr<Layer>> layers;
+        Vector<Pointer<Layer>> layers;
         size_t mutations;
         size_t evolutions;
         double add_chance;
@@ -26,7 +26,7 @@ namespace OddityEngine::NeuralNetwork {
         Network evolve() {
             auto evo = *this;
             for (int i = 0; i < layers.size(); i++) {
-                evo.layers[i] = layers[i]->copy();
+                evo.layers[i] = layers[i].copy();
             }
             for (int i = 0; i < evo.mutations; ++i) {
                 auto random = Math::random(0., 1.);
@@ -35,7 +35,7 @@ namespace OddityEngine::NeuralNetwork {
                     l = Math::random<size_t>(0, evo.layers.size());
                     const size_t input_size = l == 0 ? input_count : evo.layers[l - 1]->output_size();
                     const size_t output_size = l == evo.layers.size() ? output_count : evo.layers[l]->input_size();
-                    evo.layers.insert(l, std::make_shared<Random_evolve>(input_size, output_size));
+                    evo.layers.insert(l, Pointer(Random_evolve(input_size, output_size)));
                 }
                 else if (random < evo.add_chance) {
                     l = Math::random<size_t>(0, evo.layers.size() - 2);
@@ -52,10 +52,10 @@ namespace OddityEngine::NeuralNetwork {
 
     public:
         explicit Network(size_t mutations = 1, size_t evolutions = 1, double add_chance = 0.05, double learning_rate = 0.1) : layers(1, nullptr), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {
-            layers[0] = std::make_shared<Random_evolve>(input_count, output_count);
+            layers[0] = Pointer(Random_evolve(input_count, output_count));
         }
 
-        Vector<std::shared_ptr<Layer>> get_layers() {
+        Vector<Pointer<Layer>> get_layers() {
             return layers;
         }
 
@@ -107,7 +107,7 @@ namespace OddityEngine::NeuralNetwork {
     template<size_t in, size_t out>
     inline std::ostream& operator << (std::ostream& os, Network<in, out>& network) {
         for (auto l : network.get_layers()) {
-            os << l << "\n";
+            os << *l << "\n";
         }
 
         return os;

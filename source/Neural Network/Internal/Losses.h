@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-#include <Math/Vector.h>
+#include <Util/Vector.h>
 
 namespace OddityEngine::NeuralNetwork {
     static float mse(const Math::Vector<>& value_true, const Math::Vector<>& value_predicted) {

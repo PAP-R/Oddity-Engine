@@ -1,5 +1,6 @@
 #ifndef SORTEDVECTOR_H
 #define SORTEDVECTOR_H
+
 #include "Vector.h"
 
 namespace OddityEngine {

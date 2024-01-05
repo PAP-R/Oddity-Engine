@@ -20,10 +20,6 @@ namespace OddityEngine::NeuralNetwork {
 
         ~Random_evolve() override = default;
 
-        std::shared_ptr<Layer> copy() override {
-            return std::make_shared<Random_evolve>(*this);
-        }
-
         void evolve(double rate) override {
             size_t index;
             switch (Math::random<size_t>(0, 2)) {
