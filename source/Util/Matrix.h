@@ -30,7 +30,7 @@ namespace OddityEngine {
         Matrix() : Matrix(1, 1) {
         }
 
-        Matrix(const size_t rows, const size_t columns, T value, bool use_default = false) : Matrix(rows, columns) {
+        Matrix(const size_t rows, const size_t columns, const T& value, bool use_default = false) : Matrix(rows, columns) {
             this->use_default = use_default;
             this->default_value = value;
             const size_t bigger = rows > columns ? rows : columns;

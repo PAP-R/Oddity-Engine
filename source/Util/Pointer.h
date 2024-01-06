@@ -13,7 +13,7 @@ namespace OddityEngine {
         T* _data = nullptr;
         size_t* _size = nullptr;
         size_t* _count = nullptr;
-        size_t* pointer_count = nullptr;
+        int* pointer_count = nullptr;
 
     public:
         template<typename S, std::enable_if_t<std::is_base_of_v<T, S>, bool> = true>
@@ -24,7 +24,7 @@ namespace OddityEngine {
             *_size = sizeof(T);
             _count = static_cast<size_t*>(malloc(sizeof(size_t)));
             *_count = 0;
-            pointer_count = static_cast<size_t*>(malloc(sizeof(size_t)));
+            pointer_count = static_cast<int*>(malloc(sizeof(size_t)));
             *pointer_count = 1;
         }
 
@@ -96,19 +96,19 @@ namespace OddityEngine {
 
         ~Pointer() {
             counter += 1;
-            if (pointer_count != nullptr) {
+            if (pointer_count != nullptr && *pointer_count != 0) {
                 *pointer_count -= 1;
                 if (*pointer_count == 0) {
                     if (_data != nullptr) {
                         free(_data);
                         _data = nullptr;
                     }
-                    free(_size);
-                    _size = nullptr;
-                    free(_count);
-                    _count = nullptr;
-                    free(pointer_count);
-                    pointer_count = nullptr;
+                    // free(_size);
+                    // _size = nullptr;
+                    // free(_count);
+                    // _count = nullptr;
+                    // free(pointer_count);
+                    *pointer_count = -9;
                 }
             }
         }

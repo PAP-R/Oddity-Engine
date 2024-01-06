@@ -51,9 +51,7 @@ namespace OddityEngine::NeuralNetwork {
         }
 
     public:
-        explicit Network(size_t mutations = 1, size_t evolutions = 1, double add_chance = 0.05, double learning_rate = 0.1) : layers(1, nullptr), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {
-            layers[0] = Pointer(Random_evolve(input_count, output_count));
-        }
+        explicit Network(size_t mutations = 1, size_t evolutions = 1, double add_chance = 0.05, double learning_rate = 0.1) : layers(1, Pointer(Random_evolve(input_count, output_count))), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {}
 
         Vector<Pointer<Layer>> get_layers() {
             return layers;
