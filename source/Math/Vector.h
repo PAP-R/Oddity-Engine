@@ -8,7 +8,9 @@ namespace OddityEngine {
     class Vector : public Matrix<T>{
     protected:
         using Matrix<T>::resize;
+        using Matrix<T>::resize_rows;
         using Matrix<T>::resize_columns;
+        using Matrix<T>::data;
     public:
         Vector() = default;
 
@@ -26,15 +28,31 @@ namespace OddityEngine {
         }
 
         Vector& resize(size_t size) {
-            Matrix<T>::resize_rows(size);
+            resize_rows(size);
             return *this;
         }
 
+        using Matrix<T>::size;
+
         T& operator [] (long long int index) const {
-            return Matrix<T>::data[index % Matrix<T>::rows()];
+            return data[index % Matrix<T>::rows()];
         }
 
         void insert(size_t index, T value) {
+            if (index <= size()) {
+                this->resize(size() + 1);
+                if (size() > 1) {
+                    for (int i = size() - 1; i > index; i--) {
+                        (*this)[i] = (*this)[i - 1];
+                    }
+                }
+
+                (*this)[index] = value;
+            }
+        }
+
+        template<typename ... Args>
+        void emplace(size_t index, Args ... args) {
             if (index > Matrix<T>::size()) {
                 return;
             }
@@ -45,19 +63,32 @@ namespace OddityEngine {
                 }
             }
 
-            (*this)[index] = value;
+            (*this)[index] = T(args...);
+        }
+
+        template<typename ... Args>
+        void emplace_front(Args ... args) {
+            emplace(0, args...);
+        }
+
+        template<typename ... Args>
+        void emplace_back(Args ... args) {
+            emplace(size(), args...);
         }
 
         Vector(const Vector& other) : Matrix<T>{other} {
+            this->resize(this->size());
         }
 
-        Vector(Vector&& other) noexcept : Matrix<T>{std::move(other)} {
+        Vector(Vector&& other) noexcept : Matrix<T>{other} {
+            this->resize(this->size());
         }
 
         Vector& operator=(const Vector& other) {
             if (this == &other)
                 return *this;
             Matrix<T>::operator =(other);
+            this->resize(this->size());
             return *this;
         }
 
@@ -65,6 +96,7 @@ namespace OddityEngine {
             if (this == &other)
                 return *this;
             Matrix<T>::operator =(std::move(other));
+            this->resize(this->size());
             return *this;
         }
 

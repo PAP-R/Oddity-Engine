@@ -12,7 +12,7 @@ namespace OddityEngine {
         explicit SortableVector(size_t size) : Vector<T>(size), _scores(size) {
         }
 
-        SortableVector(size_t size, T value) : Vector<T>(size, value), _scores(size) {
+        SortableVector(size_t size, T value, S score = 0) : Vector<T>(size, value), _scores(size, score) {
         }
 
         SortableVector& resize(size_t size) {

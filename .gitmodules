@@ -22,3 +22,6 @@
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt.git
 	ignore = all
+[submodule "external/boost"]
+	path = external/boost
+	url = git@github.com:boostorg/boost.git

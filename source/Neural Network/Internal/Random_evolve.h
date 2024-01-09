@@ -16,11 +16,8 @@ namespace OddityEngine::NeuralNetwork {
         };
 
     public:
+        Random_evolve() : Random_evolve(0, 0) {}
         Random_evolve(size_t input_count, size_t output_count) : Layer(input_count, output_count) {}
-
-        Layer* copy() override {
-            return new Random_evolve(*this);
-        }
 
         void evolve(double rate) override {
             size_t index;
