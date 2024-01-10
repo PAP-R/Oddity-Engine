@@ -7,7 +7,7 @@
 namespace OddityEngine::NeuralNetwork {
     class Random_evolve : public Layer {
     protected:
-        inline static Vector<double(*)(double)> available_functions = {
+        inline static Vector<std::function<double(double)>> available_functions = {
             [](const double x){return x * x;},
             [](const double x){return sin(x);},
             [](const double x){return cos(x);},
@@ -16,8 +16,7 @@ namespace OddityEngine::NeuralNetwork {
         };
 
     public:
-        Random_evolve() : Random_evolve(0, 0) {}
-        Random_evolve(size_t input_count, size_t output_count) : Layer(input_count, output_count) {}
+        Random_evolve(const size_t input_count = 1, const size_t output_count = 1) : Layer(input_count, output_count) {}
 
         void evolve(double rate) override {
             size_t index;

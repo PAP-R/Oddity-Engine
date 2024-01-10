@@ -9,7 +9,7 @@ namespace OddityEngine {
         Vector<S> _scores;
 
     public:
-        explicit SortableVector(size_t size) : Vector<T>(size), _scores(size) {
+        explicit SortableVector(size_t size) : Vector<T>(size), _scores(size, 0) {
         }
 
         SortableVector(size_t size, T value, S score = 0) : Vector<T>(size, value), _scores(size, score) {
@@ -22,7 +22,7 @@ namespace OddityEngine {
         }
 
         size_t sorted_insert(T value, S score) {
-            for (int i = 0; i < _scores.size(); i++) {
+            for (size_t i = 0; i < _scores.size(); i++) {
                 if (score < _scores[i]) {
                     _scores.insert(i, score);
                     Vector<T>::insert(i, value);

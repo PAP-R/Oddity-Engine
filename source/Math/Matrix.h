@@ -2,6 +2,8 @@
 #define MATRIX_H
 
 #include <cstring>
+#include <functional>
+#include <memory>
 #include <sstream>
 #include <fmt/core.h>
 
@@ -13,12 +15,15 @@ namespace OddityEngine {
     template<typename T = double>
     class Matrix {
     protected:
+        static void Deleter(const T* obj) {
+            delete [] obj;
+        }
+
         size_t _rows = 0;
         size_t _columns = 1;
         size_t _size = 0;
-        bool use_default = false;
-        T* default_value = nullptr;
-        T* data = nullptr;
+        std::unique_ptr<T> default_value;
+        std::unique_ptr<T[], std::function<void(T[])>> data = std::unique_ptr<T[], std::function<void(T[])>>(nullptr, Deleter);
 
     public:
         Matrix(const size_t rows, const size_t columns) {
@@ -28,37 +33,10 @@ namespace OddityEngine {
         Matrix() : Matrix(1, 1) {
         }
 
-        Matrix(const size_t rows, const size_t columns, T value, bool use_default = false) : Matrix(rows, columns) {
-            this->use_default = use_default;
-            this->default_value = new T(value);
-
-            const size_t bigger = rows > columns ? rows : columns;
-            auto cr = static_cast<long double>(columns) / rows;
-            cr = cr < 1 ? cr : 1;
-            auto rc = static_cast<long double>(rows) / columns;
-            rc = rc < 1 ? rc : 1;
-
-            if (use_default) {
-                for (int i = 0; i < rows * columns; i++) {
-                    data[i] = value;
-                }
-            }
-            else if (rows > 0 && columns > 0){
-                for (int i = 0; i < bigger; i++) {
-                    data[static_cast<size_t>(i * rc) * this->_columns + static_cast<size_t>(i * cr)] = value;
-                }
-            }
-        }
-
-        virtual ~Matrix() {
-            delete default_value;
-            delete[] data;
-        }
-
-        void clear(T* data, size_t count = 0) {
-            if (count == 0) count = this->size();
-            for (int i = 0; i < count; ++i) {
-                data[i].~T();
+        Matrix(const size_t rows, const size_t columns, const T& value) : Matrix(rows, columns) {
+            this->default_value.reset(new T(value));
+            for (size_t i = 0; i < _size; i++) {
+                this->data[i] = value;
             }
         }
 
@@ -76,35 +54,35 @@ namespace OddityEngine {
         }
 
         Matrix& resize(const size_t& rows, const size_t& columns) {
-            if (rows == 0 || columns == 0) return *this;
             size_t new_size = rows * columns;
-            T* temp = this->data;
-            if (this->size() != new_size) {
-                this->data = new T[new_size]();
-            }
+            if (new_size > 0) {
+                std::unique_ptr<T[], std::function<void(T[])>> temp(new T[new_size], Deleter);
+                temp.swap(data);
 
-            if (this->use_default) {
-                for (int x = 0; x < rows; x++) {
-                    for (int y = 0; y < columns; y++) {
-                        data[x * columns + y] = *default_value;
+                if (default_value) {
+                    for (int x = 0; x < rows; x++) {
+                        for (int y = 0; y < columns; y++) {
+                            data[x * columns + y] = *default_value;
+                        }
+                    }
+                }
+
+                if (temp) {
+                    auto temp_rows = Math::min(rows, this->rows());
+                    auto temp_columns = Math::min(columns, this->columns());
+
+                    for (int x = 0; x < temp_rows; x++) {
+                        memcpy(this->data.get() + x * columns, temp.get() + x * this->columns(), temp_columns * sizeof(T));
                     }
                 }
             }
-
-            if (temp != nullptr) {
-                auto temp_rows = Math::min(rows, this->rows());
-                auto temp_columns = Math::min(columns, this->columns());
-
-                for (int x = 0; x < temp_rows; x++) {
-                    memcpy(this->data + x * columns, temp + x * this->columns(), temp_columns * sizeof(T));
-                }
-
-                if (temp != this->data) delete[] temp;
+            else {
+                this->data.reset(nullptr);
             }
 
             this->_rows = rows;
             this->_columns = columns;
-            this->_size = rows * columns;
+            this->_size = new_size;
 
             return *this;
         }
@@ -134,11 +112,16 @@ namespace OddityEngine {
             return data[(x % _rows) * _columns + (y % _columns)];
         }
 
-        T* operator [] (int index) const {
-            if (this->size() > 0) {
-                return data + ((index % _rows) * _columns);
+        struct Row {
+            size_t offset;
+            T* data;
+            T& operator [] (const size_t index) {
+                return data[offset + index];
             }
-            return nullptr;
+        };
+
+        Row operator [] (const size_t index) const {
+            return {index * _columns, data.get()};
         }
 
         bool operator == (const Matrix& other) const {
@@ -164,43 +147,53 @@ namespace OddityEngine {
             return this->_rows == other.rows() && this->_columns == other.columns();
         }
 
-        Matrix(const Matrix& other) {
-            this->use_default = other.use_default;
-            delete this->default_value;
-            if (other.default_value != nullptr) this->default_value = new T(*other.default_value);
-            resize(other._rows, other._columns);
-            memcpy(data, other.data, other.size() * sizeof(T));
+        Matrix(const Matrix& other) : _rows{other._rows}, _columns{other._columns}, _size{other._size} {
+            if (other.default_value) default_value.reset(new T(*other.default_value));
+            if (other._size > 0) data.reset(new T[other._size]);
+            for (size_t i = 0; i < other._size; i++) {
+                data[i] = other.data[i];
+            }
         }
 
-        Matrix(Matrix&& other) noexcept {
-            this->use_default = other.use_default;
-            delete this->default_value;
-            if (other.default_value != nullptr) this->default_value = new T(*other.default_value);
-            resize(other._rows, other._columns);
-            memcpy(data, other.data, other.size() * sizeof(T));
+        Matrix(const Matrix&& other) : _rows{other._rows}, _columns{other._columns}, _size{other._size} {
+            if (other.default_value) default_value.reset(new T(*other.default_value));
+            if (other._size > 0) data.reset(new T[other._size]);
+            for (size_t i = 0; i < other._size; i++) {
+                data[i] = other.data[i];
+            }
         }
+
+        // Matrix(const Matrix&& other) = delete;
 
         Matrix& operator=(const Matrix& other) {
             if (this == &other)
                 return *this;
-            this->use_default = other.use_default;
-            delete this->default_value;
-            if (other.default_value != nullptr) this->default_value = new T(*other.default_value);
-            resize(other._rows, other._columns);
-            memcpy(data, other.data, other.size() * sizeof(T));
+            _rows = other._rows;
+            _columns = other._columns;
+            _size = other._size;
+            if (other.default_value) default_value.reset(new T(*other.default_value));
+            if (other._size > 0) data.reset(new T[other._size]);
+            for (size_t i = 0; i < other._size; i++) {
+                data[i] = other.data[i];
+            }
             return *this;
         }
 
         Matrix& operator=(Matrix&& other) noexcept {
             if (this == &other)
                 return *this;
-            this->use_default = other.use_default;
-            delete this->default_value;
-            if (other.default_value != nullptr) this->default_value = new T(*other.default_value);
-            resize(other._rows, other._columns);
-            memcpy(data, other.data, other.size() * sizeof(T));
+            _rows = other._rows;
+            _columns = other._columns;
+            _size = other._size;
+            if (other.default_value) default_value.reset(new T(*other.default_value));
+            if (other._size > 0) data.reset(new T[other._size]);
+            for (size_t i = 0; i < other._size; i++) {
+                data[i] = other.data[i];
+            }
             return *this;
         }
+
+        // Matrix& operator=(Matrix&& other) = delete;
 
         template<typename S>
         Matrix<S> operator () (Matrix<S>  args) {
@@ -372,11 +365,11 @@ namespace OddityEngine {
         };
 
         Iterator begin() const {
-            return Iterator(0, data);
+            return Iterator(0, data.get());
         }
 
         Iterator end() const {
-            return Iterator(this->size(), data);
+            return Iterator(this->size(), data.get());
         }
     };
 

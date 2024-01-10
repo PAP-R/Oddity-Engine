@@ -17,7 +17,7 @@ namespace OddityEngine {
         explicit Vector(size_t size) : Matrix<T>(size, 1) {
         }
 
-        Vector(size_t size, T value, bool use_default = false) : Matrix<T>(size, 1, value, use_default) {
+        Vector(size_t size, const T& value) : Matrix<T>(size, 1, value) {
         }
 
         Vector(std::initializer_list<T> list) : Vector(list.size()) {
@@ -76,19 +76,14 @@ namespace OddityEngine {
             emplace(size(), args...);
         }
 
-        Vector(const Vector& other) : Matrix<T>{other} {
-            this->resize(this->size());
-        }
+        Vector(const Vector& other) : Matrix<T>{other} {}
 
-        Vector(Vector&& other) noexcept : Matrix<T>{other} {
-            this->resize(this->size());
-        }
+        Vector(Vector&& other) noexcept : Matrix<T>{other} {}
 
         Vector& operator=(const Vector& other) {
             if (this == &other)
                 return *this;
             Matrix<T>::operator =(other);
-            this->resize(this->size());
             return *this;
         }
 
@@ -96,7 +91,6 @@ namespace OddityEngine {
             if (this == &other)
                 return *this;
             Matrix<T>::operator =(std::move(other));
-            this->resize(this->size());
             return *this;
         }
 

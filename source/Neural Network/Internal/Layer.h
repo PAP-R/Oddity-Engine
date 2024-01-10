@@ -9,20 +9,19 @@ namespace OddityEngine::NeuralNetwork {
     protected:
         inline static double default_weight = 1;
         inline static double default_bias = 0;
-        inline static double(*default_function)(double) = [](const double x){return x;};
+        inline static std::function<double(double)> default_function = [](const double x){return x;};
 
         size_t _input_size;
         size_t _output_size;
 
         Matrix<> weights;
         Vector<> bias;
-        Vector<double(*)(double)> functions;
+        Vector<std::function<double(double)>> functions;
         Vector<> input;
         Vector<> output;
 
     public:
-        Layer() : Layer(0, 0) {}
-        Layer(const size_t input_count, const size_t output_count) : _input_size(input_count), _output_size(output_count), weights(output_count, input_count, default_weight), bias(output_count, default_bias), functions(output_count, [](const double x){return x;}, true), input(input_count), output(output_count) {}
+        Layer(const size_t input_count = 1, const size_t output_count = 1) : _input_size(input_count), _output_size(output_count), weights(output_count, input_count, default_weight), bias(output_count, default_bias), functions(output_count, [](const double x){return x;}), input(input_count, 0), output(output_count, 0) {}
         virtual ~Layer() = default;
 
         virtual void resize_input(const size_t size) {
