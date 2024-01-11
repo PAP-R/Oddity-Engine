@@ -57,6 +57,7 @@ set(SOURCES
         Math/random.h
         "Neural Network/Internal/Random_evolve.h"
         Math/SortableVector.h
+        Math/Vector_overload.h
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})

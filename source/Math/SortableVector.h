@@ -16,7 +16,7 @@ namespace OddityEngine {
         }
 
         SortableVector& resize(size_t size) {
-            Matrix<T>::resize_rows(size);
+            Vector<T>::resize(size);
             _scores.resize(size);
             return *this;
         }

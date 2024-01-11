@@ -42,7 +42,7 @@ namespace OddityEngine::NeuralNetwork {
                     const size_t output_size = l == net.layers.size() ? output_count : net.layers[l].input_size();
                     net.layers.emplace(l, input_size, output_size);
                 }
-                else if (add < net.add_chance) {
+                else if (add < net.add_chance && net.layers.size() > 1) {
                     l = Math::random<size_t>(0, net.layers.size() - 2);
                     net.resize(l, net.layers[l].output_size() + 1);
                 }
@@ -63,7 +63,7 @@ namespace OddityEngine::NeuralNetwork {
         }
 
     public:
-        explicit Network(size_t mutations = 1, size_t evolutions = 1, double add_chance = 0.05, double learning_rate = 0.1) : layers(0), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {
+        explicit Network(size_t mutations = 1, size_t evolutions = 1, double add_chance = 0.05, double learning_rate = 0.1) : layers(), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {
             layers.emplace_back(input_count, output_count);
         }
 

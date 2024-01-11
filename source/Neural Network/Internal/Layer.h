@@ -1,8 +1,7 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include <Math/Matrix.h>
-#include <Math/Vector.h>
+#include <Math/Vector_overload.h>
 
 namespace OddityEngine::NeuralNetwork {
     class Layer {
@@ -21,7 +20,7 @@ namespace OddityEngine::NeuralNetwork {
         Vector<> output;
 
     public:
-        Layer(const size_t input_count = 1, const size_t output_count = 1) : _input_size(input_count), _output_size(output_count), weights(output_count, input_count, default_weight), bias(output_count, default_bias), functions(output_count, [](const double x){return x;}), input(input_count, 0), output(output_count, 0) {}
+        Layer(const size_t input_count = 1, const size_t output_count = 1) : _input_size(input_count), _output_size(output_count), weights(output_count, input_count, default_weight), bias(output_count, default_bias), functions(output_count, default_function), input(input_count, 0), output(output_count, 0) {}
         virtual ~Layer() = default;
 
         virtual void resize_input(const size_t size) {
@@ -48,7 +47,7 @@ namespace OddityEngine::NeuralNetwork {
 
         virtual void evolve(double rate) = 0;
         virtual Vector<double> forward(Vector<double> input) = 0;
-        virtual Vector<double> backward(Vector<double> output_gradient, float learning_rate) = 0;
+        virtual Vector<double> backward(Vector<double> output_gradient, double learning_rate) = 0;
 
         friend std::ostream& operator << (std::ostream& os, const Layer& layer);
         friend std::ostream& operator << (std::ostream& os, const Layer* layer);

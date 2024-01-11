@@ -8,7 +8,9 @@ namespace OddityEngine::NeuralNetwork {
     class Random_evolve : public Layer {
     protected:
         inline static Vector<std::function<double(double)>> available_functions = {
+            [](const double x){return -x;},
             [](const double x){return x * x;},
+            [](const double x){return x * x * x;},
             [](const double x){return sin(x);},
             [](const double x){return cos(x);},
             [](const double x){return tanh(x);},
@@ -40,7 +42,7 @@ namespace OddityEngine::NeuralNetwork {
             return this->functions(this->weights * input + this->bias);
         }
 
-        Vector<double> backward(Vector<double> output_gradient, float learning_rate) override {
+        Vector<double> backward(Vector<double> output_gradient, double learning_rate) override {
             return output_gradient;
         }
     };
