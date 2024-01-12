@@ -2,121 +2,53 @@
 #define NETWORK_H
 
 #include <Util/Vector.h>
+
 #include "Internal/Layer.h"
 #include "Internal/Random_evolve.h"
 #include "../Util/SortableVector.h"
 
 namespace OddityEngine::NeuralNetwork {
-    template<size_t input_count, size_t output_count>
     class Network {
     protected:
-        Vector<Pointer<Layer>> layers;
+        size_t input_count;
+        size_t output_count;
         size_t mutations;
         size_t evolutions;
         double add_chance;
         double learning_rate;
 
-        void resize(const size_t layer, const size_t size) {
-            if (layer < layers.size() - 1) {
-                layers[layer]->resize_output(size);
-                layers[layer + 1]->resize_input(size);
-            }
-        }
+        Vector<Random_evolve> layers;
 
-        Network evolve() {
-            auto evo = *this;
-            for (int i = 0; i < layers.size(); i++) {
-                evo.layers[i] = layers[i].copy();
-            }
-            for (int i = 0; i < evo.mutations; ++i) {
-                auto random = Math::random(0., 1.);
-                size_t l;
-                if (random < evo.add_chance / 2) {
-                    l = Math::random<size_t>(0, evo.layers.size());
-                    const size_t input_size = l == 0 ? input_count : evo.layers[l - 1]->output_size();
-                    const size_t output_size = l == evo.layers.size() ? output_count : evo.layers[l]->input_size();
-                    evo.layers.insert(l, Pointer(Random_evolve(input_size, output_size)));
-                }
-                else if (random < evo.add_chance) {
-                    l = Math::random<size_t>(0, evo.layers.size() - 2);
-                    evo.resize(l, evo.layers[l]->output_size() + 1);
-                }
-                else {
-                    l = Math::random<size_t>(0, evo.layers.size() - 1);
-                    evo.layers[l]->evolve(evo.learning_rate);
-                }
-            }
+        void resize(const size_t layer, const size_t size);
 
-            return evo;
-        }
+        Network evolve();
 
     public:
-        explicit Network(size_t mutations = 1, size_t evolutions = 1, double add_chance = 0.05, double learning_rate = 0.1) : layers(1, Pointer(Random_evolve(input_count, output_count))), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {}
+        explicit Network(size_t input_count = 0, size_t output_count = 0, size_t mutations = 1, size_t evolutions = 1, double add_chance = 0.05, double learning_rate = 0.1);
 
-        Vector<Pointer<Layer>> get_layers() {
-            return layers;
-        }
+        size_t get_input_count() const;
+        size_t get_output_count() const;
+        size_t get_mutations() const;
+        size_t get_evolutions() const;
+        double get_add_chance() const;
+        double get_learning_rate() const;
 
-        Vector<double> apply(Vector<double> input) {
-            for (auto l : layers) {
-                input = l->forward(input);
-            }
+        Vector<Random_evolve> get_layers() const;
 
-            return input;
-        }
+        Vector<double> apply(Vector<double> input);
 
-        double test(const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list) {
-            double error = 0;
-            for (int i = 0; i < input_list.size(); i++) {
-                auto value = this->apply(input_list[i]);
-                if (value.size() != output_list[i].size()) {
-                    error = std::numeric_limits<double>::infinity();
-                }
-                else {
-                    error += (value - output_list[i]).abs().mean();
-                }
-            }
+        double test(const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list);
 
-            return error / static_cast<double>(input_list.size());
-        }
+        static Vector<Network> train(Vector<Network> nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list);
 
-        static Vector<Network> train(Vector<Network> nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list) {
-            SortableVector<Network> best_nets(0);
-            for (auto n : nets) {
-                best_nets.sorted_insert(n, n.test(input_list, output_list));
-                for (int i = 0; i < n.evolutions; i++) {
-                    auto evo = n.evolve();
-                    best_nets.sorted_insert(evo, evo.test(input_list, output_list));
-                }
-            }
+        static Vector<Network> train(Vector<Network> nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list, const size_t epochs);
 
-            return best_nets.resize(nets.size());
-        }
+        operator std::string() const;
 
-        static Vector<Network> train(Vector<Network> nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list, const size_t epochs) {
-            for (int i = 0; i < epochs; i++) {
-                nets = train(nets, input_list, output_list);
-            }
-
-            return nets;
-        }
+        static Network from_csv(const std::string& path);
     };
 
-    template<size_t in, size_t out>
-    inline std::ostream& operator << (std::ostream& os, Network<in, out>& network) {
-        for (auto l : network.get_layers()) {
-            os << *l << "\n";
-        }
-
-        return os;
-    }
-
-    template<size_t in, size_t out>
-    inline std::ostream& operator << (std::ostream& os, Network<in, out>* network) {
-        os << *network;
-
-        return os;
-    }
+    std::ostream& operator<<(std::ostream& os, const Network& network);
 }
 
 #endif //NETWORK_H

@@ -5,8 +5,11 @@
 #include <string>
 
 #include <fstream>
+#include <iostream>
 
 #include "fmt/core.h"
+
+#include <vector>
 
 namespace OddityEngine::Util::File {
     /**
@@ -22,6 +25,10 @@ namespace OddityEngine::Util::File {
      * @return file contents as string
      */
     std::string string(const std::string& path);
+
+    void write(const std::string& path, const std::string& data);
+
+    std::vector<std::string> csv(const std::string& path);
 }
 
 #endif //ODDITYENGINE_FILE_H

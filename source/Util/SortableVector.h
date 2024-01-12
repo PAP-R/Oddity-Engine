@@ -4,26 +4,26 @@
 #include "Vector.h"
 
 namespace OddityEngine {
-    template<typename T = double, typename S = double>
+    template<typename T = double, typename S = double, std::enable_if_t<std::is_arithmetic_v<S>, bool> = true>
     class SortableVector : public Vector<T> {
     protected:
         Vector<S> _scores;
 
     public:
-        explicit SortableVector(size_t size) : Vector<T>(size), _scores(size) {
+        explicit SortableVector(size_t size) : Vector<T>(size), _scores(size, std::numeric_limits<S>::infinity()) {
         }
 
-        SortableVector(size_t size, T value) : Vector<T>(size, value), _scores(size) {
+        SortableVector(size_t size, T value, S score = std::numeric_limits<S>::infinity()) : Vector<T>(size, value), _scores(size, score) {
         }
 
         SortableVector& resize(size_t size) {
-            Matrix<T>::resize_rows(size);
+            Vector<T>::resize(size);
             _scores.resize(size);
             return *this;
         }
 
         size_t sorted_insert(const T& value, S score) {
-            for (int i = 0; i < _scores.size(); i++) {
+            for (size_t i = 0; i < _scores.size(); i++) {
                 if (score < _scores[i]) {
                     _scores.insert(i, score);
                     Vector<T>::insert(i, value);

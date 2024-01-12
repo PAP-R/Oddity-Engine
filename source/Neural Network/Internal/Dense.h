@@ -24,8 +24,8 @@ namespace OddityEngine::NeuralNetwork {
             return this->weights * input + this->bias;
         };
 
-        Vector<> backward(Vector<> output_gradient, const float learning_rate) override {
-            auto weights_gradient = output_gradient * (this->input.transpose());
+        Vector<> backward(Vector<> output_gradient, const double learning_rate) override {
+            auto weights_gradient = output_gradient * (transpose(this->input));
             this->weights -= weights_gradient * learning_rate;
             this->bias -= output_gradient * learning_rate;
             return this->weights.transpose() * output_gradient;

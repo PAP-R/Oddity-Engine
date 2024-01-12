@@ -3,26 +3,26 @@
 
 #include <Util/Matrix.h>
 #include <Util/Vector.h>
+#include <Util/Vector_overload.h>
 
 namespace OddityEngine::NeuralNetwork {
     class Layer {
     protected:
         inline static double default_weight = 1;
         inline static double default_bias = 0;
-        inline static double(*default_function)(double) = [](const double x){return x;};
 
         size_t _input_size;
         size_t _output_size;
 
         Matrix<> weights;
         Vector<> bias;
-        Vector<double(*)(double)> functions;
+        Vector<Vector<size_t>> functions;
         Vector<> input;
         Vector<> output;
 
     public:
-        Layer(const size_t input_count, const size_t output_count) : _input_size(input_count), _output_size(output_count), weights(output_count, input_count, default_weight), bias(output_count, default_bias), functions(output_count, [](const double x){return x;}, true), input(input_count), output(output_count) {}
-
+        Layer(const size_t input_count = 1, const size_t output_count = 1) : _input_size(input_count), _output_size(output_count), weights(output_count, input_count, default_weight), bias(output_count, default_bias), functions(output_count), input(input_count, 0), output(output_count, 0) {}
+        Layer(const Matrix<>& weights, const Vector<>& bias, const Vector<Vector<size_t>>& functions) : _input_size(weights.columns()), _output_size(weights.rows()), weights(weights), bias(bias), functions(functions), input(weights.columns(), 0), output(weights.rows(), 0) {}
         virtual ~Layer() = default;
 
         virtual void resize_input(const size_t size) {
@@ -48,15 +48,15 @@ namespace OddityEngine::NeuralNetwork {
         }
 
         virtual void evolve(double rate) = 0;
-        virtual Vector<double> forward(Vector<double> input) = 0;
-        virtual Vector<double> backward(Vector<double> output_gradient, float learning_rate) = 0;
+        virtual Vector<double> forward(const Vector<double>& input) = 0;
+        virtual Vector<double> backward(const Vector<double>& output_gradient, double learning_rate) = 0;
 
         friend std::ostream& operator << (std::ostream& os, const Layer& layer);
         friend std::ostream& operator << (std::ostream& os, const Layer* layer);
     };
 
     inline std::ostream& operator << (std::ostream& os, const Layer& layer) {
-        os << layer.input_size() << " -> " << layer.output_size() << "\n" << layer.weights << "\n\t + \n" << layer.bias;
+        os << layer.weights << "\n" << layer.bias << "\n" << layer.functions;
 
         return os;
     }

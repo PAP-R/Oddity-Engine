@@ -3,45 +3,34 @@
 
 #include <cmath>
 
-#include "Layer.h"
-
 namespace OddityEngine::NeuralNetwork {
-    class Activation : public Layer {
-    public:
-        enum ACTIVATION {
-            TANH
+    namespace Activation {
+        enum Activation {
+            DEFAULT,
+            SQUARE,
+            SIN,
+            COS,
+            TANH,
+            EXP,
+            LAST,
         };
+    }
 
-    protected:
-        ACTIVATION activation;
-
-    public:
-        Activation(const ACTIVATION activation, const size_t node_count) : Layer(node_count, node_count), activation(activation) {}
-
-        Vector<> forward(const Vector<> input) override {
-            auto result = input;
-            switch(activation) {
-                default:
-                    return result;
-                case TANH:
-                    for (int i = 0; i < result.size(); i++) {
-                        result[i] = tanh(result[i]);
-                    }
-                    return result;
-            }
-        }
-
-        Vector<> backward(Vector<> output_gradient, const float learning_rate) override {
-            switch(activation) {
-                default:
-                    return output_gradient;
-                case TANH:
-                    for (int i = 0; i < output_gradient.size(); i++) {
-                        output_gradient[i] *= (1 - pow(tanh(Layer::input[i]), 2));
-                    }
-                    return output_gradient;
-
-            }
+    template<typename T, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
+    static T activate(const Activation::Activation activation, T in) {
+        switch (activation) {
+            case Activation::DEFAULT:
+                return in;
+            case Activation::SQUARE:
+                return in * in;
+            case Activation::SIN:
+                return sin(in);
+            case Activation::COS:
+                return cos(in);
+            case Activation::TANH:
+                return tanh(in);
+            case Activation::EXP:
+                return pow(std::numbers::e, in);
         }
     };
 }

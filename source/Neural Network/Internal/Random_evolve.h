@@ -7,45 +7,79 @@
 namespace OddityEngine::NeuralNetwork {
     class Random_evolve : public Layer {
     protected:
-        inline static Vector<double(*)(double)> available_functions = {
+        inline static Vector<std::function<double(double)>> available_functions = {
+            [](const double x){return -x;},
+            [](const double x){return 1 / x;},
+            [](const double x){return sqrt(x);},
             [](const double x){return x * x;},
+            [](const double x){return x * x * x;},
             [](const double x){return sin(x);},
             [](const double x){return cos(x);},
             [](const double x){return tanh(x);},
             [](const double x){return 1 / (1 + pow(std::numbers::e, -x));},
         };
 
-    public:
-        Random_evolve(size_t input_count, size_t output_count) : Layer(input_count, output_count) {}
+        double weight_chance;
+        double bias_chance;
+        double function_chance;
 
-        ~Random_evolve() override = default;
+    public:
+        Random_evolve(const size_t input_count = 1, const size_t output_count = 1, double weight_chance = 0.4, double bias_chance = 0.4, double function_chance = 0.2) : Layer(input_count, output_count), weight_chance(weight_chance), bias_chance(bias_chance), function_chance(function_chance) {
+            double total_chance = weight_chance + bias_chance + function_chance;
+            this->weight_chance /= total_chance;
+            this->bias_chance /= total_chance;
+            this->function_chance /= total_chance;
+        }
+
+        Random_evolve(const Matrix<>& weights, const Vector<>& bias, const Vector<Vector<size_t>>& functions, double weight_chance = 0.4, double bias_chance = 0.4, double function_chance = 0.2) : Layer(weights, bias, functions), weight_chance(weight_chance), bias_chance(bias_chance), function_chance(function_chance) {
+            double total_chance = weight_chance + bias_chance + function_chance;
+            this->weight_chance /= total_chance;
+            this->bias_chance /= total_chance;
+            this->function_chance /= total_chance;
+        }
 
         void evolve(double rate) override {
             size_t index;
-            switch (Math::random<size_t>(0, 2)) {
-                case 0:
-                    index = Math::random<size_t>(0, weights.size() - 1);
-                    weights[index / weights.columns()][index % weights.columns()] += Math::random(-rate, rate);
-                    break;
-                case 1:
-                    index = Math::random<size_t>(0, bias.size() - 1);
-                    bias[index] += Math::random(-rate, rate);
-                    break;
-                case 2:
-                    index = Math::random<size_t>(0, functions.size() - 1);
-                    functions[index] = available_functions[Math::random<size_t>(0, available_functions.size() - 1)];
+            auto random = Math::random<double>(0, 1);
+            if (random < weight_chance) {
+                index = Math::random<size_t>(0, weights.size() - 1);
+                weights[index / weights.columns()][index % weights.columns()] += Math::random(-rate, rate);
+            }
+            else if (random < weight_chance + bias_chance) {
+                index = Math::random<size_t>(0, bias.size() - 1);
+                bias[index] += Math::random(-rate, rate);
+            }
+            else {
+                index = Math::random<size_t>(0, functions.size() - 1);
+                functions[index].push_back(Math::random<size_t>(1, available_functions.size() - 1));
             }
         }
 
-        Vector<double> forward(const Vector<double> input) override {
+        Vector<double> forward(const Vector<double>& input) override {
             this->input = input;
-            return this->functions(this->weights * input + this->bias);
+            this->output = this->weights * input + this->bias;
+            for (size_t i = 0; i < this->output.size(); i++) {
+                if (!functions[i].empty()) {
+                    for (auto f : functions[i]) {
+                        this->output[i] = available_functions[f](this->output[i]);
+                    }
+                }
+            }
+            return this->output;
         }
 
-        Vector<double> backward(Vector<double> output_gradient, float learning_rate) override {
+        Vector<double> backward(const Vector<double>& output_gradient, double learning_rate) override {
             return output_gradient;
         }
+
+        friend std::ostream& operator << (std::ostream& os, const Random_evolve& layer);
     };
+
+    inline std::ostream& operator << (std::ostream& os, const Random_evolve& layer) {
+        os << layer.weight_chance << "," << layer.bias_chance << "," << layer.function_chance << ",\n" << layer.weights << "\n" << layer.bias << "\n" << layer.functions;
+
+        return os;
+    }
 }
 
 
