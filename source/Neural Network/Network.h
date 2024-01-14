@@ -45,6 +45,8 @@ namespace OddityEngine::NeuralNetwork {
 
         operator std::string() const;
 
+        operator Vector<> () const;
+
         static Network from_csv(const std::string& path);
     };
 

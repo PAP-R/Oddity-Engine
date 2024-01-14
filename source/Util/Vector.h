@@ -15,6 +15,7 @@ namespace OddityEngine {
     protected:
         bool use_default = false;
         T default_value = T();
+        void resize() {};
 
     public:
         explicit Vector(const size_t size = 0) : std::vector<T>(size) {}
@@ -29,13 +30,33 @@ namespace OddityEngine {
 
         Vector(std::initializer_list<T> list) : std::vector<T>(list) {}
 
-        Vector& resize(size_t size) {
+        template<std::enable_if_t<std::is_base_of_v<Vector, T>, bool> = true>
+        size_t size(size_t dimension) {
+            if (dimension == 0) {
+                return this->size();
+            }
+
+            if (this->size() > 0) {
+                return (*this)[0].size(dimension - 1);
+            }
+
+            return 0;
+        }
+
+        template<typename ... Sizes>//, std::enable_if_t<std::is_arithmetic_v<Sizes> && !std::is_floating_point_v<Sizes>>>
+        Vector& resize(size_t size, Sizes ... sizes) {
             const size_t old_size = this->size();
             std::vector<T>::resize(size);
 
             if (use_default) {
                 for (size_t i = old_size; i < size; i++) {
                     (*this)[i] = default_value;
+                }
+            }
+
+            if constexpr (std::is_base_of_v<Vector, T>) {
+                for (auto &v : *this) {
+                    v.resize(sizes...);
                 }
             }
 
@@ -68,10 +89,29 @@ namespace OddityEngine {
             return result / static_cast<T>(this->size());
         }
 
+        template<std::enable_if_t<std::is_base_of_v<Vector, T>, bool> = true>
+        std::remove_all_extents_t<T> mean() {
+            std::remove_all_extents_t<T> result = 0;
+            for (auto v& : *this) {
+                result += v.mean();
+            }
+
+            return result / static_cast<T>(this->size());
+        }
+
         template<typename S = T, std::enable_if_t<std::is_arithmetic_v<S>, bool> = true>
         Vector& abs() {
             for (size_t i = 0; i < this->size(); i++) {
                     (*this)[i] = std::abs((*this)[i]);
+            }
+
+            return *this;
+        }
+
+        template<std::enable_if_t<std::is_base_of_v<Vector, T>, bool> = true>
+        Vector& abs() {
+            for (auto v& : *this) {
+                v.abs();
             }
 
             return *this;
@@ -84,6 +124,14 @@ namespace OddityEngine {
         template<typename ... Args>
         void emplace(size_t idx, const Args& ... args) {
             std::vector<T>::emplace(this->begin() + idx, args...);
+        }
+
+        Vector slice(size_t start, size_t end) {
+            return Vector(this->begin() + start, this->begin() + end);
+        }
+
+        Vector slice(size_t start) {
+            return Vector(this->begin() + start, this->end());
         }
     };
 

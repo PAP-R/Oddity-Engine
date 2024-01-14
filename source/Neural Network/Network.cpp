@@ -120,6 +120,11 @@ namespace OddityEngine::NeuralNetwork {
         return str.str();
     }
 
+    Network::operator Vector<Vector<>>() const {
+        Vector<Vector<>> result;
+        result.insert()
+    }
+
     std::ostream& operator<<(std::ostream& os, const Network& network) {
         os << network.get_input_count() << "," << network.get_output_count() << "," << network.get_mutations() << "," << network.get_evolutions() << "," << network.get_add_chance() << "," << network.get_learning_rate() << ",\n";
         for (auto l : network.get_layers()) {
