@@ -1,7 +1,6 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include <Util/Matrix.h>
 #include <Util/Vector.h>
 #include <Util/Vector_overload.h>
 
@@ -22,17 +21,17 @@ namespace OddityEngine::NeuralNetwork {
 
     public:
         Layer(const size_t input_count = 1, const size_t output_count = 1) : _input_size(input_count), _output_size(output_count), weights(output_count, input_count, default_weight), bias(output_count, default_bias), functions(output_count), input(input_count, 0), output(output_count, 0) {}
-        Layer(const Matrix<>& weights, const Vector<>& bias, const Vector<Vector<size_t>>& functions) : _input_size(weights.columns()), _output_size(weights.rows()), weights(weights), bias(bias), functions(functions), input(weights.columns(), 0), output(weights.rows(), 0) {}
+        Layer(const Matrix<>& weights, const Vector<>& bias, const Vector<Vector<size_t>>& functions) : _input_size(weights.size(1)), _output_size(weights.size(0)), weights(weights), bias(bias), functions(functions), input(weights.size(1), 0), output(weights.size(0), 0) {}
         virtual ~Layer() = default;
 
         virtual void resize_input(const size_t size) {
-            weights.resize_columns(size);
+            weights.resize(weights.size(0), size);
             input.resize(size);
             _input_size = size;
         }
 
         virtual void resize_output(const size_t size) {
-            weights.resize_rows(size);
+            weights.resize(size, weights.size(1));
             bias.resize(size);
             functions.resize(size);
             output.resize(size);

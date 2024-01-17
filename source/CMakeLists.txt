@@ -50,7 +50,7 @@ set(SOURCES
         Graphics/Render/OddBlock.cpp
         Graphics/Render/OddBlock.h
         "Neural Network/Internal/Layer.h"
-        Util/Matrix.h
+#        Util/Matrix.h
         Util/Vector.h
         "Neural Network/Network_old.h"
         Math/basics.h

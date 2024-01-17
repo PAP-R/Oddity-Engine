@@ -18,6 +18,7 @@ namespace OddityEngine::NeuralNetwork {
             auto random = Math::random(0., 1.);
             size_t l;
             if (random < evo.add_chance / 2) {
+                auto size = evo.layers.size();
                 l = Math::random<size_t>(0, evo.layers.size());
                 const size_t input_size = l == 0 ? input_count : evo.layers[l - 1].output_size();
                 const size_t output_size = l == evo.layers.size() ? output_count : evo.layers[l].input_size();
@@ -36,7 +37,7 @@ namespace OddityEngine::NeuralNetwork {
         return evo;
     }
 
-    inline Network::Network(size_t input_count, size_t output_count, size_t mutations, size_t evolutions, double add_chance, double learning_rate): input_count(input_count), output_count(output_count), layers(), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {
+    inline Network::Network(size_t input_count, size_t output_count, size_t mutations, size_t evolutions, double add_chance, double learning_rate): input_count(input_count), output_count(output_count), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {
         layers.emplace_back(input_count, output_count);
     }
 
@@ -122,7 +123,6 @@ namespace OddityEngine::NeuralNetwork {
 
     Network::operator Vector<Vector<>>() const {
         Vector<Vector<>> result;
-        result.insert()
     }
 
     std::ostream& operator<<(std::ostream& os, const Network& network) {
@@ -134,16 +134,32 @@ namespace OddityEngine::NeuralNetwork {
         return os;
     }
 
+    Vector<double> Network::to_csv() const {
+        Vector<double> result;
+
+        this->to_csv(&result);
+
+        return result;
+    }
+
+    void Network::to_csv(Vector<double>* result) const {
+        Vector<double> stats = {input_count, output_count, mutations, evolutions, add_chance, learning_rate};
+        stats.to_csv(result);
+        layers.to_csv(result);
+    }
+
     Network Network::from_csv(const std::string& path) {
         auto raw = Util::File::csv(path);
 
+        size_t idx = 0;
+
         Network result(
-            std::stoull(raw[0]),
-            std::stoull(raw[1]),
-            std::stoull(raw[2]),
-            std::stoull(raw[3]),
-            std::stod(raw[4]),
-            std::stod(raw[5])
+            std::stoull(raw[idx++]),
+            std::stoull(raw[idx++]),
+            std::stoull(raw[idx++]),
+            std::stoull(raw[idx++]),
+            std::stod(raw[idx++]),
+            std::stod(raw[idx++])
         );
 
         result.layers.resize(0);

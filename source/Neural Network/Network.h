@@ -43,9 +43,15 @@ namespace OddityEngine::NeuralNetwork {
 
         static Vector<Network> train(Vector<Network> nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list, const size_t epochs);
 
+        operator Vector<Vector<>>() const;
+
         operator std::string() const;
 
         operator Vector<> () const;
+
+        Vector<double> to_csv() const;
+
+        void to_csv(Vector<double>* result) const;
 
         static Network from_csv(const std::string& path);
     };

@@ -43,7 +43,7 @@ namespace OddityEngine::NeuralNetwork {
             auto random = Math::random<double>(0, 1);
             if (random < weight_chance) {
                 index = Math::random<size_t>(0, weights.size() - 1);
-                weights[index / weights.columns()][index % weights.columns()] += Math::random(-rate, rate);
+                weights[index / weights.size(1)][index % weights.size(1)] += Math::random(-rate, rate);
             }
             else if (random < weight_chance + bias_chance) {
                 index = Math::random<size_t>(0, bias.size() - 1);
@@ -70,6 +70,22 @@ namespace OddityEngine::NeuralNetwork {
 
         Vector<double> backward(const Vector<double>& output_gradient, double learning_rate) override {
             return output_gradient;
+        }
+
+        Vector<double> to_csv() const {
+            Vector<double> result;
+
+            this->to_csv(&result);
+
+            return result;
+        }
+
+        virtual void to_csv(Vector<double>* result) const {
+            Vector<double> chances = {weight_chance, bias_chance, function_chance};
+            chances.to_csv(result);
+            weights.to_csv(result);
+            bias.to_csv(result);
+            functions.to_csv(result);
         }
 
         friend std::ostream& operator << (std::ostream& os, const Random_evolve& layer);
