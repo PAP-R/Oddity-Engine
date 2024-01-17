@@ -16,6 +16,3 @@
 [submodule "external/fmt"]
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt.git
-[submodule "external/boost"]
-	path = external/boost
-	url = https://github.com/boostorg/boost.git
