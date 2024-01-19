@@ -28,6 +28,19 @@ namespace OddityEngine {
     template<typename V>
     inline constexpr bool is_vector_v = is_vector<V>::value;
 
+    template<typename T, size_t dimensions>
+    struct dimensional_matrix {
+        typedef Vector<typename dimensional_matrix<T, dimensions - 1>::type> type;
+    };
+
+    template<typename T>
+    struct dimensional_matrix<T, 0> {
+        typedef T type;
+    };
+
+    template<typename T = double, size_t dimensions = 2>
+    using Matrix = typename dimensional_matrix<T, dimensions>::type;
+
     template<typename T>
     class Vector : public std::vector<T> {
     protected:
@@ -40,19 +53,16 @@ namespace OddityEngine {
         explicit Vector(const size_t size = 0) : std::vector<T>(size) {}
 
         template<typename ... Args, typename S = T, std::enable_if_t<is_vector_v<S>, bool> = true>
-        Vector(const size_t size, Args ... args) : Vector(size, S(args...)) {
+        Vector(const size_t size, Args ... args) : Vector(size, S(args...)) {}
 
-        }
-
-        Vector(const size_t size, const T& value) {
+        Vector(const size_t size, const T& value) : std::vector<T>(size, value) {
             this->use_default = true;
             this->default_value = value;
-            for (size_t x = 0; x < size; x++) {
-                this->push_back(value);
-            }
         }
 
         Vector(std::initializer_list<T> list) : std::vector<T>(list) {}
+
+        using std::vector<T>::vector;
 
         using std::vector<T>::size;
 
@@ -84,12 +94,8 @@ namespace OddityEngine {
         }
 
         template<typename S = T, std::enable_if_t<is_vector_v<S>, bool> = true>
-        size_t dimensions() const {
-            if (this->size() > 0) {
-                return (*this)[0].dimensions() + 1;
-            }
-
-            return 1;
+        static size_t dimensions() {
+            return T::dimensions() + 1;
         }
 
         template<typename ... Sizes>//, std::enable_if_t<std::is_arithmetic_v<Sizes> && !std::is_floating_point_v<Sizes>>>
@@ -166,6 +172,8 @@ namespace OddityEngine {
             return *this;
         }
 
+        using std::vector<T>::insert;
+
         void insert(size_t idx, const T& value) {
             std::vector<T>::insert(this->begin() + idx, value);
         }
@@ -175,15 +183,80 @@ namespace OddityEngine {
             std::vector<T>::emplace(this->begin() + idx, args...);
         }
 
-        Vector slice(size_t start, size_t end) {
+        [[nodiscard]] Vector slice(size_t start, size_t end) const {
             return Vector(this->begin() + start, this->begin() + end);
         }
 
-        Vector slice(size_t start) {
+        [[nodiscard]] Vector slice(size_t start) const {
             return Vector(this->begin() + start, this->end());
         }
 
-        Vector<double> to_csv() const {
+        template<typename S = T, std::enable_if_t<std::is_arithmetic_v<S>, bool> = true>
+        [[nodiscard]] Vector<Vector> auto_slice() const {
+            if ((*this)[0] < 1) {
+                return {slice(0, (*this)[0] + 1)};
+            }
+
+
+            size_t start = 2;
+            size_t count = (*this)[1];
+            Vector<Vector> result(count);
+
+            for (size_t i = 0; i < count; i++) {
+                result[i] = sub_slice(start);
+                start += result[i].size();
+            }
+
+            return result;
+        }
+
+        template<typename S = T, std::enable_if_t<std::is_arithmetic_v<S>, bool> = true>
+        [[nodiscard]] Vector sub_slice(size_t start) const {
+            if ((*this)[start] < 1) {
+                return slice(start, start + (*this)[start + 1] + 1);
+            }
+
+            size_t count = (*this)[start + 1];
+            Vector result = {1, count};
+            for (size_t i = 0; i < count; i++) {
+                auto temp = sub_slice(start + result.size());
+                result.insert(result.end(), temp.begin(), temp.end());
+            }
+
+            return result;
+        }
+
+        template<typename S = T, std::enable_if_t<is_vector_v<S>, bool> = true>
+        [[nodiscard]] Vector<Vector> auto_slice() const {
+            Vector<Vector> result;
+            result.reserve(this->size());
+
+            for (auto v : (*this)) {
+                result.push_back(v.auto_slice());
+            }
+
+            return result;
+        }
+
+        template<typename S = T, std::enable_if_t<is_vector_v<S>, bool> = true>
+        [[nodiscard]] auto strip() const {
+            if constexpr (this->size() == 1) {
+                return (*this)[0].strip();
+            }
+
+            return *this;
+        }
+
+        template<typename S = T, std::enable_if_t<std::is_same_v<S, std::string>, bool> = true>
+        [[nodiscard]] Vector<double> to_double() const {
+            Vector<double> result(this->size());
+            for (size_t i = 0; i < this->size(); i++) {
+                result[i] = std::stod((*this)[i]);
+            }
+            return result;
+        }
+
+        [[nodiscard]] Vector<double> to_csv() const {
             Vector<double> result;
 
             this->to_csv(&result);
@@ -191,7 +264,7 @@ namespace OddityEngine {
             return result;
         }
 
-        void to_csv(Vector<double>* result) const {
+        void to_csv_more(Vector<double>* result) const {
             size_t start = result->size();
             result->push_back(dimensions());
             for (size_t i = 0; i < (*result)[start]; i++) {
@@ -201,10 +274,22 @@ namespace OddityEngine {
             this->to_csv_less(result);
         }
 
-        void to_csv_less(Vector<double>* result) const {
+        void to_csv(Vector<double>* result) const {
+            // if constexpr (std::is_class_v<T>) {
+            //     result->push_back(0);
+            // }
+            // if (this->size() == 0) {
+            //     result->push_back(1);
+            //     result->push_back(0);
+            //     return;
+            // }
+
+            result->push_back(this->dimensions());
+            result->push_back(this->size());
+
             if constexpr (is_vector_v<T>) {
                 for (auto v : (*this)) {
-                    v.to_csv_less(result);
+                    v.to_csv(result);
                 }
             }
             else if constexpr (!std::is_class_v<T>) {
@@ -240,16 +325,14 @@ namespace OddityEngine {
     };
 
     template<typename T>
-    static std::ostream& operator << (std::ostream& os, const Vector<T>& vector) {
-        for (size_t i = 0; i < vector.size(); i++) {
-            os << vector[i] << ",\n";
+    static std::ostream& operator << (std::ostream& os, const Vector<T>& vector) {for (size_t i = 0; i < vector.size(); i++) {
+            os << vector[i] << ", ";
         }
+
+        os << "\n\n";
 
         return os;
     }
-
-    template<typename T = double>
-    using Matrix = Vector<Vector<T>>;
 }
 
 #endif //VECTOR_H

@@ -143,72 +143,43 @@ namespace OddityEngine::NeuralNetwork {
     }
 
     void Network::to_csv(Vector<double>* result) const {
-        Vector<double> stats = {input_count, output_count, mutations, evolutions, add_chance, learning_rate};
-        stats.to_csv(result);
+        result->push_back(1);
+        result->push_back(2);
+        Vector({input_count, output_count, mutations, evolutions, add_chance, learning_rate}).to_csv(result);
         layers.to_csv(result);
     }
 
     Network Network::from_csv(const std::string& path) {
-        auto raw = Util::File::csv(path);
+        return from_csv(Util::File::csv(path).to_double());
+    }
 
-        size_t idx = 0;
+    Network Network::from_csv(const Vector<double>& csv) {
+        auto net_csv = csv.auto_slice();
 
-        Network result(
-            std::stoull(raw[idx++]),
-            std::stoull(raw[idx++]),
-            std::stoull(raw[idx++]),
-            std::stoull(raw[idx++]),
-            std::stod(raw[idx++]),
-            std::stod(raw[idx++])
-        );
+        size_t idx = 1;
 
-        result.layers.resize(0);
+        Network result(net_csv[0][idx++], net_csv[0][idx++], net_csv[0][idx++], net_csv[0][idx++], net_csv[0][idx++], net_csv[0][idx++]);
 
-        size_t size, dimensions, rows, columns;
+        auto layers_csv = net_csv[1].auto_slice();
 
-        for (size_t i = 6; i < raw.size();) {
-            double weight_chance = std::stod(raw[i++]);
-            double bias_chance = std::stod(raw[i++]);
-            double function_chance = std::stod(raw[i++]);
+        result.layers.resize(layers_csv.size());
 
-            dimensions = std::stoull(raw[i++]);
-            rows = std::stoull(raw[i++]);
-            columns = std::stoull(raw[i++]);
+        for (size_t i = 0; i < layers_csv.size(); i++) {
+            result.layers[i] = Random_evolve::from_csv(layers_csv[i]);
+        }
 
-            Matrix<> weights(rows, columns);
-            for (size_t x = 0; x < rows; x++) {
-                for (size_t y = 0; y < columns; y++) {
-                    weights[x][y] = std::stod(raw[i + x * columns + y]);
-                }
-            }
+        return result;
+    }
 
-            i += rows * columns;
+    Vector<Network> Network::from_csv_vector(const std::string& path) {
+        auto raw = Util::File::csv(path).to_double();
 
-            dimensions = std::stoull(raw[i++]);
-            rows = std::stoull(raw[i++]);
+        auto nets = raw.auto_slice();
 
-            Vector<> bias(rows);
-            for (size_t x = 0; x < rows; x++) {
-                bias[x] = std::stod(raw[i + x]);
-            }
+        Vector<Network> result(nets.size());
 
-            i += rows;
-
-            dimensions = std::stoull(raw[i++]);
-            rows = std::stoull(raw[i++]);
-
-            Vector<Vector<size_t>> functions(rows);
-            for (size_t x = 0; x < rows; x++) {
-                dimensions = std::stoull(raw[i++]);
-                columns = std::stoull(raw[i++]);
-                for (size_t y = 0; y < columns; y++) {
-                    functions[x].push_back(std::stoull(raw[i + y]));
-                }
-
-                i += columns;
-            }
-
-            result.layers.emplace_back(weights, bias, functions, weight_chance, bias_chance, function_chance);
+        for (size_t i = 0; i < nets.size(); i++) {
+            result[i] = from_csv(nets[i]);
         }
 
         return result;

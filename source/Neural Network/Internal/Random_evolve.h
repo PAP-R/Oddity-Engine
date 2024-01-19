@@ -2,7 +2,8 @@
 #define RANDOM_EVOLVE_H
 
 #include "Layer.h"
-#include "Math/random.h"
+#include <Math/random.h>
+#include <Util/Vector_overload.h>
 
 namespace OddityEngine::NeuralNetwork {
     class Random_evolve : public Layer {
@@ -81,11 +82,37 @@ namespace OddityEngine::NeuralNetwork {
         }
 
         virtual void to_csv(Vector<double>* result) const {
-            Vector<double> chances = {weight_chance, bias_chance, function_chance};
-            chances.to_csv(result);
+            result->push_back(1);
+            result->push_back(6);
+            Vector({weight_chance, bias_chance, function_chance}).to_csv(result);
             weights.to_csv(result);
             bias.to_csv(result);
             functions.to_csv(result);
+            bias.to_csv(result);
+            functions.to_csv(result);
+        }
+
+        static Random_evolve from_csv(const Vector<double>& csv) {
+            auto random_evolve_csv = csv.auto_slice();
+
+            auto chances = random_evolve_csv[0];
+
+            auto wbf = random_evolve_csv[1].auto_slice();
+
+            auto weights = wbf[0].auto_slice();
+            auto bias = wbf[1];
+            auto functions_csv = wbf[2].auto_slice();
+            Vector<Vector<size_t>> functions(functions_csv.size());
+
+            for (size_t i = 0; i < functions_csv.size(); i++) {
+                functions[i] = {functions_csv[i].begin(), functions_csv[i].end()};
+            }
+
+            size_t idx = 1;
+
+            Random_evolve result(weights, bias, functions, chances[idx++], chances[idx++], chances[idx++]);
+
+            return result;
         }
 
         friend std::ostream& operator << (std::ostream& os, const Random_evolve& layer);

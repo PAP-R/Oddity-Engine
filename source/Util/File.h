@@ -9,7 +9,7 @@
 
 #include "fmt/core.h"
 
-#include <vector>
+#include "Vector.h"
 
 namespace OddityEngine::Util::File {
     /**
@@ -28,7 +28,7 @@ namespace OddityEngine::Util::File {
 
     void write(const std::string& path, const std::string& data);
 
-    std::vector<std::string> csv(const std::string& path);
+    Vector<std::string> csv(const std::string& path);
 }
 
 #endif //ODDITYENGINE_FILE_H

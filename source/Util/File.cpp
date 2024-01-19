@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "Vector.h"
+
 namespace OddityEngine::Util::File {
     std::stringstream stream(const std::string& path) {
         std::stringstream string_stream;
@@ -32,10 +34,10 @@ namespace OddityEngine::Util::File {
         file.close();
     }
 
-    std::vector<std::string> csv(const std::string& path) {
+    Vector<std::string> csv(const std::string& path) {
         auto file = stream(path);
 
-        std::vector<std::string> result(0);
+        Vector<std::string> result(0);
 
         std::string line;
 
