@@ -43,9 +43,9 @@ namespace OddityEngine {
                 return object;
             }
 
-            Graphics::Object* object(const std::string &path) {
-                auto object = new Graphics::Object();
-            }
+            // Graphics::Object* object(const std::string &path) {
+            //     auto object = new Graphics::Object();
+            // }
         } // Loader
     } // OddityEngine
 } // Graphics
