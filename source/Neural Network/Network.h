@@ -36,7 +36,7 @@ namespace OddityEngine::NeuralNetwork {
 
         Vector<Random_evolve> get_layers() const;
 
-        Vector<> apply(Vector<> input);
+        Vector<> apply(const Vector<>& input) const;
 
         long double test(const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list);
 

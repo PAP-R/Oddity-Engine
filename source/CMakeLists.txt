@@ -59,6 +59,8 @@ set(SOURCES
         Util/SortableVector.h
         Util/Vector_overload.h
         "Neural Network/Network.cpp"
+        Graphics/Object/NetworkShape.cpp
+        Graphics/Object/NetworkShape.h
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})

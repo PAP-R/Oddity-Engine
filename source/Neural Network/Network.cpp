@@ -74,12 +74,13 @@ namespace OddityEngine::NeuralNetwork {
         return layers;
     }
 
-    inline Vector<> Network::apply(Vector<> input) {
+    inline Vector<> Network::apply(const Vector<>& input) const {
+        auto result = input;
         for (auto l : layers) {
-            input = l.forward(input);
+            result = l.forward(result);
         }
 
-        return input;
+        return result;
     }
 
     inline long double Network::test(const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list) {
