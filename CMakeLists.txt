@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 project(OddityEngine)
 
+set(OUTPUT_DIR ${PROJECT_SOURCE_DIR}/[output])
+
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 
 find_package(OpenGL REQUIRED)
 
@@ -41,3 +43,15 @@ add_definitions(
 target_link_libraries(${PROJECT_NAME}
         ${LIBS}
 )
+
+target_link_libraries(${PROJECT_NAME}_test
+        ${LIBS}
+)
+
+set(RECOURSES
+        shaders
+        models
+        networks
+)
+
+file(COPY ${RECOURSES} DESTINATION ${OUTPUT_DIR})

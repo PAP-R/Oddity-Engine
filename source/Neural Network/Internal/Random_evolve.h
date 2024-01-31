@@ -10,39 +10,39 @@
 namespace OddityEngine::NeuralNetwork {
     class Random_evolve : public Layer {
     protected:
-        inline static Vector<std::function<long double(long double)>> available_functions = {
-            [](const long double x){return -x;},
-            [](const long double x){return 1 / x;},
-            [](const long double x){return sqrt(x);},
-            [](const long double x){return x * x;},
-            [](const long double x){return x * x * x;},
-            [](const long double x){return sin(x);},
-            [](const long double x){return cos(x);},
-            [](const long double x){return tanh(x);},
-            [](const long double x){return 1 / (1 + pow(std::numbers::e, -x));},
+        inline static Vector<std::function<double(double)>> available_functions = {
+            [](const double x){return -x;},
+            [](const double x){return 1 / x;},
+            [](const double x){return sqrt(x);},
+            [](const double x){return x * x;},
+            [](const double x){return x * x * x;},
+            [](const double x){return sin(x);},
+            [](const double x){return cos(x);},
+            [](const double x){return tanh(x);},
+            [](const double x){return 1 / (1 + pow(std::numbers::e, -x));},
         };
 
-        long double weight_chance;
-        long double bias_chance;
-        long double function_chance;
+        double weight_chance;
+        double bias_chance;
+        double function_chance;
 
     public:
-        Random_evolve(const size_t input_count = 1, const size_t output_count = 1, long double weight_chance = 0.4, long double bias_chance = 0.4, long double function_chance = 0.2) : Layer(input_count, output_count), weight_chance(weight_chance), bias_chance(bias_chance), function_chance(function_chance) {
-            long double total_chance = weight_chance + bias_chance + function_chance;
+        Random_evolve(const size_t input_count = 1, const size_t output_count = 1, double weight_chance = 0.4, double bias_chance = 0.4, double function_chance = 0.2) : Layer(input_count, output_count), weight_chance(weight_chance), bias_chance(bias_chance), function_chance(function_chance) {
+            double total_chance = weight_chance + bias_chance + function_chance;
             this->weight_chance /= total_chance;
             this->bias_chance /= total_chance;
             this->function_chance /= total_chance;
         }
 
-        Random_evolve(const Matrix<>& weights, const Vector<>& bias, const Vector<Vector<size_t>>& functions, long double weight_chance = 0.4, long double bias_chance = 0.4, long double function_chance = 0.2) : Layer(weights, bias, functions), weight_chance(weight_chance), bias_chance(bias_chance), function_chance(function_chance) {
-            long double total_chance = weight_chance + bias_chance + function_chance;
+        Random_evolve(const Matrix<>& weights, const Vector<>& bias, const Vector<Vector<size_t>>& functions, double weight_chance = 0.4, double bias_chance = 0.4, double function_chance = 0.2) : Layer(weights, bias, functions), weight_chance(weight_chance), bias_chance(bias_chance), function_chance(function_chance) {
+            double total_chance = weight_chance + bias_chance + function_chance;
             this->weight_chance /= total_chance;
             this->bias_chance /= total_chance;
             this->function_chance /= total_chance;
         }
 
-        Random_evolve(const Vector<long double>& csv, long double weight_chance = 0.4, long double bias_chance = 0.4, long double function_chance = 0.2) : Layer(csv[3], csv[5]), weight_chance(weight_chance), bias_chance(bias_chance), function_chance(function_chance) {
-            long double total_chance = weight_chance + bias_chance + function_chance;
+        Random_evolve(const Vector<double>& csv, double weight_chance = 0.4, double bias_chance = 0.4, double function_chance = 0.2) : Layer(csv[3], csv[5]), weight_chance(weight_chance), bias_chance(bias_chance), function_chance(function_chance) {
+            double total_chance = weight_chance + bias_chance + function_chance;
             auto csv_step = csv.auto_slice();
 
             this->weights = csv_step[0].auto_slice();
@@ -54,7 +54,7 @@ namespace OddityEngine::NeuralNetwork {
             this->function_chance /= total_chance;
         }
 
-        void evolve(long double rate) override {
+        void evolve(double rate) override {
             size_t index;
             auto random = Math::random<>(0, 1);
             if (random < weight_chance) {
@@ -84,7 +84,7 @@ namespace OddityEngine::NeuralNetwork {
             return this->output;
         }
 
-        Vector<> backward(const Vector<>& output_gradient, long double learning_rate) override {
+        Vector<> backward(const Vector<>& output_gradient, double learning_rate) override {
             return output_gradient;
         }
 

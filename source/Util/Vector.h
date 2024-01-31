@@ -262,8 +262,8 @@ namespace OddityEngine {
         }
 
         template<typename S = T, std::enable_if_t<std::is_same_v<S, std::string>, bool> = true>
-        [[nodiscard]] Vector<long double> to_long_double() const {
-            Vector<long double> result(this->size());
+        [[nodiscard]] Vector<double> to_long_double() const {
+            Vector<double> result(this->size());
             for (size_t i = 0; i < this->size(); i++) {
                 result[i] = std::stold((*this)[i]);
             }

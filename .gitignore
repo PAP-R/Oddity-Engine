@@ -24,3 +24,4 @@ gen
 ### External Files
 external
 /cmake-build-release/
+/\[output\]/
