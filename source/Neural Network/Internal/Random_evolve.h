@@ -1,6 +1,8 @@
 #ifndef RANDOM_EVOLVE_H
 #define RANDOM_EVOLVE_H
 
+#include <numbers>
+
 #include "Layer.h"
 #include <Math/random.h>
 #include <Util/Vector_overload.h>

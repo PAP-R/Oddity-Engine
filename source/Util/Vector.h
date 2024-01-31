@@ -53,12 +53,7 @@ namespace OddityEngine {
         explicit Vector(const size_t size = 0) : std::vector<T>(size) {}
 
         template<typename ... Args, typename S = T, std::enable_if_t<is_vector_v<S>, bool> = true>
-        Vector(const size_t size, Args ... args) : Vector(size, S(args...)) {}
-
-        Vector(const size_t size, const T& value) : std::vector<T>(size, value) {
-            this->use_default = true;
-            this->default_value = value;
-        }
+        Vector(const size_t size, size_t next, Args ... args) : Vector(size, S(next, args...)) {}
 
         Vector(std::initializer_list<T> list) : std::vector<T>(list) {}
 

@@ -4,6 +4,7 @@
 
 #include "Shader.h"
 #include "fmt/core.h"
+#include "Util/Debug.h"
 
 namespace OddityEngine {
     namespace Graphics {
@@ -31,8 +32,7 @@ namespace OddityEngine {
 
                 std::vector<char> program_error(info_length + 1);
                 glGetProgramInfoLog(ID, info_length, nullptr, &program_error[0]);
-                fmt::print("{} Shader Program Error : {}\n", info_length, &program_error[0]);
-                throw std::runtime_error(&program_error[0]);
+                Debug::error(&program_error[0]);
             }
         }
 

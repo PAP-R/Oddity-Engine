@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <stdexcept>
+
 #include <fmt/core.h>
 
 #include "Value.h"

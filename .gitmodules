@@ -22,3 +22,6 @@
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt.git
 	ignore = all
+[submodule "external/sdl"]
+	path = external/sdl
+	url = git@github.com:libsdl-org/SDL.git
