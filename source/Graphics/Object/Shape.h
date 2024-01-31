@@ -31,6 +31,7 @@ namespace OddityEngine::Graphics {
             MESH,
             MESH_FLAT,
             CURVE,
+            SDF,
         };
 
     protected:

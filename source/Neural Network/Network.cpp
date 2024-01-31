@@ -37,8 +37,13 @@ namespace OddityEngine::NeuralNetwork {
         return evo;
     }
 
-    inline Network::Network(size_t input_count, size_t output_count, size_t mutations, size_t evolutions, double add_chance, double learning_rate): input_count(input_count), output_count(output_count), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {
+    inline Network::Network(size_t input_count, size_t output_count, size_t mutations, size_t evolutions, long double add_chance, long double learning_rate) : input_count(input_count), output_count(output_count), mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {
         layers.emplace_back(input_count, output_count);
+    }
+
+    Network::Network(const Vector<>& csv, size_t mutations, size_t evolutions, long double add_chance, long double learning_rate) : mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate), layers(csv.auto_slice()) {
+        input_count = layers.front().input_size();
+        output_count = layers.back().output_size();
     }
 
     size_t Network::get_input_count() const {
@@ -57,11 +62,11 @@ namespace OddityEngine::NeuralNetwork {
         return evolutions;
     }
 
-    double Network::get_add_chance() const {
+    long double Network::get_add_chance() const {
         return add_chance;
     }
 
-    double Network::get_learning_rate() const {
+    long double Network::get_learning_rate() const {
         return learning_rate;
     }
 
@@ -69,30 +74,31 @@ namespace OddityEngine::NeuralNetwork {
         return layers;
     }
 
-    inline Vector<double> Network::apply(Vector<double> input) {
+    inline Vector<> Network::apply(const Vector<>& input) const {
+        auto result = input;
         for (auto l : layers) {
-            input = l.forward(input);
+            result = l.forward(result);
         }
 
-        return input;
+        return result;
     }
 
-    inline double Network::test(const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list) {
-        double error = 0;
+    inline long double Network::test(const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list) {
+        long double error = 0;
         for (int i = 0; i < input_list.size(); i++) {
             auto value = this->apply(input_list[i]);
             if (value.size() != output_list[i].size()) {
-                error = std::numeric_limits<double>::infinity();
+                error = std::numeric_limits<long double>::infinity();
             }
             else {
                 error += (value - output_list[i]).abs().mean();
             }
         }
 
-        return error / static_cast<double>(input_list.size());
+        return error / static_cast<long double>(input_list.size());
     }
 
-    inline Vector<Network> Network::train(Vector<Network> nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list) {
+    inline Vector<Network> Network::train(Vector<Network> nets, const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list) {
         SortableVector<Network> best_nets(0);
         for (auto n : nets) {
             best_nets.sorted_insert(n, n.test(input_list, output_list));
@@ -106,7 +112,7 @@ namespace OddityEngine::NeuralNetwork {
         return best_nets.resize(nets.size());
     }
 
-    Vector<Network> Network::train(Vector<Network> nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list, const size_t epochs) {
+    Vector<Network> Network::train(Vector<Network> nets, const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list, const size_t epochs) {
         for (int i = 0; i < epochs; i++) {
             std::cout << "[ " << i + 1 << " / " << epochs << " ]: ";
             nets = train(nets, input_list, output_list);
@@ -121,12 +127,8 @@ namespace OddityEngine::NeuralNetwork {
         return str.str();
     }
 
-    Network::operator Vector<Vector<>>() const {
-        Vector<Vector<>> result;
-    }
-
     std::ostream& operator<<(std::ostream& os, const Network& network) {
-        os << network.get_input_count() << "," << network.get_output_count() << "," << network.get_mutations() << "," << network.get_evolutions() << "," << network.get_add_chance() << "," << network.get_learning_rate() << ",\n";
+        os << network.get_input_count() << " -> " << network.get_output_count() << ",\n";
         for (auto l : network.get_layers()) {
             os << l << "\n";
         }
@@ -134,26 +136,27 @@ namespace OddityEngine::NeuralNetwork {
         return os;
     }
 
-    Vector<double> Network::to_csv() const {
-        Vector<double> result;
+    Vector<> Network::to_csv() const {
+        Vector<> result;
 
         this->to_csv(&result);
 
         return result;
     }
 
-    void Network::to_csv(Vector<double>* result) const {
-        result->push_back(1);
-        result->push_back(2);
-        Vector({input_count, output_count, mutations, evolutions, add_chance, learning_rate}).to_csv(result);
+    void Network::to_csv(Vector<>* result) const {
         layers.to_csv(result);
     }
 
-    Network Network::from_csv(const std::string& path) {
-        return from_csv(Util::File::csv(path).to_double());
+    size_t Network::csv_count() const {
+        return layers.csv_count();
     }
 
-    Network Network::from_csv(const Vector<double>& csv) {
+    Network Network::from_csv(const std::string& path) {
+        return from_csv(Util::File::csv(path).to_long_double());
+    }
+
+    Network Network::from_csv(const Vector<>& csv) {
         auto net_csv = csv.auto_slice();
 
         size_t idx = 1;
@@ -172,7 +175,7 @@ namespace OddityEngine::NeuralNetwork {
     }
 
     Vector<Network> Network::from_csv_vector(const std::string& path) {
-        auto raw = Util::File::csv(path).to_double();
+        auto raw = Util::File::csv(path).to_long_double();
 
         auto nets = raw.auto_slice();
 

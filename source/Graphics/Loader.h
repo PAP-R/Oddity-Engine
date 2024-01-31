@@ -73,7 +73,7 @@ namespace OddityEngine {
 
             Object obj_file(const std::string& path);
 
-            Graphics::Object* object(const std::string& path);
+            // Graphics::Object* object(const std::string& path);
         } // Loader
     } // OddityEngine
 } // Graphics

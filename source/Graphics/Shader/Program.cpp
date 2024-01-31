@@ -32,7 +32,7 @@ namespace OddityEngine {
 
                 std::vector<char> program_error(info_length + 1);
                 glGetProgramInfoLog(ID, info_length, nullptr, &program_error[0]);
-                Debug::error(&program_error[0]);
+                Debug::error(fmt::format("{} Shader Program Error : {}\n", info_length, &program_error[0]));
             }
         }
 

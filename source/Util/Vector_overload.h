@@ -74,7 +74,7 @@ namespace OddityEngine {
 
     //*** Vector<T> o Vector<T> ***//
     template<typename T, typename S, std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<S>, bool> = true>
-    Vector<T>& operator + (Vector<T> vector, const Vector<S>& other) {
+    Vector<T> operator + (Vector<T> vector, const Vector<S>& other) {
         return vector += other;
     }
 
@@ -88,7 +88,7 @@ namespace OddityEngine {
     }
 
     template<typename T, typename S, std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<S>, bool> = true>
-    Vector<T>& operator - (Vector<T> vector, const Vector<S>& other) {
+    Vector<T> operator - (Vector<T> vector, const Vector<S>& other) {
         return vector -= other;
     }
 
@@ -102,7 +102,7 @@ namespace OddityEngine {
     }
 
     template<typename T, typename S, std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<S>, bool> = true>
-    Vector<T>& operator * (Vector<T> vector, const Vector<S>& other) {
+    Vector<T> operator * (Vector<T> vector, const Vector<S>& other) {
         return vector *= other;
     }
 
@@ -116,7 +116,7 @@ namespace OddityEngine {
     }
 
     template<typename T, typename S, std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<S>, bool> = true>
-    Vector<T>& operator / (Vector<T> vector, const Vector<S>& other) {
+    Vector<T> operator / (Vector<T> vector, const Vector<S>& other) {
         return vector /= other;
     }
 
