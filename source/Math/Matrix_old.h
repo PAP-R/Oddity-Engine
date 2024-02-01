@@ -12,7 +12,7 @@
 #include "basics.h"
 
 namespace OddityEngine {
-    template<typename T = double>
+    template<typename T = float>
     class Matrix {
     protected:
         static void Deleter(const T* obj) {

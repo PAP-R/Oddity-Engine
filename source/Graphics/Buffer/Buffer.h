@@ -19,6 +19,7 @@ namespace OddityEngine {
             MATERIAL,
             TEXTURE_TRANSFORM,
             LAYER,
+            NETWORK,
         };
 
         template<typename T>

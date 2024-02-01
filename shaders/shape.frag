@@ -7,6 +7,7 @@ const uint SPHERE = 0;
 const uint CUBE = 1;
 const uint MESH = 2;
 const uint MESH_FLAT = 3;
+const uint SDF = 4;
 
 struct buffershape {
     uint shape;

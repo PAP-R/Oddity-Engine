@@ -4,7 +4,7 @@
 #include "Vector.h"
 
 namespace OddityEngine {
-    template<typename T = double, typename S = double, std::enable_if_t<std::is_arithmetic_v<S>, bool> = true>
+    template<typename T = float, typename S = float, std::enable_if_t<std::is_arithmetic_v<S>, bool> = true>
     class SortableVector : public Vector<T> {
     protected:
         Vector<S> _scores;

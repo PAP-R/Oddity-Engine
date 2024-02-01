@@ -1,6 +1,7 @@
 #include "Network.h"
 
 #include <iostream>
+#include <utility>
 
 #include "Util/File.h"
 
@@ -42,19 +43,19 @@ namespace OddityEngine::NeuralNetwork {
         return result;
     }
 
-    inline double Trainer::test(const Network& net, const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list) {
-        double error = 0;
+    inline float Trainer::test(const Network& net, const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list) {
+        float error = 0;
         for (int i = 0; i < input_list.size(); i++) {
             auto value = net.apply(input_list[i]);
             if (value.size() != output_list[i].size()) {
-                error = std::numeric_limits<double>::infinity();
+                error = std::numeric_limits<float>::infinity();
             }
             else {
                 error += (value - output_list[i]).abs().mean();
             }
         }
 
-        return error / static_cast<double>(input_list.size());
+        return error / static_cast<float>(input_list.size());
     }
 
     inline Vector<Network> Trainer::train(Vector<Network> nets, const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list) {
@@ -140,5 +141,5 @@ namespace OddityEngine::NeuralNetwork {
         return evo;
     }
 
-    Trainer::Trainer(size_t mutations, size_t evolutions, double add_chance, double learning_rate) : mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate) {}
+    Trainer::Trainer(size_t mutations, size_t evolutions, float add_chance, float learning_rate, const std::function<float(const Network&, const Vector<Vector<>>&, const Vector<Vector<>>&)>& test_function) : mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate), test_function(test_function) {}
 }

@@ -7,9 +7,9 @@
 namespace OddityEngine::Graphics {
     class NetworkShape : public Shape {
     public:
-        NetworkShape(NeuralNetwork::Network& network) : Shape(Shapes::SDF) {
+        NetworkShape(NeuralNetwork::Network& network);
 
-        }
+        static void bind_buffer();
     };
 }
 

@@ -4,7 +4,7 @@
 #include "Matrix.h"
 
 namespace OddityEngine {
-    template<typename T = double>
+    template<typename T = float>
     class Vector : public Matrix<T>{
     protected:
         using Matrix<T>::resize;

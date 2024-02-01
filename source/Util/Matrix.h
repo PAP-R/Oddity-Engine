@@ -8,7 +8,7 @@
 #include "Vector.h"
 
 namespace OddityEngine {
-    template<typename T = double>
+    template<typename T = float>
     class Matrix : public Vector<Vector<T>> {
     protected:
         bool use_default = false;

@@ -13,7 +13,7 @@
 #include <fmt/core.h>
 
 namespace OddityEngine {
-    template<typename T = double>
+    template<typename T = float>
     class Vector;
 
     template<typename>
@@ -38,7 +38,7 @@ namespace OddityEngine {
         typedef T type;
     };
 
-    template<typename T = double, size_t dimensions = 2>
+    template<typename T = float, size_t dimensions = 2>
     using Matrix = typename dimensional_matrix<T, dimensions>::type;
 
     template<typename T>
@@ -243,7 +243,7 @@ namespace OddityEngine {
             }
 
             size_t count = (*this)[start + 1];
-            Vector result = {1, static_cast<double>(count)};
+            Vector result = {1, static_cast<float>(count)};
             for (size_t i = 0; i < count; i++) {
                 auto temp = sub_slice(start + result.size());
                 result.insert(result.end(), temp.begin(), temp.end());
@@ -262,8 +262,8 @@ namespace OddityEngine {
         }
 
         template<typename S = T, std::enable_if_t<std::is_same_v<S, std::string>, bool> = true>
-        [[nodiscard]] Vector<double> to_long_double() const {
-            Vector<double> result(this->size());
+        [[nodiscard]] Vector<float> to_long_float() const {
+            Vector<float> result(this->size());
             for (size_t i = 0; i < this->size(); i++) {
                 result[i] = std::stold((*this)[i]);
             }

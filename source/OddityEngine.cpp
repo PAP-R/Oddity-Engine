@@ -13,7 +13,7 @@
 namespace OddityEngine {
     namespace Stat {
         float fps;
-        double spf;
+        float spf;
         auto time = Time::get();
         auto last_time = time;
 

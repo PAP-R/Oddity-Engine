@@ -7,8 +7,8 @@
 namespace OddityEngine::NeuralNetwork {
     class Layer {
     protected:
-        inline static double default_weight = 1;
-        inline static double default_bias = 0;
+        inline static float default_weight = 1;
+        inline static float default_bias = 0;
 
         size_t _input_size;
         size_t _output_size;
@@ -46,9 +46,9 @@ namespace OddityEngine::NeuralNetwork {
             return _output_size;
         }
 
-        virtual void evolve(double rate) = 0;
+        virtual void evolve(float rate) = 0;
         virtual Vector<> forward(const Vector<>& input) = 0;
-        virtual Vector<> backward(const Vector<>& output_gradient, double learning_rate) = 0;
+        virtual Vector<> backward(const Vector<>& output_gradient, float learning_rate) = 0;
 
         friend std::ostream& operator << (std::ostream& os, const Layer& layer);
         friend std::ostream& operator << (std::ostream& os, const Layer* layer);

@@ -22,8 +22,8 @@ namespace OddityEngine::NeuralNetwork {
         Vector<Layer*> layers;
         size_t mutations;
         size_t evolutions;
-        double add_chance;
-        double learning_rate;
+        float add_chance;
+        float learning_rate;
 
         void resize(const size_t layer, const size_t size) {
             if (layer < layers.size() - 1) {
@@ -63,7 +63,7 @@ namespace OddityEngine::NeuralNetwork {
         }
 
     public:
-        explicit Network(size_t mutations = 1, size_t evolutions = 1, double add_chance = 0.05, double learning_rate = 0.1) : mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate), layers(1, nullptr) {
+        explicit Network(size_t mutations = 1, size_t evolutions = 1, float add_chance = 0.05, float learning_rate = 0.1) : mutations(mutations), evolutions(evolutions), add_chance(add_chance), learning_rate(learning_rate), layers(1, nullptr) {
             layers[0] = new Random_evolve(input_count, output_count);
         }
 
@@ -127,7 +127,7 @@ namespace OddityEngine::NeuralNetwork {
           return layers;
         }
 
-        Vector<double> apply(Vector<double> input) {
+        Vector<float> apply(Vector<float> input) {
             for (auto l : layers) {
                 input = l->forward(input);
             }
@@ -135,23 +135,23 @@ namespace OddityEngine::NeuralNetwork {
             return input;
         }
 
-        double test(const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list) {
-            double error = 0;
+        float test(const Vector<Vector<float>>& input_list, const Vector<Vector<float>>& output_list) {
+            float error = 0;
             for (int i = 0; i < input_list.size(); i++) {
                 auto value = this->apply(input_list[i]);
                 if (value.size() != output_list[i].size()) {
-                    error = std::numeric_limits<double>::infinity();
+                    error = std::numeric_limits<float>::infinity();
                 }
                 else {
                     error += (value - output_list[i]).abs().mean();
                 }
             }
 
-            return error / static_cast<double>(input_list.size());
+            return error / static_cast<float>(input_list.size());
         }
 
-        double train(const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list) {
-            double lowest = this->test(input_list, output_list);
+        float train(const Vector<Vector<float>>& input_list, const Vector<Vector<float>>& output_list) {
+            float lowest = this->test(input_list, output_list);
             Network lowest_net = *this;
 
             for (int i = 0; i < evolutions; i++) {
@@ -168,7 +168,7 @@ namespace OddityEngine::NeuralNetwork {
             return lowest;
         }
 
-        static Vector<Network*> train(Vector<Network*>& nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list) {
+        static Vector<Network*> train(Vector<Network*>& nets, const Vector<Vector<float>>& input_list, const Vector<Vector<float>>& output_list) {
             SortableVector<Network*> best_nets(0);
 
             for (auto n : nets) {
@@ -189,8 +189,8 @@ namespace OddityEngine::NeuralNetwork {
             return best_nets.resize(nets.size());
         }
 
-        double train(const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list, size_t epochs) {
-            double error = 0;
+        float train(const Vector<Vector<float>>& input_list, const Vector<Vector<float>>& output_list, size_t epochs) {
+            float error = 0;
             for (int i = 0; i < epochs; ++i) {
                 error = train(input_list, output_list);
             }
@@ -198,7 +198,7 @@ namespace OddityEngine::NeuralNetwork {
             return error;
         }
 
-        static Vector<Network> train(Vector<Network> nets, const Vector<Vector<double>>& input_list, const Vector<Vector<double>>& output_list, size_t epochs) {
+        static Vector<Network> train(Vector<Network> nets, const Vector<Vector<float>>& input_list, const Vector<Vector<float>>& output_list, size_t epochs) {
             for (int i = 0; i < epochs; ++i) {
                 std::cout << "[" << i << "/" << epochs << "]: ";
                 nets = train(nets, input_list, output_list);

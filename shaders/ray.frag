@@ -69,7 +69,7 @@ Ray mkray_hit(vec3 origin, vec3 dir, vec3 pos, vec3 normal, vec3 uv, uint object
 }
 
 Ray sphere_collision(Ray ray, uint object) {
-    mat4 transform = get_transform(object);
+    dmat4 transform = get_transform(object);
 
     vec3 pos = transform2pos(transform);
     float radius = length(transform2scale(transform));
@@ -106,7 +106,7 @@ Ray sphere_collision(Ray ray, uint object) {
 }
 
 float sphere_simple_collision(Ray ray, uint object) {
-    mat4 transform = get_transform(object);
+    dmat4 transform = get_transform(object);
 
     vec3 pos = transform2pos(transform);
     float radius = length(transform2scale(transform));
@@ -128,7 +128,7 @@ float sphere_simple_collision(Ray ray, uint object) {
 }
 
 Ray box_collision(Ray ray, uint object) {
-    mat4 transform = get_transform(object);
+    dmat4 transform = get_transform(object);
 
     vec3 pos = transform2pos(transform);
     float radius = transform2scale(transform).x;
@@ -167,7 +167,7 @@ Ray box_collision(Ray ray, uint object) {
 Ray triangle_collision(Ray ray, uint object, uint v0, uint v1, uint v2) {
     ray.hit = false;
 
-    mat4 transform = get_transform(object);
+    dmat4 transform = get_transform(object);
 
     vec3 a = (transform * vertices[v0]).xyz;
     vec3 b = (transform * vertices[v1]).xyz;
@@ -256,6 +256,27 @@ Ray mesh_collision(Ray ray, uint object) {
 }
 
 Ray network_colision(Ray ray, uint object) {
+    const float threshhold = 0;
+
+    float vector[MAX_THROUGHPUT];
+    for (uint i = 0; i < 3; i++) {
+        vector[i] = ray.origin[i];
+        vector[i + 3] = ray.dir[i];
+    }
+
+    buffershape shape = get_shape(object);
+
+    vector = apply(shape.vertex_start, vector);
+
+    if (vector[0] > threshhold) {
+        ray.hit = true;
+        ray.len = vector[0];
+        for (uint i = 0; i < 3; i++) {
+            ray.pos[i] = vector[i + 1];
+            ray.normal[i] = vector[i + 4];
+            ray.uv[i] = vector[i + 7];
+        }
+    }
 
     return ray;
 }
@@ -265,7 +286,7 @@ Ray collision_ray(Ray ray) {
     Ray temp = ray;
 
     for (uint obj = 0; obj < objects.length(); obj++) {
-        mat4 transform = get_transform(obj);
+        dmat4 transform = get_transform(obj);
         if (true || distance(ray.origin, transform2pos(transform)) - length(transform2scale(transform)) < result.len) {
             switch(get_shape(obj).shape) {
                 case SPHERE:
@@ -276,8 +297,11 @@ Ray collision_ray(Ray ray) {
                     float approximate_len = sphere_simple_collision(ray, obj);
                     if (tolerance < approximate_len && approximate_len < temp.len) {
                         temp = mesh_collision(ray, obj);
-                        break;
                     }
+                    break;
+                case SDF:
+                    temp = network_colision(ray, obj);
+                    break;
             }
             if (temp.hit && tolerance < temp.len && temp.len < result.len) {
                 result = temp;

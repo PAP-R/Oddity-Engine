@@ -30,8 +30,8 @@ namespace OddityEngine::NeuralNetwork {
         size_t get_output_count() const;
         size_t get_mutations() const;
         size_t get_evolutions() const;
-        double get_add_chance() const;
-        double get_learning_rate() const;
+        float get_add_chance() const;
+        float get_learning_rate() const;
 
         Vector<Random_evolve> get_layers() const;
 
@@ -52,15 +52,16 @@ namespace OddityEngine::NeuralNetwork {
     private:
         size_t mutations;
         size_t evolutions;
-        double add_chance;
-        double learning_rate;
+        float add_chance;
+        float learning_rate;
+        std::function<float(const Network&, const Vector<Vector<>>&, const Vector<Vector<>>&)> test_function;
 
         Network evolve(const Network& net);
 
-    public:
-        Trainer(size_t mutations = 1, size_t evolutions = 1, double add_chance = 0.05, double learning_rate = 0.1);
+        static float test(const Network& net, const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list);
 
-        double test(const Network& net, const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list);
+    public:
+        Trainer(size_t mutations = 1, size_t evolutions = 1, float add_chance = 0.05, float learning_rate = 0.1, const std::function<float(const Network&, const Vector<Vector<>>&, const Vector<Vector<>>&)>& test_function = test);
 
         Vector<Network> train(Vector<Network> nets, const Vector<Vector<>>& input_list, const Vector<Vector<>>& output_list);
 

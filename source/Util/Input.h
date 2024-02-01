@@ -16,7 +16,7 @@ namespace OddityEngine {
         static std::map<GLFWwindow*, int> cursor_modes;
 
         virtual void key_update(int key, int action) = 0;
-        virtual void mouse_update(double xpos, double ypos) = 0;
+        virtual void mouse_update(float xpos, float ypos) = 0;
     public:
         Input();
 

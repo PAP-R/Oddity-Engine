@@ -6,11 +6,11 @@
 namespace OddityEngine {
     namespace Time {
         void update();
-        double get();
-        double get_start();
-        double get_delta();
+        float get();
+        float get_start();
+        float get_delta();
         size_t get_frame();
-        double get_fps();
+        float get_fps();
     } // Time
 } // OddityEngine
 

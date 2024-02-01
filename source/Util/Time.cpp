@@ -5,10 +5,10 @@
 
 namespace OddityEngine {
     namespace Time {
-        double now = glfwGetTime();
-        double start = now;
-        double last = now;
-        double delta;
+        float now = glfwGetTime();
+        float start = now;
+        float last = now;
+        float delta;
         size_t frame = 0;
 
         void update() {
@@ -18,15 +18,15 @@ namespace OddityEngine {
             frame++;
         }
 
-        double get() {
+        float get() {
             return now;
         }
 
-        double get_start() {
+        float get_start() {
             return start;
         }
 
-        double get_delta() {
+        float get_delta() {
             return delta;
         }
 
@@ -34,7 +34,7 @@ namespace OddityEngine {
             return frame;
         }
 
-        double get_fps() {
+        float get_fps() {
             return 1 / get_delta();
         }
     } // Time
