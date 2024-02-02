@@ -32,40 +32,7 @@ Ray mk_ray(float from, float to) {
 }
 
 OddityEngine::Vector<float> sphere(Ray ray) {
-    float tolerance = 1E-3;
-
-    OddityEngine::Vector<float> result(10);
-
-    auto poso = glm::vec3(-ray.pos);
-
-    float len = dot(poso, ray.dir);
-
-    glm::vec3 c = len * ray.dir;
-
-    float dstc = distance(poso, c);
-
-    if (dstc <= radius) {
-        float dst = sqrt(pow(radius, 2) - pow(dstc, 2));
-
-        if (len > -dst + tolerance) {
-            float sign = 1;
-
-            if (len > dst + tolerance) {
-                sign = -1;
-            }
-
-            result[0] = len + sign * dst;
-            auto pos = ray.pos + ray.dir * result[0];
-
-            auto normal = glm::normalize(pos);
-
-            result[1] = normal.x;
-            result[2] = normal.y;
-            result[3] = normal.z;
-        }
-    }
-
-    return result;
+    return {glm::distance(ray.pos, sphere_pos) - radius};
 };
 
 
@@ -91,7 +58,7 @@ OddityEngine::Vector<OddityEngine::Vector<float>> mk_test_input(size_t count) {
 
     for (int i = 0; i < count; i++) {
         auto ray = mk_ray(from, to);
-        training_input[i] = ray.to_vec();
+        training_input[i] = ray.to_vec().slice(0, 3);
     }
 
     return training_input;
@@ -101,7 +68,7 @@ OddityEngine::Vector<OddityEngine::Vector<float>> mk_test_output(const OddityEng
     OddityEngine::Vector<OddityEngine::Vector<>> training_output(input.size());
 
     for (int i = 0; i < input.size(); i++) {
-        training_output[i] = sphere({{input[i][0], input[i][1], input[i][2]}, {input[i][3], input[i][4], input[i][5]}});
+        training_output[i] = sphere({{input[i][0], input[i][1], input[i][2]}});
     }
 
     return training_output;
@@ -117,11 +84,11 @@ int main() {
     OddityEngine::Vector<OddityEngine::Vector<>> test_input = mk_test_input(test_size);
     OddityEngine::Vector<OddityEngine::Vector<>> test_output = mk_test_output(test_input);
 
-    OddityEngine::NeuralNetwork::Trainer trainer(5, 5, 0.01, 0.1, test_function);
+    OddityEngine::NeuralNetwork::Trainer trainer(5, 10, 0.01, 0.1, test_function);
 
-    OddityEngine::Vector nets(10, OddityEngine::NeuralNetwork::Network(6, 10));
+    OddityEngine::Vector nets(10, OddityEngine::NeuralNetwork::Network(3, 1));
 
-    nets = trainer.train(nets, training_input, training_output, 10);
+    nets = trainer.train(nets, training_input, training_output, 1000);
 
     for (size_t i = 0; i < test_size; i++) {
         std::cout << test_input[i] << " : " << nets[0].apply(test_input[i]) << " / " << test_output[i] << "\n";

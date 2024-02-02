@@ -1,9 +1,7 @@
 #include "Graphics.h"
 
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+#include <SDL2/SDL.h>
 
-#include <stdexcept>
 
 #include "Util/Debug.h"
 #include "Window.h"
@@ -11,7 +9,7 @@
 namespace OddityEngine {
     namespace Graphics {
         void init() {
-            if (!glfwInit()) {
+            if (SDL_Init(SDL_INIT_VIDEO)) {
                 Debug::error("Failed to initialize GLFW");
             }
         }

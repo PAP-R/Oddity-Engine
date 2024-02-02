@@ -2,7 +2,6 @@
 #define ODDITYENGINE_BUFFER_H
 
 #include "GL/glew.h"
-#include "GLFW/glfw3.h"
 
 #include <algorithm>
 #include <vector>

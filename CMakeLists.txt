@@ -8,19 +8,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 
 find_package(OpenGL REQUIRED)
 
+find_package(SDL2 REQUIRED)
+
 include_directories(
         external/glew/include
         external/glfw/include
         external/glm
         external/imgui
         external/fmt/include
-        ${SDL3_INCLUDE_DIRECTORY}
+        ${SDL2_INCLUDE_DIRS}
         source
 )
 
 add_subdirectory(external)
-
-add_subdirectory(source)
 
 set(LIBS
         ${OPENGL_LIBRARY}
@@ -28,7 +28,7 @@ set(LIBS
         glfw
         libglew_static
         IMGUI
-        ${SDL3_LIBRARIES}
+        ${SDL2_LIBRARIES}
         fmt::fmt
 )
 
@@ -39,6 +39,10 @@ add_definitions(
         -DGLEW_STATIC
         -D_CRT_SECURE_NO_WARNINGS
 )
+
+
+add_subdirectory(source)
+
 
 target_link_libraries(${PROJECT_NAME}
         ${LIBS}

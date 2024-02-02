@@ -39,5 +39,3 @@ set(IMGUI
 add_library(IMGUI STATIC ${IMGUI})
 
 add_subdirectory(fmt)
-
-add_subdirectory(sdl)
