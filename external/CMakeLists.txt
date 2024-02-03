@@ -1,10 +1,3 @@
-### GLFW ###
-add_subdirectory(glfw)
-
-include_directories(
-        glfw/include/GLFW
-)
-
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(OPENGL_LIBRARY
             ${OPENGL_LIBRARY}
@@ -31,8 +24,8 @@ set(IMGUI
         imgui/imgui_draw.cpp
         imgui/imgui_tables.cpp
         imgui/imgui_widgets.cpp
-        imgui/backends/imgui_impl_glfw.cpp
-        imgui/backends/imgui_impl_glfw.h
+        imgui/backends/imgui_impl_sdl2.cpp
+        imgui/backends/imgui_impl_sdl2.h
         imgui/backends/imgui_impl_opengl3.cpp
         imgui/backends/imgui_impl_opengl3.h)
 

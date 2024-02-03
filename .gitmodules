@@ -1,7 +1,3 @@
-[submodule "external/glfw"]
-	path = external/glfw
-	url = https://github.com/glfw/glfw.git
-	ignore = all
 [submodule "external/glm"]
 	path = external/glm
 	url = https://github.com/g-truc/glm.git
@@ -22,6 +18,3 @@
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt.git
 	ignore = all
-[submodule "external/sdl"]
-	path = external/sdl
-	url = git@github.com:libsdl-org/SDL.git

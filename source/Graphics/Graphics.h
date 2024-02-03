@@ -1,18 +1,11 @@
-#ifndef ODDITYENGINE_GRAPHICS_H
-#define ODDITYENGINE_GRAPHICS_H
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
 
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
+namespace OddityEngine::Graphics {
+    void init();
+    void terminate();
 
-namespace OddityEngine {
-    namespace Graphics {
-        void init();
-        void terminate();
+    bool update();
+};
 
-        bool update();
-
-
-    } // OddityEngine
-} // Graphics
-
-#endif //ODDITYENGINE_GRAPHICS_H
+#endif //GRAPHICS_H

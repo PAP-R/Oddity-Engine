@@ -12,7 +12,6 @@ find_package(SDL2 REQUIRED)
 
 include_directories(
         external/glew/include
-        external/glfw/include
         external/glm
         external/imgui
         external/fmt/include
@@ -25,7 +24,6 @@ add_subdirectory(external)
 set(LIBS
         ${OPENGL_LIBRARY}
         glm
-        glfw
         libglew_static
         IMGUI
         ${SDL2_LIBRARIES}
