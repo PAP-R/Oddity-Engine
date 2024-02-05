@@ -56,4 +56,9 @@ set(RECOURSES
         networks
 )
 
-file(COPY ${RECOURSES} DESTINATION ${OUTPUT_DIR})
+file(INSTALL ${RECOURSES} DESTINATION ${OUTPUT_DIR})
+
+add_custom_command(OUTPUT ${RECOURSES} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${RECOURSES} ${OUTPUT_DIR}
+)
