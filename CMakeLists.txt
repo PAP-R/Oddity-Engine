@@ -30,14 +30,19 @@ set(LIBS
         fmt::fmt
 )
 
-add_definitions(
-        -DTW_STATIC
-        -DTW_NO_LIB_PRAGMA
-        -DTW_NO_DIRECT3D
-        -DGLEW_STATIC
-        -D_CRT_SECURE_NO_WARNINGS
-)
+#add_definitions(
+#        -DTW_STATIC
+#        -DTW_NO_LIB_PRAGMA
+#        -DTW_NO_DIRECT3D
+#        -DGLEW_STATIC
+#        -D_CRT_SECURE_NO_WARNINGS
+#)
 
+set(RECOURSES
+        shaders
+        models
+        networks
+)
 
 add_subdirectory(source)
 
@@ -50,15 +55,4 @@ target_link_libraries(${PROJECT_NAME}_test
         ${LIBS}
 )
 
-set(RECOURSES
-        shaders
-        models
-        networks
-)
-
-file(INSTALL ${RECOURSES} DESTINATION ${OUTPUT_DIR})
-
-add_custom_command(OUTPUT ${RECOURSES} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${RECOURSES} ${OUTPUT_DIR}
-)
+file(COPY ${RECOURSES} DESTINATION ${OUTPUT_DIR})

@@ -7,6 +7,18 @@
 #include <Util/Vector.h>
 
 namespace OddityEngine::Graphics {
+    enum BufferIndex {
+        OBJECT = 3,
+        TRANSFORM,
+        SHAPE,
+        VERTEX,
+        NORMAL,
+        UV,
+        MATERIAL,
+        TEXTURE_TRANSFORM,
+        LAYER,
+    };
+
     template<typename T>
     class Buffer {
     protected:
@@ -70,6 +82,10 @@ namespace OddityEngine::Graphics {
             return indices.slice(start, start + count);
         }
 
+        GLsizei** insert(const GLsizei start, const T& data) {
+            return insert(start, 1, &data)[0];
+        }
+
         Vector<GLsizei**> insert_back(GLsizei count, const T* data) {
             auto offset = this->count;
             resize(this->count + count);
@@ -80,9 +96,26 @@ namespace OddityEngine::Graphics {
             return indices.slice(offset, offset + count);
         }
 
-        void set(const GLsizei count, const GLsizei offset, const T* data) {
+        GLsizei** insert_back(const T& data) {
+            return insert_back(1, &data)[0];
+        }
+
+        void set(const GLsizei start, const GLsizei count, const T* data) {
             glBindBuffer(type, ID);
-            glNamedBufferSubData(ID, offset * sizeof(T), count * sizeof(T), data);
+            glNamedBufferSubData(ID, start * sizeof(T), count * sizeof(T), data);
+        }
+
+        void set(const GLsizei index, const T& data) {
+            set(index, 1, &data);
+        }
+
+        Vector<T> get() {
+            Vector<T> result(count);
+
+            glBindBuffer(type, ID);
+            glGetNamedBufferSubData(ID, 0, count * sizeof(T), result.data());
+
+            return result;
         }
 
         void remove(const GLsizei count, const GLsizei offset) {
@@ -94,8 +127,12 @@ namespace OddityEngine::Graphics {
             return type;
         }
 
-        operator GLuint() const {
+        GLuint get_ID() const {
             return ID;
+        }
+
+        operator GLuint() const {
+            return get_ID();
         }
     };
 }

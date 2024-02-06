@@ -13,6 +13,8 @@
 #include "Math/random.h"
 #include "Shader/Shader.h"
 
+#include <cstdio>
+
 namespace OddityEngine::Graphics {
     std::vector<Window*> window_list;
 
@@ -20,8 +22,8 @@ namespace OddityEngine::Graphics {
         Debug::message(message);
     }
 
-    auto create_window(const char* name, int width, int height) {
-        auto window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    auto create_window(const char* name, const int width, const int height, const unsigned int flags) {
+        auto window = SDL_CreateWindow(name, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags | SDL_WINDOW_OPENGL);
         if (window == nullptr) {
             Debug::error("Failed to create window");
         }
@@ -60,7 +62,7 @@ namespace OddityEngine::Graphics {
         return context;
     }
 
-    Window::Window(const char* name, int width, int height) : window(create_window(name, width, height)), gl_context(create_gl_contextCurrent(window)), screenbuffer(GL_ARRAY_BUFFER), view_vertex_shader(GL_VERTEX_SHADER, "view.vert"), view_fragment_shader(GL_FRAGMENT_SHADER, "view.frag"), view_program({view_vertex_shader, view_fragment_shader}) {
+    Window::Window(const char* name, const int width, const int height, const unsigned int flags) : window(create_window(name, width, height, flags)), gl_context(create_gl_contextCurrent(window)), screenbuffer(GL_ARRAY_BUFFER), view_program({Shader(GL_VERTEX_SHADER, "view.vert"), Shader(GL_FRAGMENT_SHADER, "view.frag")}) {
         window_list.emplace_back(this);
 
         glGenVertexArrays(1, &vertex_array);
@@ -107,26 +109,50 @@ namespace OddityEngine::Graphics {
 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        if (scene != nullptr && scene->layer_count() > 0) {
+            scene->update();
 
-        glUseProgram(view_program);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
-        glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.5, 0.5, -1), glm::vec3(0, 1, 0));
-        glUniformMatrix4fv(view_program.uniform_location("screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
+            glUseProgram(view_program);
 
-        glEnableVertexAttribArray(0);
-        glBindBuffer(screenbuffer.get_type(), screenbuffer);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, scene->get_render_texture());
+            glBindSampler(0, 0);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+            glUniform1ui(view_program.uniform_location("texture_count"), scene->layer_count());
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+            glBindBufferBase(scene->get_texture_transform_buffer()->get_type(), 3, scene->get_texture_transform_buffer()->get_ID());
 
-        glDisableVertexAttribArray(0);
+            glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+            glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.5, 0.5, -1), glm::vec3(0, 1, 0));
+            glUniformMatrix4fv(view_program.uniform_location("screen_projection"), 1, GL_FALSE, &screen_projection[0][0]);
+
+            glUniform2f(view_program.uniform_location("view_size"), width, height);
+
+            glEnableVertexAttribArray(0);
+            glBindBuffer(screenbuffer.get_type(), screenbuffer);
+
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            glDisableVertexAttribArray(0);
+        }
 
         SDL_GL_SwapWindow(window);
 
         return true;
+    }
+
+    void Window::set_scene(Scene* scene) {
+        this->scene = scene;
+
+        int width, height;
+
+        SDL_GetWindowSizeInPixels(window, &width, &height);
+
+        scene->set_size({width, height});
     }
 
     bool Window::update_all() {

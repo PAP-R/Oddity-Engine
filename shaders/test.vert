@@ -8,6 +8,6 @@ out vec2 uv;
 
 void main() {
     gl_Position = screen_projection * vec4(vertexpos, 1.0);
-//    gl_Position = vertexpos;
+    //    gl_Position = vertexpos;
     uv = vertexpos.xy;
 }

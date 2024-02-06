@@ -6,6 +6,7 @@
 
 #include <Graphics/Buffer/Buffer.h>
 
+#include "Render/Scene.h"
 #include "Shader/Program.h"
 #include "Shader/Shader.h"
 
@@ -24,15 +25,17 @@ namespace OddityEngine::Graphics {
 
         Buffer<GLfloat> screenbuffer;
 
-        Shader view_vertex_shader;
-        Shader view_fragment_shader;
         Program view_program;
 
+        Scene* scene = nullptr;
+
     public:
-            Window(const char* name, int width, int height);
+        Window(const char* name, int width, int height, unsigned int flags);
         ~Window();
 
         bool update();
+
+        void set_scene(Scene* scene);
 
         static bool update_all();
         static void terminate_all();
