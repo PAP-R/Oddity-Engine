@@ -1,0 +1,62 @@
+#version 450 core
+
+#include <buffer.glsl>
+
+const float G = 0.001;
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+struct Object {
+    vec4 position;
+    vec4 velocity;
+    vec4 acceleration;
+
+    vec4 angle;
+    vec4 angle_velocity;
+    vec4 angle_acceleration;
+
+    vec4 test_value;
+
+    float mass;
+    uint state;
+};
+
+layout(std140, std430, binding = PHYSICS) buffer object_buffer {
+    Object objects[];
+};
+
+layout(std140, std430, binding = TIME) buffer time_buffer {
+    float time_delta;
+};
+
+void main() {
+    uint self = gl_WorkGroupID.x;
+    uint other = gl_WorkGroupID.y;
+
+    barrier();
+
+    if (self == other) {
+        barrier();
+        objects[self].velocity.xyz += objects[self].acceleration.xyz * time_delta / 2;
+        objects[self].position.xyz += objects[self].velocity.xyz * time_delta;
+        objects[self].velocity.xyz += objects[self].acceleration.xyz * time_delta / 2;
+
+        objects[self].angle_velocity.xyz += objects[self].angle_acceleration.xyz * time_delta / 2;
+        objects[self].angle.xyz += objects[self].angle_velocity.xyz * time_delta;
+        objects[self].angle_velocity.xyz += objects[self].angle_acceleration.xyz * time_delta / 2;
+        barrier();
+    }
+    else {
+        vec3 to_other = objects[other].position.xyz - objects[self].position.xyz;
+        objects[self].acceleration.xyz += G * normalize(to_other) * objects[self].mass * objects[other].mass / pow(length(to_other), 2);
+        barrier();
+
+        to_other += objects[self].velocity.xyz * time_delta;
+
+        if (length(to_other) < objects[self].test_value.x + objects[other].test_value.x) {
+            objects[self].position.xyz += normalize(to_other) * (length(to_other) - (objects[self].test_value.x + objects[other].test_value.x));
+            objects[self].velocity.xyz = vec3(0, 0, 0);
+            objects[self].acceleration.xyz = vec3(0, 0, 0);
+        }
+    }
+}

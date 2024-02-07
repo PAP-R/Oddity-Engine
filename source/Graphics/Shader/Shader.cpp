@@ -26,6 +26,9 @@ namespace OddityEngine {
 
             for (std::string line; std::getline(shader_stream, line); ) {
                 size_t first_char =  line.find_first_not_of(" \t\n");
+                if (first_char >= line.size()) {
+                    continue;
+                }
                 if (line.contains("  ")) {
                     line.erase(std::unique(line.begin() + first_char, line.end(), [](unsigned char a, unsigned char b){return std::isspace(a) && std::isspace(b);}), line.end());
                 }

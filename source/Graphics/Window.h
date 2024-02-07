@@ -15,7 +15,6 @@ namespace OddityEngine::Graphics {
     protected:
         SDL_Window* window = nullptr;
         SDL_Surface* surface = nullptr;
-        SDL_Event event;
 
         SDL_GLContext gl_context;
 
@@ -29,17 +28,21 @@ namespace OddityEngine::Graphics {
 
         Scene* scene = nullptr;
 
+        glm::vec2 size;
+
     public:
         Window(const char* name, int width, int height, unsigned int flags);
         ~Window();
 
-        bool update();
+        void update();
 
+        void set_size(glm::vec2 size);
         void set_scene(Scene* scene);
 
         static bool update_all();
         static void terminate_all();
         static Window* get(SDL_Window* window);
+        static void event(const SDL_Event& event);
     };
 }
 

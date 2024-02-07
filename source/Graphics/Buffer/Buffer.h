@@ -17,6 +17,9 @@ namespace OddityEngine::Graphics {
         MATERIAL,
         TEXTURE_TRANSFORM,
         LAYER,
+        NETWORK,
+        PHYSICS,
+        TIME,
     };
 
     template<typename T>
@@ -100,13 +103,29 @@ namespace OddityEngine::Graphics {
             return insert_back(1, &data)[0];
         }
 
-        void set(const GLsizei start, const GLsizei count, const T* data) {
+        void set(const GLsizei start, GLsizei count, const T* data) {
+            if (start + count > this->count) {
+                insert_back(start + count - this->count, data + this->count);
+                count = this->count - start;
+            }
             glBindBuffer(type, ID);
             glNamedBufferSubData(ID, start * sizeof(T), count * sizeof(T), data);
         }
 
-        void set(const GLsizei index, const T& data) {
-            set(index, 1, &data);
+        void set(const GLsizei index, T* data) {
+            if (index >= this->count) {
+                this->resize(index + 1);
+            }
+            set(index, 1, data);
+        }
+
+        T get(const GLsizei index) {
+            T result;
+
+            glBindBuffer(type, ID);
+            glGetNamedBufferSubData(ID, index * sizeof(T), sizeof(T), &result);
+
+            return result;
         }
 
         Vector<T> get() {

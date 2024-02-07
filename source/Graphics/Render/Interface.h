@@ -7,6 +7,11 @@
 #include "Graphics/Buffer/Buffer.h"
 
 namespace OddityEngine::Graphics::Render {
+    struct alignas(16) render_transform {
+        glm::vec2 scale;
+        glm::vec2 pos_scale;
+    };
+
     class Interface {
     protected:
         GLuint framebuffer = 0;
@@ -15,23 +20,24 @@ namespace OddityEngine::Graphics::Render {
         glm::vec2 size = {0, 0};
         glm::vec2 screen_pos = {0, 0};
         glm::vec2 screen_size = {0, 0};
+        glm::vec2 scale = {1, 1};
 
-        Buffer<glm::vec4>* texture_transform_buffer = nullptr;
+        Buffer<render_transform>* texture_transform_buffer = nullptr;
         GLsizei** texture_transform_index = nullptr;
 
-        glm::vec4 texture_tranform();
+        render_transform texture_tranform();
         void set_texture_transform();
 
     public:
         Interface();
-        explicit Interface(Buffer<glm::vec4>* texture_transform_buffer);
+        explicit Interface(Buffer<render_transform>* texture_transform_buffer);
         ~Interface();
 
         virtual void render() = 0;
 
         void bind_framebuffer();
         virtual void set_texture(GLuint texture, GLsizei layer);
-        virtual void set_texture_transform_buffer(Buffer<glm::vec4>* texture_transform_buffer);
+        virtual void set_texture_transform_buffer(Buffer<render_transform>* texture_transform_buffer);
 
         virtual void set_size(const glm::vec2 &size);
         virtual void set_screen_size(const glm::vec2 &size);

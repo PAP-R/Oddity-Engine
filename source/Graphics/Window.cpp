@@ -15,6 +15,9 @@
 
 #include <cstdio>
 
+#include "Camera.h"
+#include "Camera.h"
+
 namespace OddityEngine::Graphics {
     std::vector<Window*> window_list;
 
@@ -62,7 +65,7 @@ namespace OddityEngine::Graphics {
         return context;
     }
 
-    Window::Window(const char* name, const int width, const int height, const unsigned int flags) : window(create_window(name, width, height, flags)), gl_context(create_gl_contextCurrent(window)), screenbuffer(GL_ARRAY_BUFFER), view_program({Shader(GL_VERTEX_SHADER, "view.vert"), Shader(GL_FRAGMENT_SHADER, "view.frag")}) {
+    Window::Window(const char* name, const int width, const int height, const unsigned int flags) : window(create_window(name, width, height, flags)), gl_context(create_gl_contextCurrent(window)), screenbuffer(GL_ARRAY_BUFFER), view_program({Shader(GL_VERTEX_SHADER, "view.vert"), Shader(GL_FRAGMENT_SHADER, "view.frag")}), size(width, height) {
         window_list.emplace_back(this);
 
         glGenVertexArrays(1, &vertex_array);
@@ -92,20 +95,8 @@ namespace OddityEngine::Graphics {
         SDL_DestroyWindow(window);
     }
 
-    bool Window::update() {
-        SDL_PollEvent(&event);
-
-        if (event.type == SDL_QUIT) {
-            return false;
-        }
-
+    void Window::update() {
         SDL_GL_MakeCurrent(window, gl_context);
-
-        int width, height;
-
-        SDL_GetWindowSizeInPixels(window, &width, &height);
-
-        glViewport(0, 0, width, height);
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -113,6 +104,12 @@ namespace OddityEngine::Graphics {
             scene->update();
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            int width, height;
+
+            SDL_GetWindowSizeInPixels(window, &width, &height);
+
+            glViewport(0, 0, width, height);
 
             glUseProgram(view_program);
 
@@ -141,8 +138,14 @@ namespace OddityEngine::Graphics {
         }
 
         SDL_GL_SwapWindow(window);
+    }
 
-        return true;
+    void Window::set_size(glm::vec2 size) {
+        if (scene != nullptr) {
+            scene->set_size(size);
+        }
+
+        this->size = size;
     }
 
     void Window::set_scene(Scene* scene) {
@@ -157,10 +160,7 @@ namespace OddityEngine::Graphics {
 
     bool Window::update_all() {
         for (auto w : window_list) {
-            if (!w->update()) {
-                window_list.erase(std::remove(window_list.begin(), window_list.end(), w), window_list.end());
-                delete(w);
-            }
+            w->update();
         }
 
         return !window_list.empty();
@@ -174,6 +174,41 @@ namespace OddityEngine::Graphics {
     }
 
     Window* Window::get(SDL_Window* window) {
-        return *std::ranges::find_if(window_list, [&window](Window* w){return window == w->window;});
+        const auto window_iterator = std::ranges::find_if(window_list, [&window](Window* w){return window == w->window;});
+        if (window_iterator == window_list.end()) {
+            return nullptr;
+        }
+        return *window_iterator;
+    }
+
+    void Window::event(const SDL_Event& event) {
+        const auto window = get(SDL_GetWindowFromID(event.window.windowID));
+        switch (event.type) {
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
+                // if (!event.key.repeat) {
+                //     Debug::message(fmt::format("Key {} + {} state {} \t at {}", event.key.keysym.sym, event.key.keysym.mod, event.key.state, event.key.timestamp, event.key.repeat));
+                // }
+                break;
+            case SDL_TEXTINPUT:
+                Debug::message(fmt::format("Textinput {} on window {}", event.text.text, event.window.windowID));
+            break;
+            case SDL_TEXTEDITING:
+                Debug::message(fmt::format("Textedit {}", event.edit.text));
+            break;
+            case SDL_WINDOWEVENT:
+                switch (event.window.event) {
+                    case SDL_WINDOWEVENT_SIZE_CHANGED:
+                        window->set_size({event.window.data1, event.window.data2});
+                        Debug::message(fmt::format("Window {} resized to [{} / {}]", event.window.windowID, event.window.data1, event.window.data2));
+                    break;
+                    case SDL_WINDOWEVENT_CLOSE:
+                        window_list.erase(std::remove(window_list.begin(), window_list.end(), window), window_list.end());
+                        delete(window);
+                        Debug::message(fmt::format("Window {} closed", event.window.windowID));
+                    break;
+                }
+            break;
+        }
     }
 }

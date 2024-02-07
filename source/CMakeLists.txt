@@ -16,6 +16,8 @@ set(GRAPHICS
         Graphics/Render/TestRenderer.h
         Graphics/Camera.cpp
         Graphics/Camera.h
+        Util/Event_Poller.cpp
+        Util/Event_Poller.h
 )
 
 set(MATH
@@ -26,6 +28,8 @@ set(MATH
 set(PHYSICS
         Physics/Object.cpp
         Physics/Object.h
+        Physics/World.cpp
+        Physics/World.h
 
 )
 
@@ -35,6 +39,9 @@ set(UTIL
         Util/File.cpp
         Util/File.h
         Util/Vector.h
+        Util/Time.cpp
+        Util/Time.h
+        Util/Eventable.h
 )
 
 set(SOURCES
@@ -44,6 +51,8 @@ set(SOURCES
         ${UTIL}
         OddityEngine.cpp
         OddityEngine.h
+        Player.cpp
+        Player.h
 )
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
@@ -53,6 +62,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX CXX_STANDAR
 set_target_properties(${PROJECT_NAME}_test PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)
 
 add_custom_command(TARGET ${PROJECT_NAME}_test PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${PROJECT_SOURCE_DIR}/shaders ${OUTPUT_DIR}/shaders
 )

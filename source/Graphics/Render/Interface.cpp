@@ -1,20 +1,20 @@
 #include "Interface.h"
 
 namespace OddityEngine::Graphics::Render {
-    glm::vec4 Interface::texture_tranform() {
-        auto scale = size / screen_size;
-        return glm::vec4(screen_pos / screen_size, scale);
+    render_transform Interface::texture_tranform() {
+        return {size / screen_size / glm::vec2(scale), screen_pos / screen_size};
     }
 
     void Interface::set_texture_transform() {
-        texture_transform_buffer->set(**texture_transform_index, texture_tranform());
+        auto transform = texture_tranform();
+        texture_transform_buffer->set(**texture_transform_index, &transform);
     }
 
     Interface::Interface() {
         glGenFramebuffers(1, &framebuffer);
     }
 
-    Interface::Interface(Buffer<glm::vec4>* texture_transform_buffer) : Interface() {
+    Interface::Interface(Buffer<render_transform>* texture_transform_buffer) : Interface() {
         set_texture_transform_buffer(texture_transform_buffer);
     }
 
@@ -35,7 +35,7 @@ namespace OddityEngine::Graphics::Render {
         }
     }
 
-    void Interface::set_texture_transform_buffer(Buffer<glm::vec4>* texture_transform_buffer) {
+    void Interface::set_texture_transform_buffer(Buffer<render_transform>* texture_transform_buffer) {
         if (this->texture_transform_buffer != nullptr && *texture_transform_index != nullptr) {
             this->texture_transform_buffer->remove(1, **texture_transform_index);
         }

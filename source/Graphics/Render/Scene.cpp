@@ -24,11 +24,17 @@ namespace OddityEngine::Graphics {
             return false;
         }
 
-        for (auto r : renderers) {
+        for (const auto r : renderers) {
             r->render();
         }
 
         return true;
+    }
+
+    void Scene::event(const SDL_Event& event) {
+        for (const auto e : eventables) {
+            e->event(event);
+        }
     }
 
     void Scene::set_size(const glm::vec<2, int>& size) {
@@ -54,11 +60,16 @@ namespace OddityEngine::Graphics {
         return index;
     }
 
+    GLsizei Scene::add_input(Util::Eventable* eventable) {
+        eventables.emplace_back(eventable);
+        return eventables.size() - 1;
+    }
+
     GLsizei Scene::layer_count() const {
         return renderers.size();
     }
 
-    Buffer<glm::vec4>* Scene::get_texture_transform_buffer() {
+    Buffer<Render::render_transform>* Scene::get_texture_transform_buffer() {
         return &texture_transform_buffer;
     }
 

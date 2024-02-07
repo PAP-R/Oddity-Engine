@@ -9,14 +9,17 @@
 
 #include <Util/Vector.h>
 
+#include "Util/Eventable.h"
+
 namespace OddityEngine::Graphics {
     class Scene {
     protected:
         GLuint texture = 0;
 
         Vector<Render::Interface*> renderers;
+        Vector<Util::Eventable*> eventables;
 
-        Buffer<glm::vec4> texture_transform_buffer = Buffer<glm::vec4>(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
+        Buffer<Render::render_transform> texture_transform_buffer = Buffer<Render::render_transform>(GL_SHADER_STORAGE_BUFFER, GL_DYNAMIC_DRAW);
 
         glm::vec<2, int> size = {0, 0};
 
@@ -27,11 +30,14 @@ namespace OddityEngine::Graphics {
 
         bool update();
 
+        void event(const SDL_Event& event);
+
         void set_size(const glm::vec<2, int>& size);
         GLsizei add_renderer(Render::Interface* renderer);
+        GLsizei add_input(Util::Eventable* input);
 
         GLsizei layer_count() const;
-        Buffer<glm::vec4>* get_texture_transform_buffer();
+        Buffer<Render::render_transform>* get_texture_transform_buffer();
         GLuint get_render_texture() const;
     };
 }

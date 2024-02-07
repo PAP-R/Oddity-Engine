@@ -1,9 +1,9 @@
 #version 450 core
 
-in vec2 uv;
+in vec3 dir;
 
 out vec4 color;
 
 void main() {
-    color = vec4(uv, 0, 1);
+    color = vec4(dir, 1);
 }
