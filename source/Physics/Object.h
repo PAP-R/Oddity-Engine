@@ -8,6 +8,7 @@
 namespace OddityEngine::Physics {
     enum STATES {
         TO_DELETE = 1,
+        NO_SHOW = 1 << 1,
     };
 
     struct alignas(16) Object_struct {
@@ -22,6 +23,7 @@ namespace OddityEngine::Physics {
         glm::vec4 test_value = {0, 0, 0, 0};
 
         float mass = 1;
+        float drag = 0.9;
         GLuint state = 0;
     };
 
@@ -31,6 +33,8 @@ namespace OddityEngine::Physics {
         virtual ~Object() = default;
 
         explicit Object(glm::vec3 position = {0, 0, 0}, glm::vec3 angle = {0, 0, 0});
+
+        virtual bool update();
 
         void normalize();
 

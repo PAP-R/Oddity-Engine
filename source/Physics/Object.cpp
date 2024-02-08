@@ -7,6 +7,10 @@ namespace OddityEngine::Physics {
         normalize();
     }
 
+    bool Object::update() {
+        return true;
+    }
+
     void Object::normalize() {
         for (int i = 0; i < angle.length(); i++) {
             angle[i] = fmod(angle[i], 360);

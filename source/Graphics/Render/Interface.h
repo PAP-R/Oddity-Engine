@@ -17,6 +17,7 @@ namespace OddityEngine::Graphics::Render {
         GLuint framebuffer = 0;
 
         GLuint texture = 0;
+        GLuint texture_layer = 0;
         glm::vec2 size = {0, 0};
         glm::vec2 screen_pos = {0, 0};
         glm::vec2 screen_size = {0, 0};

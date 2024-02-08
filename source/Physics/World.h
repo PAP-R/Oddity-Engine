@@ -18,9 +18,12 @@ namespace OddityEngine::Physics {
 
     public:
         void update();
+        void bind_buffers();
 
         void add_object(Object* object);
         void remove_object(Object* object);
+
+        size_t object_count();
     };
 }
 

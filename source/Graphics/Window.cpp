@@ -60,7 +60,7 @@ namespace OddityEngine::Graphics {
         // glDepthFunc(GL_LESS);
         // glEnable(GL_CULL_FACE);
 
-        glClearColor(0.3, 0, 0, 1);
+        glClearColor(0, 0, 0, 1);
 
         return context;
     }
@@ -183,32 +183,23 @@ namespace OddityEngine::Graphics {
 
     void Window::event(const SDL_Event& event) {
         const auto window = get(SDL_GetWindowFromID(event.window.windowID));
-        switch (event.type) {
-            case SDL_KEYDOWN:
-            case SDL_KEYUP:
-                // if (!event.key.repeat) {
-                //     Debug::message(fmt::format("Key {} + {} state {} \t at {}", event.key.keysym.sym, event.key.keysym.mod, event.key.state, event.key.timestamp, event.key.repeat));
-                // }
-                break;
-            case SDL_TEXTINPUT:
-                Debug::message(fmt::format("Textinput {} on window {}", event.text.text, event.window.windowID));
-            break;
-            case SDL_TEXTEDITING:
-                Debug::message(fmt::format("Textedit {}", event.edit.text));
-            break;
-            case SDL_WINDOWEVENT:
+        if (window != nullptr) {
+            if (event.type == SDL_WINDOWEVENT) {
                 switch (event.window.event) {
                     case SDL_WINDOWEVENT_SIZE_CHANGED:
                         window->set_size({event.window.data1, event.window.data2});
                         Debug::message(fmt::format("Window {} resized to [{} / {}]", event.window.windowID, event.window.data1, event.window.data2));
-                    break;
+                        break;
                     case SDL_WINDOWEVENT_CLOSE:
                         window_list.erase(std::remove(window_list.begin(), window_list.end(), window), window_list.end());
-                        delete(window);
+                        window->~Window();
                         Debug::message(fmt::format("Window {} closed", event.window.windowID));
-                    break;
+                        break;
                 }
-            break;
+            }
+            else {
+                window->scene->event(event);
+            }
         }
     }
 }

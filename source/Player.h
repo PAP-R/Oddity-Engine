@@ -19,8 +19,10 @@ public:
 
     void event(const SDL_Event& event) override;
 
+    bool update() override;
+
     OddityEngine::Graphics::Camera* camera;
-    glm::vec3 camera_shift = {0, 2, 0};
+    glm::vec3 camera_shift = {0, 0, 0};
 
     glm::vec3 closest(glm::vec3 point) override;
     float distance(glm::vec3 point) override;

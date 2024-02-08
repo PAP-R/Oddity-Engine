@@ -20,6 +20,7 @@ namespace OddityEngine::Graphics {
         NETWORK,
         PHYSICS,
         TIME,
+        RENDER,
     };
 
     template<typename T>
@@ -37,6 +38,10 @@ namespace OddityEngine::Graphics {
         }
 
         void resize(GLsizei count) {
+            if(count == this->count) {
+                return;
+            }
+
             GLuint new_buffer;
             glGenBuffers(1, &new_buffer);
 
@@ -65,6 +70,16 @@ namespace OddityEngine::Graphics {
             }
 
             this->count = count;
+        }
+
+        void multiply(GLsizei count, GLsizei multiples) {
+            resize(count * multiples);
+
+            glBindBuffer(type, ID);
+
+            for (GLsizei i = 1; i < count; i++) {
+                glCopyNamedBufferSubData(ID, ID, 0, i * count * sizeof(T), count * sizeof(T));
+            }
         }
 
         void clear() {
@@ -152,6 +167,10 @@ namespace OddityEngine::Graphics {
 
         operator GLuint() const {
             return get_ID();
+        }
+
+        void bind_base(GLuint index) {
+            glBindBufferBase(this->type, index, ID);
         }
     };
 }

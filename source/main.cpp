@@ -4,53 +4,97 @@
 #include "Graphics/Camera.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/Window.h"
+#include "Graphics/Render/ComputeRenderer.h"
 #include "Graphics/Render/TestRenderer.h"
 #include "Math/random.h"
 #include "Physics/World.h"
 
+#include <numbers>
+
 int main(int argc, char* args[]) {
     OddityEngine::init();
 
-    auto window = new OddityEngine::Graphics::Window("Hallo", 600, 600, SDL_WINDOW_RESIZABLE);
+    auto window = OddityEngine::Graphics::Window("Hallo", 600, 600, SDL_WINDOW_RESIZABLE);
 
     OddityEngine::Graphics::Scene scene;
-    window->set_scene(&scene);
+    window.set_scene(&scene);
 
-    OddityEngine::Graphics::Camera camera(90);
-    auto renderer = new OddityEngine::Graphics::Render::TestRenderer(&camera);
-    scene.add_renderer(renderer);
-
-    renderer->set_size({10, 10});
 
     Player player;
-    player.angle_velocity += glm::vec4(1, 0, 0, 0);
+
+    auto renderer = new OddityEngine::Graphics::Render::ComputeRenderer(player.camera);
+    scene.add_renderer(renderer);
+
+    player.position.z = 10;
+
+    player.state |= OddityEngine::Physics::NO_SHOW;
+
+    // player.angle_velocity.x = 10;
+    // player.angle_velocity.y = 1;
+
+    scene.add_input(&player);
 
     OddityEngine::Physics::World world;
 
-    OddityEngine::Physics::Object ball1({-1, 0, 0});
-    OddityEngine::Physics::Object ball2({1, 0, 0});
-    OddityEngine::Physics::Object ball3({0, 1, 0});
-    OddityEngine::Physics::Object ball4({0, -1, 0});
+    renderer->world = &world;
 
-    world.add_object(&ball1);
-    world.add_object(&ball2);
-    world.add_object(&ball3);
-    world.add_object(&ball4);
+    world.add_object(&player);
 
+    OddityEngine::Physics::Object center_ball({0, 0, 0});
+    OddityEngine::Physics::Object ball1({-2, 0, 0});
+    OddityEngine::Physics::Object ball2({2, 0, 0});
+    OddityEngine::Physics::Object ball3({0, 2, 0});
+    OddityEngine::Physics::Object ball4({0, -2, 0});
+
+    world.add_object(&center_ball);
+    // world.add_object(&ball1);
+    // world.add_object(&ball2);
+    // world.add_object(&ball3);
+    // world.add_object(&ball4);
+
+    center_ball.mass = 1500;
+    center_ball.test_value.x = 0.1;
+    center_ball.test_value.y = 150;
     ball1.test_value.x = 0.5;
+    ball1.test_value.y = 150;
     ball2.test_value.x = 0.5;
+    ball2.test_value.y = 150;
     ball3.test_value.x = 0.5;
+    ball3.test_value.y = 150;
     ball4.test_value.x = 0.5;
+    ball4.test_value.y = 150;
+
+    ball4.velocity.x = 1;
+
+    OddityEngine::Vector<OddityEngine::Physics::Object*> balls;
+
+    int round = 16;
+    float height = 0.6;
+    int count = round * 32;
+
+    for (int i = 0; i < count; i++) {
+        balls.push_back(new OddityEngine::Physics::Object({height * (i / round + 1) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height * (i / round + 1) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), 0}));
+        balls.back()->test_value.x = 0.1;
+        balls.back()->mass = 0.2;
+        // balls.back()->velocity.x = height * ((i + 1) / round + 1) * sin(i * std::numbers::pi * 2 / round) - balls.back()->position.x;
+        // balls.back()->velocity.y = height * ((i + 1) / round + 1) * cos(i * std::numbers::pi * 2 / round) - balls.back()->position.y;
+    }
+
+    for (auto b : balls) {
+        world.add_object(b);
+    }
+
+    // renderer->set_size({10, 10});
 
     while (OddityEngine::update()) {
-        fmt::print("< [ {} / {} / {} ] >", ball1.position.x, ball1.position.y, ball1.position.z);
-        fmt::print("< [ {} / {} / {} ] >", ball2.position.x, ball2.position.y, ball2.position.z);
-        fmt::print("< [ {} / {} / {} ] >", ball3.position.x, ball3.position.y, ball3.position.z);
-        fmt::print("< [ {} / {} / {} ] >", ball4.position.x, ball4.position.y, ball4.position.z);
-        fmt::print("\n");
-        // fmt::print("[ {} / {} / {} ] >-< [ {} / {} / {} ]\n\n", ball1.acceleration.x, ball1.acceleration.y, ball1.acceleration.z, ball2.acceleration.x, ball2.acceleration.y, ball2.acceleration.z);
         world.update();
     }
+
+    for (auto b : balls) {
+        delete b;
+    }
+
+    balls.clear();
 
     OddityEngine::terminate();
 

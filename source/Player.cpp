@@ -2,7 +2,9 @@
 
 #include <SDL.h>
 
-Player::Player(OddityEngine::Graphics::Camera* camera) : camera(camera) {}
+Player::Player(OddityEngine::Graphics::Camera* camera) : camera(camera) {
+    mass = 0;
+}
 
 void Player::event(const SDL_Event& event) {
     switch (event.type) {
@@ -27,6 +29,11 @@ void Player::event(const SDL_Event& event) {
                     case SDLK_LCTRL:
                         delta_acceleration.y -= manual_acceleration.y;
                     break;
+                    case SDLK_r:
+                        position = {0, 0, 0, 1};
+                        velocity = {0, 0, 0, 1};
+                        acceleration = {0, 0, 0, 1};
+                        break;
                 }
             }
             break;
@@ -53,6 +60,16 @@ void Player::event(const SDL_Event& event) {
             }
             break;
     }
+}
+
+bool Player::update() {
+    acceleration = glm::vec4(glm::mat3(right(), glm::vec3(0, 1, 0), front()) * delta_acceleration, 1);
+
+    camera->position = position + glm::vec4(camera_shift, 0);
+    camera->angle = angle;
+    camera->normalize();
+
+    return true;
 }
 
 glm::vec3 Player::closest(const glm::vec3 point) {

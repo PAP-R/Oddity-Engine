@@ -4,7 +4,7 @@ namespace OddityEngine::Graphics {
     void Scene::texture_size() const {
         if (!renderers.empty()) {
             glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
-            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, size.x, size.y, layer_count(), 0, GL_RGBA, GL_FLOAT, nullptr);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA32F, size.x, size.y, layer_count(), 0, GL_RGBA, GL_FLOAT, nullptr);
         }
     }
 

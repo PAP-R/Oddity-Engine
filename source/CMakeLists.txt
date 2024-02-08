@@ -18,6 +18,8 @@ set(GRAPHICS
         Graphics/Camera.h
         Util/Event_Poller.cpp
         Util/Event_Poller.h
+        Graphics/Render/ComputeRenderer.cpp
+        Graphics/Render/ComputeRenderer.h
 )
 
 set(MATH

@@ -24,6 +24,7 @@ namespace OddityEngine::Graphics::Render {
 
     void Interface::set_texture(const GLuint texture, const GLsizei layer) {
         this->texture = texture;
+        texture_layer = layer;
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture, 0, layer);
