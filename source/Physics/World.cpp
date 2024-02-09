@@ -14,7 +14,7 @@ namespace OddityEngine::Physics {
 
         bind_buffers();
 
-        glDispatchCompute(objects.size(), objects.size(), 1);
+        glDispatchCompute(object_count(), object_count(), 1);
 
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
@@ -34,8 +34,6 @@ namespace OddityEngine::Physics {
         for (GLsizei i = 0; i < objects.size(); i++) {
             object_buffer.set(i, objects[i]);
         }
-
-        object_buffer.multiply(object_count(), object_count());
 
         auto time_delta = Util::Time::delta();
 

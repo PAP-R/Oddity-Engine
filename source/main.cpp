@@ -25,9 +25,9 @@ int main(int argc, char* args[]) {
     auto renderer = new OddityEngine::Graphics::Render::ComputeRenderer(player.camera);
     scene.add_renderer(renderer);
 
-    player.position.z = 10;
+    player.position.z = 100;
 
-    player.state |= OddityEngine::Physics::NO_SHOW;
+    player.state &= ~OddityEngine::Physics::SHOW;
 
     // player.angle_velocity.x = 10;
     // player.angle_velocity.y = 1;
@@ -41,10 +41,10 @@ int main(int argc, char* args[]) {
     world.add_object(&player);
 
     OddityEngine::Physics::Object center_ball({0, 0, 0});
-    OddityEngine::Physics::Object ball1({-2, 0, 0});
-    OddityEngine::Physics::Object ball2({2, 0, 0});
-    OddityEngine::Physics::Object ball3({0, 2, 0});
-    OddityEngine::Physics::Object ball4({0, -2, 0});
+    OddityEngine::Physics::Object ball1({-10, 0, 0});
+    OddityEngine::Physics::Object ball2({10, 0, 0});
+    OddityEngine::Physics::Object ball3({0, -10, 0});
+    OddityEngine::Physics::Object ball4({0, 10, 0});
 
     world.add_object(&center_ball);
     // world.add_object(&ball1);
@@ -52,8 +52,8 @@ int main(int argc, char* args[]) {
     // world.add_object(&ball3);
     // world.add_object(&ball4);
 
-    center_ball.mass = 1500;
-    center_ball.test_value.x = 0.1;
+    center_ball.mass = 100000;
+    center_ball.test_value.x = 5;
     center_ball.test_value.y = 150;
     ball1.test_value.x = 0.5;
     ball1.test_value.y = 150;
@@ -68,14 +68,14 @@ int main(int argc, char* args[]) {
 
     OddityEngine::Vector<OddityEngine::Physics::Object*> balls;
 
-    int round = 16;
-    float height = 0.6;
+    int round = 8;
+    float height = 6.5;
     int count = round * 32;
 
     for (int i = 0; i < count; i++) {
         balls.push_back(new OddityEngine::Physics::Object({height * (i / round + 1) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height * (i / round + 1) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), 0}));
-        balls.back()->test_value.x = 0.1;
-        balls.back()->mass = 0.2;
+        balls.back()->test_value.x = 1;
+        balls.back()->mass = 0.5;
         // balls.back()->velocity.x = height * ((i + 1) / round + 1) * sin(i * std::numbers::pi * 2 / round) - balls.back()->position.x;
         // balls.back()->velocity.y = height * ((i + 1) / round + 1) * cos(i * std::numbers::pi * 2 / round) - balls.back()->position.y;
     }
@@ -83,6 +83,10 @@ int main(int argc, char* args[]) {
     for (auto b : balls) {
         world.add_object(b);
     }
+
+    player.camera->fov = 45;
+
+    SDL_SetRelativeMouseMode(SDL_TRUE);
 
     // renderer->set_size({10, 10});
 

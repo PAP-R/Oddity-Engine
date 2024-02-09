@@ -59,6 +59,11 @@ void Player::event(const SDL_Event& event) {
                 break;
             }
             break;
+
+        case SDL_MOUSEMOTION:
+            angle.x += -event.motion.xrel * mouse_sensitivity.x;
+            angle.y += -event.motion.yrel * mouse_sensitivity.y;
+            break;
     }
 }
 

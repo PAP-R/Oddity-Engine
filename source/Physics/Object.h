@@ -8,7 +8,8 @@
 namespace OddityEngine::Physics {
     enum STATES {
         TO_DELETE = 1,
-        NO_SHOW = 1 << 1,
+        SHOW = 1 << 1,
+        HIT = 1 << 2,
     };
 
     struct alignas(16) Object_struct {
@@ -23,8 +24,8 @@ namespace OddityEngine::Physics {
         glm::vec4 test_value = {0, 0, 0, 0};
 
         float mass = 1;
-        float drag = 0.9;
-        GLuint state = 0;
+        float restitution = 1;
+        GLuint state = SHOW;
     };
 
     struct Object : public Object_struct {
