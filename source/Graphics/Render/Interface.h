@@ -24,7 +24,7 @@ namespace OddityEngine::Graphics::Render {
         glm::vec2 scale = {1, 1};
 
         Buffer<render_transform>* texture_transform_buffer = nullptr;
-        GLsizei** texture_transform_index = nullptr;
+        GLsizei* texture_transform_index = nullptr;
 
         render_transform texture_tranform();
         void set_texture_transform();

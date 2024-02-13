@@ -1,3 +1,5 @@
+#include <steam_api.h>
+
 #include <OddityEngine.h>
 
 #include "Player.h"
@@ -12,11 +14,14 @@
 #include <numbers>
 
 #include "Util/Time.h"
+#include <Util/Debug.h>
 
 int main(int argc, char* args[]) {
     OddityEngine::init();
 
-    auto window = OddityEngine::Graphics::Window("Hallo", 600, 600, SDL_WINDOW_RESIZABLE);
+    std::cout << SteamFriends()->GetPersonaName() << std::endl;
+
+    auto window = OddityEngine::Graphics::Window("Hallo", 60, 60, SDL_WINDOW_RESIZABLE);
 
     OddityEngine::Graphics::Scene scene;
     window.set_scene(&scene);
@@ -73,7 +78,7 @@ int main(int argc, char* args[]) {
     int round = 8;
     float height = 6;
     float layer_height = 2;
-    int count = round * 32;
+    int count = round * 1;
 
     for (int i = 0; i < count; i++) {
         balls.push_back(new OddityEngine::Physics::Object({(height + layer_height * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), (height + layer_height * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), 0}));
@@ -100,7 +105,7 @@ int main(int argc, char* args[]) {
     // renderer->set_size({10, 10});
 
     do {
-        fmt::print("[{}] : FPS: {}\tDelta: {}\n", OddityEngine::Util::Time::frame(), OddityEngine::Util::Time::fps<size_t>(), OddityEngine::Util::Time::delta<float>() * 1000);
+        // fmt::print("[{}] : FPS: {}\tDelta: {}\n", OddityEngine::Util::Time::frame(), OddityEngine::Util::Time::fps<size_t>(), OddityEngine::Util::Time::delta<float>() * 1000);
         world.update();
     } while (OddityEngine::update());
 

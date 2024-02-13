@@ -30,11 +30,19 @@ namespace OddityEngine::Graphics {
         GLuint type;
         GLuint usage;
         GLsizei count = 0;
-        Vector<GLsizei**> indices;
+        Vector<GLsizei*> indices;
 
     public:
         explicit Buffer(const GLuint type = GL_SHADER_STORAGE_BUFFER, const GLuint usage = GL_DYNAMIC_DRAW) : type(type), usage(usage) {
             glGenBuffers(1, &ID);
+        }
+
+        ~Buffer() {
+            for (auto i : indices) {
+                delete(i);
+            }
+
+            glDeleteBuffers(1, &ID);
         }
 
         void resize(GLsizei count) {
@@ -57,15 +65,14 @@ namespace OddityEngine::Graphics {
             ID = new_buffer;
             if (count < this->count) {
                 for (GLsizei i = count; i < this->count; i++) {
-                    delete *(indices[i]);
-                    *(indices[i]) = nullptr;
+                    delete indices[i];
                 }
                 indices.resize(count);
             }
             else {
                 indices.resize(count);
                 for (GLsizei i = this->count; i < count; i++) {
-                    indices[i] = new GLsizei*(new GLsizei(i));
+                    indices[i] = new GLsizei(i);
                 }
             }
 
@@ -91,7 +98,7 @@ namespace OddityEngine::Graphics {
             glCopyNamedBufferSubData(ID, ID, start * sizeof(T), shifted_start * sizeof(T), count * sizeof(T));
         }
 
-        Vector<GLsizei**> insert(const GLsizei start, const GLsizei count, const T* data) {
+        Vector<GLsizei*> insert(const GLsizei start, const GLsizei count, const T* data) {
             resize(this->count + count);
             shift(this->count - start, start, start + count);
             glBindBuffer(type, ID);
@@ -100,11 +107,11 @@ namespace OddityEngine::Graphics {
             return indices.slice(start, start + count);
         }
 
-        GLsizei** insert(const GLsizei start, const T& data) {
+        GLsizei* insert(const GLsizei start, const T& data) {
             return insert(start, 1, &data)[0];
         }
 
-        Vector<GLsizei**> insert_back(GLsizei count, const T* data) {
+        Vector<GLsizei*> insert_back(GLsizei count, const T* data) {
             auto offset = this->count;
             resize(this->count + count);
 
@@ -114,7 +121,7 @@ namespace OddityEngine::Graphics {
             return indices.slice(offset, offset + count);
         }
 
-        GLsizei** insert_back(const T& data) {
+        GLsizei* insert_back(const T& data) {
             return insert_back(1, &data)[0];
         }
 

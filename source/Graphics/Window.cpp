@@ -9,13 +9,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <Util/Debug.h>
+#include <cstdio>
+#include <algorithm>
 
 #include "Math/random.h"
 #include "Shader/Shader.h"
 
-#include <cstdio>
-
-#include "Camera.h"
 #include "Camera.h"
 
 namespace OddityEngine::Graphics {

@@ -7,7 +7,7 @@ namespace OddityEngine::Graphics::Render {
 
     void Interface::set_texture_transform() {
         auto transform = texture_tranform();
-        texture_transform_buffer->set(**texture_transform_index, &transform);
+        texture_transform_buffer->set(*texture_transform_index, &transform);
     }
 
     Interface::Interface() {
@@ -37,8 +37,8 @@ namespace OddityEngine::Graphics::Render {
     }
 
     void Interface::set_texture_transform_buffer(Buffer<render_transform>* texture_transform_buffer) {
-        if (this->texture_transform_buffer != nullptr && *texture_transform_index != nullptr) {
-            this->texture_transform_buffer->remove(1, **texture_transform_index);
+        if (this->texture_transform_buffer != nullptr && texture_transform_index != nullptr) {
+            this->texture_transform_buffer->remove(1, *texture_transform_index);
         }
 
         this->texture_transform_buffer = texture_transform_buffer;

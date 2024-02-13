@@ -11,15 +11,18 @@ find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 
 include_directories(
+        source
         external/glew/include
         external/glm
         external/imgui
         external/fmt/include
         ${SDL2_INCLUDE_DIRS}
-        source
+        libs/steam/public/steam
 )
 
 add_subdirectory(external)
+
+add_subdirectory(libs/steam)
 
 set(LIBS
         ${OPENGL_LIBRARY}
@@ -28,6 +31,7 @@ set(LIBS
         IMGUI
         ${SDL2_LIBRARIES}
         fmt::fmt
+        ${STEAM_LIBRARY}
 )
 
 #add_definitions(
@@ -37,6 +41,7 @@ set(LIBS
 #        -DGLEW_STATIC
 #        -D_CRT_SECURE_NO_WARNINGS
 #)
+
 
 set(RECOURSES
         shaders
