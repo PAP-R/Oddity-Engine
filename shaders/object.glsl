@@ -21,7 +21,11 @@ struct Object {
     uint state;
 };
 
-layout(std140, std430, binding = PHYSICS) buffer object_buffer {
+Object make_empty_object() {
+    return Object(vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), 0, 0, 0);
+}
+
+layout(std140, std430, binding = OBJECT) buffer object_buffer {
     Object objects[];
 };
 
@@ -30,6 +34,10 @@ vec3 closest(vec3 point, uint obj) {
     return normalize(diff) * (length(diff) - objects[obj].test_value.x);
 }
 
-float distance(vec3 point, uint obj) {
+vec3 closest_point(vec3 point, uint obj) {
+    return point + closest(point, obj);
+}
+
+float sdf(vec3 point, uint obj) {
     return length(objects[obj].position.xyz - point) - objects[obj].test_value.x;
 }

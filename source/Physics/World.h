@@ -14,7 +14,7 @@ namespace OddityEngine::Physics {
 
         Graphics::Program physics_program = Graphics::Program({Graphics::Shader(GL_COMPUTE_SHADER, "physics.comp")});
         Graphics::Buffer<Object_struct> object_buffer = Graphics::Buffer<Object_struct>();
-        Graphics::Buffer<float> time_buffer = Graphics::Buffer<float>();
+        Graphics::Buffer<float> physics_buffer = Graphics::Buffer<float>();
 
     public:
         void update();

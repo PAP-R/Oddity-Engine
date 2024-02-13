@@ -46,10 +46,6 @@ namespace OddityEngine::Graphics {
             Debug::error("Failed to initialize GLEW");
         }
 
-        if (!GLEW_ARB_shader_viewport_layer_array) {
-            Debug::error("Needed extension not available");
-        }
-
         glewExperimental = true;
 
         glEnable(GL_DEBUG_OUTPUT);

@@ -11,6 +11,8 @@
 
 #include <numbers>
 
+#include "Util/Time.h"
+
 int main(int argc, char* args[]) {
     OddityEngine::init();
 
@@ -25,7 +27,7 @@ int main(int argc, char* args[]) {
     auto renderer = new OddityEngine::Graphics::Render::ComputeRenderer(player.camera);
     scene.add_renderer(renderer);
 
-    player.position.z = 100;
+    player.position.z = 50;
 
     player.state &= ~OddityEngine::Physics::SHOW;
 
@@ -69,15 +71,22 @@ int main(int argc, char* args[]) {
     OddityEngine::Vector<OddityEngine::Physics::Object*> balls;
 
     int round = 8;
-    float height = 6.5;
+    float height = 6;
+    float layer_height = 2;
     int count = round * 32;
 
     for (int i = 0; i < count; i++) {
-        balls.push_back(new OddityEngine::Physics::Object({height * (i / round + 1) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height * (i / round + 1) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), 0}));
+        balls.push_back(new OddityEngine::Physics::Object({(height + layer_height * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), (height + layer_height * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), 0}));
         balls.back()->test_value.x = 1;
         balls.back()->mass = 0.5;
-        // balls.back()->velocity.x = height * ((i + 1) / round + 1) * sin(i * std::numbers::pi * 2 / round) - balls.back()->position.x;
-        // balls.back()->velocity.y = height * ((i + 1) / round + 1) * cos(i * std::numbers::pi * 2 / round) - balls.back()->position.y;
+        // if (balls.back()->position.y > 0) {
+        //     balls.back()->velocity.y = -1;
+        // }
+        // else {
+        //     balls.back()->velocity.y = 1;
+        // }
+        // balls.back()->velocity.x = (height + layer_height * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round) - balls.back()->position.x;
+        // balls.back()->velocity.y = (height + layer_height * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round) - balls.back()->position.y;
     }
 
     for (auto b : balls) {
@@ -90,9 +99,10 @@ int main(int argc, char* args[]) {
 
     // renderer->set_size({10, 10});
 
-    while (OddityEngine::update()) {
+    do {
+        fmt::print("[{}] : FPS: {}\tDelta: {}\n", OddityEngine::Util::Time::frame(), OddityEngine::Util::Time::fps<size_t>(), OddityEngine::Util::Time::delta<float>() * 1000);
         world.update();
-    }
+    } while (OddityEngine::update());
 
     for (auto b : balls) {
         delete b;

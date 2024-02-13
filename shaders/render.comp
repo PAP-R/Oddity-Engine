@@ -37,6 +37,8 @@ int point_size = 250;
 void main() {
     Object self = objects[gl_WorkGroupID.x];
 
+    memoryBarrier();
+
     if ((self.state & SHOW) > 0) {
         vec3 dir = self.position.xyz - render.camera_pos.xyz;
         if (dot(dir, FRONT) > 0) {
@@ -61,15 +63,15 @@ void main() {
 
             ivec3 center = to_pixel(dir);
 
-            int point_width = (right - left) / 2;
-            int point_height = (up - down) / 2;
+            int point_width = (right - left) / 2 + 1;
+            int point_height = (up - down) / 2 + 1;
 
             int horizenter = (left + right) / 2;
 
             if (center.z >= 0) {
                 for (int x = left; x < right; x++) {
                     int circle = point_height - abs(int(point_height * cos(asin(float(x - horizenter) / point_width))));
-                    for (int y = down + circle; y <= up - circle; y++) {
+                    for (int y = down + circle; y <= up - circle; y += circle + 1) {
                         ivec3 pixel = ivec3(x, y, center.z);
                         if (0 <= pixel.x && pixel.x < render.view_size.x && 0 <= pixel.y && pixel.y < render.view_size.y) {
                             imageStore(texture, pixel, vec4(vec2(pixel.xy) / render.view_size.xy, 0, 1));

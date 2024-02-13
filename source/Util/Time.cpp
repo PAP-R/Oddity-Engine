@@ -2,41 +2,10 @@
 
 #include <SDL.h>
 
-namespace OddityEngine::Util::Time {
-    float get_time() {
-        return SDL_GetPerformanceCounter() / static_cast<float>(SDL_GetPerformanceFrequency());
-    }
-
-    float _now = get_time();
-    float _start = _now;
-    float _last = _now;
-    float _delta = 0;
-    size_t _frame = 0;
-
-    void update() {
-        _now = get_time();
-        _delta = _now - _last;
-        _last = _now;
-        ++_frame;
-    }
-
-    float now() {
-        return _now;
-    }
-
-    float start() {
-        return _start;
-    }
-
-    float delta() {
-        return _delta;
-    }
-
-    size_t frame() {
-        return _frame;
-    }
-
-    float fps() {
-        return 1 / delta();
-    }
+namespace OddityEngine::Util {
+    long double Time::_now = get_time();
+    long double Time::_start = _now;
+    long double Time::_last = _now;
+    long double Time::_delta = 0;
+    size_t Time::_frame = 0;
 }
