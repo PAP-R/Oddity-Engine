@@ -60,4 +60,4 @@ target_link_libraries(${PROJECT_NAME}_test
         ${LIBS}
 )
 
-file(COPY ${RECOURSES} DESTINATION ${OUTPUT_DIR})
+file(INSTALL ${RECOURSES} DESTINATION ${OUTPUT_DIR})

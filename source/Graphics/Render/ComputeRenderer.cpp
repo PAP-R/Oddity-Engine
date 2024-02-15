@@ -37,6 +37,9 @@ namespace OddityEngine::Graphics::Render {
         glBindImageTexture(0, texture, 0, GL_FALSE, layer, GL_READ_WRITE, GL_RGBA32F);
 
         glDispatchCompute(world->object_count(), 1, 1);
+
+        glFinish();
+        // glMemoryBarrier(GL_ALL_BARRIER_BITS);
     }
 
     void ComputeRenderer::set_screen_size(const glm::vec2& size) {

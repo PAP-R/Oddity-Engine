@@ -21,6 +21,7 @@ namespace OddityEngine::Graphics {
         PHYSICS,
         TIME,
         RENDER,
+        TEMP,
     };
 
     template<typename T>
@@ -91,6 +92,11 @@ namespace OddityEngine::Graphics {
 
         void clear() {
             resize(0);
+        }
+
+        void clean() {
+            glBindBuffer(type, ID);
+            glNamedBufferData(ID, count * sizeof(T), nullptr, usage);
         }
 
         void shift(const GLsizei count, const GLsizei start, const GLsizei shifted_start) {

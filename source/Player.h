@@ -9,10 +9,8 @@
 class Player : public OddityEngine::Physics::Object, public OddityEngine::Util::Eventable {
 protected:
     glm::vec3 delta_acceleration = {0, 0, 0};
-    glm::vec3 manual_acceleration = {2, 10, 4};
+    glm::vec3 manual_acceleration = {40, 40, 40};
     glm::vec3 mouse_sensitivity = {0.1, 0.1, 0.1};
-
-    float radius = 1;
 
 public:
     Player(OddityEngine::Graphics::Camera* camera = new OddityEngine::Graphics::Camera());

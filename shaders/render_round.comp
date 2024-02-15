@@ -49,11 +49,11 @@ void main() {
         float step_size = 2 * PI / steps;
 
         for (float i = 0; i < 2 * PI; i += step_size) {
-            for (int s = 1; s < 8; s++) {
-                vec3 dir = FRONT + ((RIGHT - LEFT)) * sin(i) + ((UP - DOWN)) * cos(i);
+            for (int s = 0; s < 5; s++) {
+                vec3 dir = FRONT + ((RIGHT - LEFT) / 2) * sin(i) + ((UP - DOWN) / 2) * cos(i);
                 vec4 result = trace(render.camera_pos.xyz, dir, s, gl_WorkGroupID.x);
                 ivec3 pixel = to_pixel(result.xyz);
-//                pixel.xy = clamp(pixel.xy, ivec2(0), ivec2(render.view_size.x - 1, render.view_size.y - 1));
+                //            pixel.xy = clamp(pixel.xy, ivec2(0), ivec2(render.view_size.xy));
 
                 if (0 <= pixel.x && pixel.x < render.view_size.x && 0 <= pixel.y && pixel.y < render.view_size.y) {
                     imageStore(texture, pixel, vec4(hsv2rgb(vec3(mod(result.w * gl_WorkGroupID.x / gl_NumWorkGroups.x, 1), 1, 1)), 1));

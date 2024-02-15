@@ -1,6 +1,7 @@
 #include "Player.h"
 
 #include <SDL.h>
+#include <glm/gtx/quaternion.hpp>
 
 Player::Player(OddityEngine::Graphics::Camera* camera) : camera(camera) {
     mass = 0;
@@ -30,9 +31,12 @@ void Player::event(const SDL_Event& event) {
                         delta_acceleration.y -= manual_acceleration.y;
                     break;
                     case SDLK_r:
-                        position = {0, 0, 0, 1};
+                        // position = {0, 0, 0, 1};
                         velocity = {0, 0, 0, 1};
                         acceleration = {0, 0, 0, 1};
+                        angle = {0, 0, 0, 1};
+                        angle_velocity = {0, 0, 0, 1};
+                        angle_acceleration = {0, 0, 0, 1};
                         break;
                 }
             }
@@ -70,7 +74,10 @@ void Player::event(const SDL_Event& event) {
 bool Player::update() {
     acceleration = glm::vec4(glm::mat3(right(), glm::vec3(0, 1, 0), front()) * delta_acceleration, 1);
 
-    camera->position = position + glm::vec4(camera_shift, 0);
+    normalize();
+
+    camera->position = position + glm::toMat4(orientation) * glm::vec4(camera_shift, 1);
+    camera->position.w = 1;
     camera->angle = angle;
     camera->normalize();
 

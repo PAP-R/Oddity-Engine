@@ -21,7 +21,7 @@ int main(int argc, char* args[]) {
 
     std::cout << SteamFriends()->GetPersonaName() << std::endl;
 
-    auto window = OddityEngine::Graphics::Window("Hallo", 60, 60, SDL_WINDOW_RESIZABLE);
+    auto window = OddityEngine::Graphics::Window("Hallo", 600, 600, SDL_WINDOW_RESIZABLE);
 
     OddityEngine::Graphics::Scene scene;
     window.set_scene(&scene);
@@ -33,6 +33,9 @@ int main(int argc, char* args[]) {
     scene.add_renderer(renderer);
 
     player.position.z = 50;
+
+    player.radius = 1;
+    player.mass = 1;
 
     player.state &= ~OddityEngine::Physics::SHOW;
 
@@ -47,7 +50,7 @@ int main(int argc, char* args[]) {
 
     world.add_object(&player);
 
-    OddityEngine::Physics::Object center_ball({0, 0, 0});
+    OddityEngine::Physics::Object center_ball({0, 10, 0});
     OddityEngine::Physics::Object ball1({-10, 0, 0});
     OddityEngine::Physics::Object ball2({10, 0, 0});
     OddityEngine::Physics::Object ball3({0, -10, 0});
@@ -59,30 +62,28 @@ int main(int argc, char* args[]) {
     // world.add_object(&ball3);
     // world.add_object(&ball4);
 
-    center_ball.mass = 100000;
-    center_ball.test_value.x = 5;
-    center_ball.test_value.y = 150;
-    ball1.test_value.x = 0.5;
-    ball1.test_value.y = 150;
-    ball2.test_value.x = 0.5;
-    ball2.test_value.y = 150;
-    ball3.test_value.x = 0.5;
-    ball3.test_value.y = 150;
-    ball4.test_value.x = 0.5;
-    ball4.test_value.y = 150;
+    // center_ball.velocity.y = -10;
+
+    center_ball.mass = 100;
+    center_ball.radius = 5;
+    ball1.radius = 0.5;
+    ball2.radius = 0.5;
+    ball3.radius = 0.5;
+    ball4.radius = 0.5;
 
     ball4.velocity.x = 1;
 
     OddityEngine::Vector<OddityEngine::Physics::Object*> balls;
 
     int round = 8;
-    float height = 6;
-    float layer_height = 2;
-    int count = round * 1;
+    float height = 10;
+    float width = 6;
+    float layer_width = 2;
+    int count = round * 10;
 
     for (int i = 0; i < count; i++) {
-        balls.push_back(new OddityEngine::Physics::Object({(height + layer_height * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), (height + layer_height * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), 0}));
-        balls.back()->test_value.x = 1;
+        balls.push_back(new OddityEngine::Physics::Object({(width + layer_width * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height, (width + layer_width * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round)}));
+        balls.back()->radius = 1;
         balls.back()->mass = 0.5;
         // if (balls.back()->position.y > 0) {
         //     balls.back()->velocity.y = -1;
@@ -98,16 +99,21 @@ int main(int argc, char* args[]) {
         world.add_object(b);
     }
 
-    player.camera->fov = 45;
-
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
     // renderer->set_size({10, 10});
 
-    do {
-        // fmt::print("[{}] : FPS: {}\tDelta: {}\n", OddityEngine::Util::Time::frame(), OddityEngine::Util::Time::fps<size_t>(), OddityEngine::Util::Time::delta<float>() * 1000);
+    long double delta_added = 0;
+
+    OddityEngine::Util::Time::set_framerate(180);
+
+    while (OddityEngine::update()) {
+        // delta_added += OddityEngine::Util::Time::delta<long double>();
+        // fmt::print("[{}] : FPS: {}\tTime:{}\tTime by Delta: {}\tDelta: {}\n", OddityEngine::Util::Time::frame(), OddityEngine::Util::Time::fps<size_t>(), OddityEngine::Util::Time::elapsed<float>(), delta_added, OddityEngine::Util::Time::delta<float>());
+        // fmt::print("[ {} | {} | {} ]:|:[ {} | {} | {} ]\n", player.position.x, player.position.y, player.position.z, player.angle.x, player.angle.y, player.angle.z);
+        // fmt::print("[ {} | {} | {} ]:|:[ {} | {} | {} ]\n", player.position.x - player.camera->position.x, player.position.y - player.camera->position.y, player.position.z - player.camera->position.z, player.camera->front().x, player.camera->front().y, player.camera->front().z);
         world.update();
-    } while (OddityEngine::update());
+    }
 
     for (auto b : balls) {
         delete b;

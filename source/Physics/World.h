@@ -8,13 +8,24 @@
 #include "Util/Vector.h"
 
 namespace OddityEngine::Physics {
-    class World {
+    struct alignas(16) Physics {
+        glm::vec4 gravity = {0, -9.81, 0, 1};
+        float air_density = 1;
+        float ground_height = 0;
+        float time_delta;
+    };
+
+    class World : public Physics {
     protected:
         Vector<Object*> objects;
 
-        Graphics::Program physics_program = Graphics::Program({Graphics::Shader(GL_COMPUTE_SHADER, "physics.comp")});
+        Graphics::Program physics_self = Graphics::Program({Graphics::Shader(GL_COMPUTE_SHADER, "physics_self.comp")});
+        Graphics::Program physics_other = Graphics::Program({Graphics::Shader(GL_COMPUTE_SHADER, "physics_other.comp")});
+        Graphics::Program physics_combine = Graphics::Program({Graphics::Shader(GL_COMPUTE_SHADER, "physics_combine.comp")});
+
         Graphics::Buffer<Object_struct> object_buffer = Graphics::Buffer<Object_struct>();
-        Graphics::Buffer<float> physics_buffer = Graphics::Buffer<float>();
+        Graphics::Buffer<Object_struct> temp_object_buffer = Graphics::Buffer<Object_struct>();
+        Graphics::Buffer<Physics> physics_buffer = Graphics::Buffer<Physics>();
 
     public:
         void update();

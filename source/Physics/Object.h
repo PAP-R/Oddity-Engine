@@ -21,7 +21,9 @@ namespace OddityEngine::Physics {
         glm::vec4 angle_velocity = {0, 0, 0, 1};
         glm::vec4 angle_acceleration = {0, 0, 0, 1};
 
-        glm::vec4 test_value = {0, 0, 0, 0};
+        float test_value[10];
+
+        float radius = 0;
 
         float mass = 1;
         float restitution = 1;
