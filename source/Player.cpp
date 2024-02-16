@@ -3,6 +3,9 @@
 #include <SDL.h>
 #include <glm/gtx/quaternion.hpp>
 
+#include "Math/basics.h"
+#include "Util/Debug.h"
+
 Player::Player(OddityEngine::Graphics::Camera* camera) : camera(camera) {
     mass = 0;
 }
@@ -34,7 +37,7 @@ void Player::event(const SDL_Event& event) {
                         // position = {0, 0, 0, 1};
                         velocity = {0, 0, 0, 1};
                         acceleration = {0, 0, 0, 1};
-                        angle = {0, 0, 0, 1};
+                        // angle = {0, 0, 0, 1};
                         angle_velocity = {0, 0, 0, 1};
                         angle_acceleration = {0, 0, 0, 1};
                         break;
@@ -67,6 +70,41 @@ void Player::event(const SDL_Event& event) {
         case SDL_MOUSEMOTION:
             angle.x += -event.motion.xrel * mouse_sensitivity.x;
             angle.y += -event.motion.yrel * mouse_sensitivity.y;
+            break;
+
+        case SDL_MOUSEBUTTONDOWN:
+            switch (event.button.button) {
+                case SDL_BUTTON_LEFT:
+                    OddityEngine::Debug::message("State: [ {} | {} ]", state & OddityEngine::Physics::SHOW, state & OddityEngine::Physics::HIT);
+                    OddityEngine::Debug::message("Position: [ {} | {} | {} ]", position.x, position.y, position.z);
+                    OddityEngine::Debug::message("Velocity: [ {} | {} | {} ]", velocity.x, velocity.y, velocity.z);
+                    OddityEngine::Debug::message("Acceleration: [ {} | {} | {} ]", acceleration.x, acceleration.y, acceleration.z);
+                    break;
+                case SDL_BUTTON_RIGHT:
+                    for (size_t j = 0; j < 10; j++) {
+                        if (j == 0) {
+                            fmt::print("[");
+                        }
+                        else {
+                            fmt::print("|");
+                        }
+                        fmt::print(" {}: {} ", j, test_value[j]);
+                    }
+                    fmt::print("]\n");
+                    break;
+                case SDL_BUTTON_MIDDLE:
+                    camera->fov = 90;
+                    camera_shift.z = 5;
+                    OddityEngine::Debug::message("FOV: {}", camera->fov);
+                    break;
+            }
+            break;
+
+        case SDL_MOUSEWHEEL:
+            camera->fov = OddityEngine::Math::min(OddityEngine::Math::max(camera->fov - event.wheel.preciseY, 1.0f), 180.0f);
+            camera_shift.z = OddityEngine::Math::min(OddityEngine::Math::max(camera_shift.z - event.wheel.preciseX, 0.0f), 20.0f);
+            OddityEngine::Debug::message("FOV: {}", camera->fov);
+            OddityEngine::Debug::message("Shift: {}", camera_shift.z);
             break;
     }
 }

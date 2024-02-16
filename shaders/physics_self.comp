@@ -35,14 +35,17 @@ void main() {
         acceleration /= objects[self].mass;
     }
 
-    objects[self].test_value[0] = acceleration.y; //TODO
-    objects[self].test_value[1] = D.y; //TODO
-    objects[self].test_value[2] = W.y; //TODO
-    objects[self].test_value[3] = A; //TODO
-    objects[self].test_value[4] = v.y; //TODO
-    objects[self].test_value[5] = (Air_Density * v * abs(v)).y; //TODO
-    objects[self].test_value[6] = Cd * (Air_Density * v * abs(v)).y; //TODO
-    objects[self].test_value[7] = (Cd * ((Air_Density * v * abs(v)) / 2) * A).y; //TODO
+//    objects[self].test_value[0] = acceleration.y; //TODO
+//    objects[self].test_value[1] = D.y; //TODO
+//    objects[self].test_value[2] = W.y; //TODO
+//    objects[self].test_value[3] = A; //TODO
+//    objects[self].test_value[4] = v.y; //TODO
+//    objects[self].test_value[5] = (Air_Density * v * abs(v)).y; //TODO
+//    objects[self].test_value[6] = Cd * (Air_Density * v * abs(v)).y; //TODO
+//    objects[self].test_value[7] = (Cd * ((Air_Density * v * abs(v)) / 2) * A).y; //TODO
+    objects[self].test_value[0] = 0; //TODO
+    objects[self].test_value[1] = 0; //TODO
+    objects[self].test_value[2] = 0; //TODO
 
 
 //    if (!on_ground && objects[self].mass > 0 && length(gravity.xyz) != 0) {

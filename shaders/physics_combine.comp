@@ -11,11 +11,15 @@ void main() {
     for (uint i = 0; i < gl_NumWorkGroups.x; i++) {
         if (i != self) {
             objects[self].position.xyz += temp_objects[self_row + i].position.xyz;
+
             objects[self].velocity.xyz += temp_objects[self_row + i].velocity.xyz;
+
             objects[self].acceleration.xyz += temp_objects[self_row + i].acceleration.xyz;
 
             objects[self].angle.xyz += temp_objects[self_row + i].angle.xyz;
+
             objects[self].angle_velocity.xyz += temp_objects[self_row + i].angle_velocity.xyz;
+
             objects[self].angle_acceleration.xyz += temp_objects[self_row + i].angle_acceleration.xyz;
 
             for (uint j = 0; j < 10; j++) objects[self].test_value[j] += temp_objects[self_row + i].test_value[j];

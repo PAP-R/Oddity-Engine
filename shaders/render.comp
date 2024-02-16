@@ -7,27 +7,37 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout(rgba32f, binding = 0) uniform image2DArray texture;
 
-struct render_struct {
+layout(std140, std430, binding = RENDER) buffer render_buffer {
     vec4 camera_pos;
     mat4 vp;
     vec2 view_size;
     uint layer;
 };
 
-layout(std140, std430, binding = RENDER) buffer render_buffer {
-    render_struct render;
-};
-
 vec3 FRONT_BASE = normalize(vec3(0, 0, -1));
-vec3 LEFT = ((render.vp * vec4(normalize(vec3(-1, 0, 0) + FRONT_BASE), 1)).xyz);
-vec3 RIGHT = ((render.vp * vec4(normalize(vec3(1, 0, 0) + FRONT_BASE), 1)).xyz);
-vec3 DOWN = ((render.vp * vec4(normalize(vec3(0, -1, 0) + FRONT_BASE), 1)).xyz);
-vec3 UP = ((render.vp * vec4(normalize(vec3(0, 1, 0) + FRONT_BASE), 1)).xyz);
-vec3 FRONT = ((render.vp * vec4(FRONT_BASE, 1)).xyz);
+vec3 LEFT = normalize((vp * vec4(normalize(vec3(-1, 0, 0) + FRONT_BASE), 1)).xyz);
+vec3 RIGHT = normalize((vp * vec4(normalize(vec3(1, 0, 0) + FRONT_BASE), 1)).xyz);
+vec3 TO_RIGHT = RIGHT - LEFT;
+vec3 DOWN = normalize((vp * vec4(normalize(vec3(0, -1, 0) + FRONT_BASE), 1)).xyz);
+vec3 UP = normalize((vp * vec4(normalize(vec3(0, 1, 0) + FRONT_BASE), 1)).xyz);
+vec3 TO_UP = UP - DOWN;
+vec3 FRONT = normalize((vp * vec4(FRONT_BASE, 1)).xyz);
 
-ivec3 to_pixel(vec3 dir) {
+ivec2 dir_to_pixel(vec3 dir) {
     dir = normalize(dir);
-    return ivec3(vec2(dot(dir - LEFT, normalize(RIGHT - LEFT)) / distance(LEFT, RIGHT), dot(dir - DOWN, normalize(UP - DOWN)) / distance(DOWN, UP)) * render.view_size, render.layer);
+    vec2 ratio = vec2(dot((dir - LEFT), normalize(TO_RIGHT)) / length(TO_RIGHT), dot((dir - DOWN), normalize(TO_UP)) / length(TO_UP));
+
+    if (dot(cross(LEFT, dir), cross(LEFT, RIGHT)) >= 0 && dot(cross(RIGHT, dir), cross(RIGHT, LEFT)) >= 0) {
+        return ivec2(ratio * (view_size - ivec2(1)));
+    }
+
+    return ivec2(-1);
+}
+
+vec3 pixel_to_dir(ivec2 pixel) {
+    vec2 ratio = pixel / view_size;
+
+    return normalize(LEFT + TO_RIGHT * ratio.x + DOWN + TO_UP * ratio.y);
 }
 
 vec3 hsv2rgb(vec3 c) {
@@ -36,54 +46,76 @@ vec3 hsv2rgb(vec3 c) {
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
-int point_size = 250;
+void draw_point(ivec2 pos, vec4 color) {
+
+    if (0 <= pos.x && pos.x < view_size.x && 0 <= pos.y && pos.y < view_size.y) {
+        imageStore(texture, ivec3(pos, layer), color);
+    }
+}
+
+void draw_relative_point(vec3 pos, vec4 color) {
+    draw_point(dir_to_pixel(pos), color);
+}
+
+void draw_world_point(vec3 pos, vec4 color) {
+    draw_point(dir_to_pixel(pos - camera_pos.xyz), color);
+}
+
+void draw_line(ivec2 start, ivec2 end) {
+    float dist = distance(start, end);
+    vec2 dir = normalize(vec2(end - start));
+
+    for (float i = 0; i < dist; i++) {
+        draw_point(start + ivec2(dir * i), vec4(hsv2rgb(vec3(i / dist, 1, 1)), 1));
+    }
+}
+
+void draw_world_line(vec3 start, vec3 end) {
+    draw_line(dir_to_pixel(start - camera_pos.xyz), dir_to_pixel(end - camera_pos.xyz));
+}
+
+float line_step = 0.01;
 
 void main() {
-    Object self = objects[gl_WorkGroupID.x];
+    if (gl_WorkGroupID.x == 0 && gl_WorkGroupID.y == 0 && gl_WorkGroupID.z == 0) {
+        draw_relative_point(LEFT, vec4(0, 1, 1, 1));
+        draw_relative_point(RIGHT, vec4(0, 1, 1, 1));
+        draw_relative_point(DOWN, vec4(0, 1, 1, 1));
+        draw_relative_point(UP, vec4(0, 1, 1, 1));
+        draw_relative_point(FRONT, vec4(0, 1, 1, 1));
+        draw_relative_point(FRONT_BASE, vec4(0, 1, 1, 1));
+    }
 
-    memoryBarrier();
+    uint self = gl_WorkGroupID.x;
+    uint other = gl_WorkGroupID.y;
 
-    if ((self.state & SHOW) > 0) {
-        uint steps = 128;
-        float dist = distance(self.position.xyz, render.camera_pos.xyz);
+    if (self == other && (objects[self].state & SHOW) != 0) {
+        uint steps = 64;
+        float dist = distance(objects[self].position.xyz, camera_pos.xyz);
         float step_size = 2 * PI / steps;
 
+        vec3 center_dir = objects[self].position.xyz - camera_pos.xyz;
+        vec4 result = trace(camera_pos.xyz, center_dir, 2, gl_WorkGroupID.x);
+        draw_relative_point(result.xyz, vec4(hsv2rgb(vec3(mod(result.w * gl_WorkGroupID.x / gl_NumWorkGroups.x, 1), 1, 1)), 1));
+
+        vec3 para = normalize(cross(center_dir, UP));
+        vec3 patam = normalize(cross(center_dir, para));
+
         for (float i = 0; i < 2 * PI; i += step_size) {
-            for (int s = 1; s < 8; s++) {
-                vec3 dir = FRONT + ((RIGHT - LEFT)) * sin(i) + ((UP - DOWN)) * cos(i);
-                vec4 result = trace(render.camera_pos.xyz, dir, s, gl_WorkGroupID.x);
-                ivec3 pixel = to_pixel(result.xyz);
-//                pixel.xy = clamp(pixel.xy, ivec2(0), ivec2(render.view_size.x - 1, render.view_size.y - 1));
+//            vec3 dir = normalize(center_dir + FRONT + (TO_RIGHT) * sin(i) + (TO_UP) * cos(i));
+//            result = trace(camera_pos.xyz, dir, 4, gl_WorkGroupID.x);
+//
+//            draw_relative_point(result.xyz, vec4(hsv2rgb(vec3(mod(length(result.xyz) / length(center_dir), 1), 0.5, 1)), 1));
 
-                if (0 <= pixel.x && pixel.x < render.view_size.x && 0 <= pixel.y && pixel.y < render.view_size.y) {
-                    imageStore(texture, pixel, vec4(hsv2rgb(vec3(mod(result.w * gl_WorkGroupID.x / gl_NumWorkGroups.x, 1), 1, 1)), 1));
-                }
-            }
+
+            vec3 spup = normalize((para) * sin(i) + (patam) * cos(i));
+            vec3 resulte = closest_point(spup + objects[self].position.xyz, self);
+
+            draw_world_point(resulte.xyz, vec4(hsv2rgb(vec3(float(self) / gl_NumWorkGroups.x, 1, 1)), 1));
         }
-
-
-//        vec3 dir = self.position.xyz - render.camera_pos.xyz;
-//        if (dot(dir, FRONT) > 0) {
-//            float radius = self.radius;
-//
-//            float len = length(dir);
-//
-//            ivec3 center = to_pixel(dir);
-//
-//            int size = int(radius / len);
-//
-//            if (center.z >= 0) {
-//                for (int x = -size; x <= size; x++) {
-//                    int circle = size - abs(int(size * cos(asin(float(x) / size))));
-//                    for (int y = -size + circle; y <= size - circle; y++) {
-//                        ivec3 pixel = center + ivec3(x, y, 0);
-//                        if (0 <= pixel.x && pixel.x < render.view_size.x && 0 <= pixel.y && pixel.y < render.view_size.y) {
-//                            imageStore(texture, pixel, vec4(vec2(pixel.xy) / render.view_size.xy, 0, 1));
-//                        }
-//                    }
-//                }
-//            }
-//        }
     }
-    memoryBarrier();
+
+    if (self < other && (objects[self].state & SHOW) != 0 && (objects[other].state & SHOW) != 0) {
+//        draw_world_line(closest_point(objects[other].position.xyz, self), closest_point(objects[self].position.xyz, other));
+    }
 }

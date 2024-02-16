@@ -4,6 +4,22 @@
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
+void reset(uint index) {
+    temp_objects[index].position.xyz = vec3(0);
+    temp_objects[index].velocity.xyz = vec3(0);
+    temp_objects[index].acceleration.xyz = vec3(0);
+
+    temp_objects[index].angle.xyz = vec3(0);
+    temp_objects[index].angle_velocity.xyz = vec3(0);
+    temp_objects[index].angle_acceleration.xyz = vec3(0);
+
+    for (uint j = 0; j < 10; j++) {
+        temp_objects[index].test_value[j] = 0;
+    }
+
+    temp_objects[index].state = 0;
+}
+
 void main() {
     uint self = gl_WorkGroupID.x;
     uint other = gl_WorkGroupID.y;
@@ -11,11 +27,19 @@ void main() {
     uint self_write = other + self * gl_NumWorkGroups.x;
     uint other_write = self + other * gl_NumWorkGroups.x;
 
+    reset(self_write);
+    reset(other_write);
+
     if (self < other){
         vec3 inner = objects[other].position.xyz - objects[self].position.xyz;
         vec3 outer = closest_point(objects[self].position.xyz, other) - closest_point(objects[other].position.xyz, self);
 
-        if (length(outer) != 0 && dot(inner, outer) < 0) {
+        temp_objects[self_write].test_value[1] = dot(outer, normalize(inner));
+
+        if (dot(outer, normalize(inner)) < 0) {
+            temp_objects[self_write].test_value[0] = other * pow(10, other);
+            temp_objects[self_write].test_value[2] = dot(outer, inner);
+
             vec3 normal = normalize(inner);
 
             float mass = 1 / ((1 / objects[self].mass) + (1 / objects[other].mass));

@@ -1,0 +1,88 @@
+#version 450 core
+
+#include <buffer.glsl>
+#include <object.glsl>
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(rgba32f, binding = 0) uniform image2DArray texture;
+
+layout(std140, std430, binding = RENDER) buffer render_buffer {
+    vec4 camera_pos;
+    mat4 vp;
+    vec2 view_size;
+    uint layer;
+};
+
+vec3 FRONT_BASE = normalize(vec3(0, 0, -1));
+vec3 LEFT = normalize((vp * vec4(normalize(vec3(-1, 0, 0) + FRONT_BASE), 1)).xyz);
+vec3 RIGHT = normalize((vp * vec4(normalize(vec3(1, 0, 0) + FRONT_BASE), 1)).xyz);
+vec3 TO_RIGHT = RIGHT - LEFT;
+vec3 DOWN = normalize((vp * vec4(normalize(vec3(0, -1, 0) + FRONT_BASE), 1)).xyz);
+vec3 UP = normalize((vp * vec4(normalize(vec3(0, 1, 0) + FRONT_BASE), 1)).xyz);
+vec3 TO_UP = UP - DOWN;
+vec3 FRONT = normalize((vp * vec4(FRONT_BASE, 1)).xyz);
+
+ivec3 dir_to_pixel(vec3 dir) {
+    dir = normalize(dir);
+    vec2 ratio = vec2(dot((dir - LEFT), normalize(TO_RIGHT)) / length(TO_RIGHT), dot((dir - DOWN), normalize(TO_UP)) / length(TO_UP));
+
+    if (dot((cross(LEFT, dir) * cross(LEFT, RIGHT))) >= 0 && dot((cross(RIGHT, dir) * cross(RIGHT, LEFT))) >= 0) {
+        return ivec3(ratio * (view_size - ivec2(1)), layer);
+    }
+//    vec2 ratio = vec2(dot(dir, RIGHT) / (dot(dir, LEFT) + dot(dir, RIGHT)), dot(dir, UP) / (dot(dir, DOWN) + dot(dir, UP)));
+    return ivec3(-1, -1, layer);
+}
+
+vec3 hsv2rgb(vec3 c) {
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+int point_size = 250;
+
+void main() {
+    ivec3 pixel = ivec3(gl_WorkGroupID.xy, layer);
+
+    if (gl_WorkGroupID.x == 0 && gl_WorkGroupID.y == 0 && gl_WorkGroupID.z == 0) {
+        imageStore(texture, dir_to_pixel(LEFT), vec4(0, 1, 1, 1));
+        imageStore(texture, dir_to_pixel(RIGHT), vec4(0, 1, 1, 1));
+        imageStore(texture, dir_to_pixel(DOWN), vec4(0, 1, 1, 1));
+        imageStore(texture, dir_to_pixel(UP), vec4(0, 1, 1, 1));
+        imageStore(texture, dir_to_pixel(FRONT), vec4(0, 1, 1, 1));
+        imageStore(texture, dir_to_pixel(FRONT_BASE), vec4(0, 1, 1, 1));
+    }
+
+
+
+    memoryBarrier();
+
+    if ((self.state & SHOW) > 0) {
+        uint steps = 64;
+        float dist = distance(self.position.xyz, camera_pos.xyz);
+        float step_size = 2 * PI / steps;
+
+        vec3 center_dir = self.position.xyz - camera_pos.xyz;
+        vec4 result = trace(camera_pos.xyz, center_dir, 2, gl_WorkGroupID.x);
+        imageStore(texture, dir_to_pixel(result.xyz), vec4(hsv2rgb(vec3(mod(result.w * gl_WorkGroupID.x / gl_NumWorkGroups.x, 1), 1, 1)), 1));
+
+        uint rounding = 1;
+
+        for (float i = 0; i < 2 * PI; i += step_size) {
+            vec3 dir = normalize(center_dir + FRONT + (TO_RIGHT) * sin(i) + (TO_UP) * cos(i));
+            result = trace(camera_pos.xyz, dir, 2, gl_WorkGroupID.x);
+            for (uint s = 2; s < rounding; s++) {
+                dir += normalize(result.xyz) * result.w;
+                result = trace(camera_pos.xyz, dir, s, gl_WorkGroupID.x);
+                ivec3 pixel = dir_to_pixel(result.xyz);
+
+                if (0 <= pixel.x && pixel.x < view_size.x && 0 <= pixel.y && pixel.y < view_size.y) {
+                    imageStore(texture, pixel, vec4(hsv2rgb(vec3(mod(result.w * gl_WorkGroupID.x / gl_NumWorkGroups.x, 1), 1, 1)), 1));
+                }
+            }
+
+        }
+    }
+    memoryBarrier();
+}

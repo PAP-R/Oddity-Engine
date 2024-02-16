@@ -19,11 +19,6 @@ namespace OddityEngine::Physics {
 
         temp_object_buffer.resize(object_count() * object_count());
 
-        temp_object_buffer.clean();
-
-        glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
-
         glUseProgram(physics_self);
 
         bind_buffers();

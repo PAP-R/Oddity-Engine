@@ -21,7 +21,7 @@ int main(int argc, char* args[]) {
 
     std::cout << SteamFriends()->GetPersonaName() << std::endl;
 
-    auto window = OddityEngine::Graphics::Window("Hallo", 600, 600, SDL_WINDOW_RESIZABLE);
+    auto window = OddityEngine::Graphics::Window("Hallo", 800, 600, SDL_WINDOW_RESIZABLE);
 
     OddityEngine::Graphics::Scene scene;
     window.set_scene(&scene);
@@ -32,12 +32,14 @@ int main(int argc, char* args[]) {
     auto renderer = new OddityEngine::Graphics::Render::ComputeRenderer(player.camera);
     scene.add_renderer(renderer);
 
-    player.position.z = 50;
+    // renderer->set_size({11, 11});
+
+    player.position.z = 15;
 
     player.radius = 1;
     player.mass = 1;
 
-    player.state &= ~OddityEngine::Physics::SHOW;
+    // player.state &= ~OddityEngine::Physics::SHOW;
 
     // player.angle_velocity.x = 10;
     // player.angle_velocity.y = 1;
@@ -83,6 +85,7 @@ int main(int argc, char* args[]) {
 
     for (int i = 0; i < count; i++) {
         balls.push_back(new OddityEngine::Physics::Object({(width + layer_width * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height, (width + layer_width * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round)}));
+        // balls.push_back(new OddityEngine::Physics::Object({(width + layer_width * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), (width + layer_width * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), 0}));
         balls.back()->radius = 1;
         balls.back()->mass = 0.5;
         // if (balls.back()->position.y > 0) {
@@ -105,15 +108,15 @@ int main(int argc, char* args[]) {
 
     long double delta_added = 0;
 
-    OddityEngine::Util::Time::set_framerate(180);
+    // OddityEngine::Util::Time::set_framerate(180);
 
-    while (OddityEngine::update()) {
+    do {
         // delta_added += OddityEngine::Util::Time::delta<long double>();
         // fmt::print("[{}] : FPS: {}\tTime:{}\tTime by Delta: {}\tDelta: {}\n", OddityEngine::Util::Time::frame(), OddityEngine::Util::Time::fps<size_t>(), OddityEngine::Util::Time::elapsed<float>(), delta_added, OddityEngine::Util::Time::delta<float>());
         // fmt::print("[ {} | {} | {} ]:|:[ {} | {} | {} ]\n", player.position.x, player.position.y, player.position.z, player.angle.x, player.angle.y, player.angle.z);
         // fmt::print("[ {} | {} | {} ]:|:[ {} | {} | {} ]\n", player.position.x - player.camera->position.x, player.position.y - player.camera->position.y, player.position.z - player.camera->position.z, player.camera->front().x, player.camera->front().y, player.camera->front().z);
         world.update();
-    }
+    } while (OddityEngine::update());
 
     for (auto b : balls) {
         delete b;

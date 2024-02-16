@@ -16,6 +16,7 @@ namespace OddityEngine::Graphics::Render {
 
         float fov = camera->fov / 90.0f;
         float aspect = size.y / size.x;
+        // float aspect = 1;
 
         view_size = size;
         auto render_projection = glm::mat4(1);
@@ -23,7 +24,7 @@ namespace OddityEngine::Graphics::Render {
         render_projection[1][1] = fov;
         auto render_view = glm::toMat4(camera->orientation);
 
-        render_vp = render_view * render_projection *glm::mat4(1);//TODO maybe change order to leave out mat4(1)
+        render_vp = render_view * render_projection * glm::mat4(1);//TODO maybe change order to leave out mat4(1)
 
         camera_pos = camera->position;
 
@@ -36,7 +37,9 @@ namespace OddityEngine::Graphics::Render {
         glBindTexture(GL_TEXTURE_2D_ARRAY, texture);
         glBindImageTexture(0, texture, 0, GL_FALSE, layer, GL_READ_WRITE, GL_RGBA32F);
 
-        glDispatchCompute(world->object_count(), 1, 1);
+        // glDispatchCompute(view_size.x, view_size.y, 1);
+        glDispatchCompute(world->object_count(), world->object_count(), 1);
+        // glDispatchCompute(world->object_count(), 1, 1);
 
         glFinish();
         // glMemoryBarrier(GL_ALL_BARRIER_BITS);
