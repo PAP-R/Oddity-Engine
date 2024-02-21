@@ -32,7 +32,7 @@ void main() {
 
     if (self < other){
         vec3 inner = objects[other].position.xyz - objects[self].position.xyz;
-        vec3 outer = closest_point(objects[self].position.xyz, other) - closest_point(objects[other].position.xyz, self);
+        vec3 outer = closest_point(objects[self].position.xyz, other).xyz - closest_point(objects[other].position.xyz, self).xyz;
 
         temp_objects[self_write].test_value[1] = dot(outer, normalize(inner));
 

@@ -2,6 +2,7 @@
 
 #include <buffer.glsl>
 #include <definitions.glsl>
+#include <network.glsl>
 
 const uint SHOW = 1 << 1;
 const uint HIT = 1 << 2;
@@ -21,23 +22,45 @@ shared struct Object {
     float mass;
     float restitution;
     uint state;
+    uint net_index;
 };
 
 Object make_empty_object() {
-    return Object(vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), float[10](0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 0, 0, 0, 0);
+    return Object(vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), float[10](0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 0, 0, 0, 0, 0);
 }
 
 layout(std140, std430, binding = OBJECT) buffer object_buffer {
     Object objects[];
 };
 
-vec3 closest(vec3 point, uint obj) {
-    vec3 diff = objects[obj].position.xyz - point;
-    return normalize(diff) * (length(diff) - objects[obj].radius);
+vec4 closest(vec3 point, uint obj) {
+//    vec4 diff = vec4(objects[obj].position.xyz - point, 0);
+//
+//    diff.xyz = normalize(diff.xyz) * (length(diff.xyz) - objects[obj].radius);
+//
+//    diff.w = length(diff.xyz);
+//
+//    if (distance(diff.xyz + point, objects[obj].position.xyz) > distance(point, objects[obj].position.xyz)) {
+//        diff.w *= -1;
+//    }
+//
+//    return diff;
+
+    float temp[MAX_THROUGHPUT];
+
+    for (uint i = 0; i < 3; i++) {
+        temp[i] = point[i];
+        temp[i + 3] = objects[obj].position[i];
+        temp[i + 6] = objects[obj].angle[i];
+    }
+
+    temp = apply(objects[obj].net_index, temp);
+
+    return vec4(temp[0], temp[1], temp[2], temp[3]);
 }
 
-vec3 closest_point(vec3 point, uint obj) {
-    return point + closest(point, obj);
+vec4 closest_point(vec3 point, uint obj) {
+    return closest(point, obj) + vec4(point, 0);
 }
 
 float sdf(vec3 point, uint obj) {
@@ -48,25 +71,21 @@ vec4 trace(vec3 point, vec3 dir, uint max_steps, uint obj) {
     dir = normalize(dir);
     vec3 start_point = point;
     vec3 min_point = point;
-    vec3 current_diff = closest(point, obj);
-    vec3 min_diff = current_diff;
-    float current_distance = length(current_diff);
-    float min_distance = current_distance;
+    vec4 current_diff = closest(point, obj);
+    vec4 min_diff = current_diff;
 
     for (uint i = 0; i < max_steps; i++) {
-        point = point + dir * current_distance;
+        point = point + dir * current_diff.w;
         current_diff = closest(point, obj);
-        current_distance = length(current_diff);
 
-        if (0 <= current_distance && current_distance < min_distance) {
+        if (0 <= current_diff.w && current_diff.w < min_diff.w) {
             min_point = point;
-            min_distance = current_distance;
             min_diff = current_diff;
-            if (min_distance < TOLERANCE) {
+            if (min_diff.w < TOLERANCE) {
                 break;
             }
         }
     }
 
-    return vec4(min_diff + min_point - start_point, min_distance);
+    return min_diff + vec4(min_point - start_point, 0);
 }

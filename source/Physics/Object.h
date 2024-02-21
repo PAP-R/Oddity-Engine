@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <NeuralNetwork/Network.h>
 
 namespace OddityEngine::Physics {
     enum STATES {
@@ -28,10 +29,13 @@ namespace OddityEngine::Physics {
         float mass = 1;
         float restitution = 1;
         GLuint state = SHOW;
+        GLuint network_index = 0;
     };
 
     struct Object : public Object_struct {
         glm::quat orientation = {1, 0, 0, 0};
+
+        Vector<NeuralNetwork::Network> net = Vector<NeuralNetwork::Network>(10, NeuralNetwork::Network(9, 4));
 
         virtual ~Object() = default;
 
@@ -45,7 +49,8 @@ namespace OddityEngine::Physics {
         glm::vec3 right();
         glm::vec3 up();
 
-        virtual glm::vec3 closest(glm::vec3 point);
+        virtual glm::vec4 closest(glm::vec3 point);
+        virtual glm::vec4 closest(glm::vec3 point, glm::vec3 position, glm::vec3 angle);
         virtual float distance(glm::vec3 point);
     };
 }

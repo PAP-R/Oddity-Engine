@@ -15,19 +15,24 @@ layout(std140, std430, binding = RENDER) buffer render_buffer {
 };
 
 vec3 FRONT_BASE = normalize(vec3(0, 0, -1));
-vec3 LEFT = normalize((vp * vec4(normalize(vec3(-1, 0, 0) + FRONT_BASE), 1)).xyz);
-vec3 RIGHT = normalize((vp * vec4(normalize(vec3(1, 0, 0) + FRONT_BASE), 1)).xyz);
+vec3 LEFT = ((vp * vec4(normalize(vec3(-1, 0, 0) + FRONT_BASE), 1)).xyz);
+vec3 LEFT_DIR = normalize(LEFT);
+vec3 RIGHT = ((vp * vec4(normalize(vec3(1, 0, 0) + FRONT_BASE), 1)).xyz);
+vec3 RIGHT_DIR = normalize(RIGHT);
 vec3 TO_RIGHT = RIGHT - LEFT;
-vec3 DOWN = normalize((vp * vec4(normalize(vec3(0, -1, 0) + FRONT_BASE), 1)).xyz);
-vec3 UP = normalize((vp * vec4(normalize(vec3(0, 1, 0) + FRONT_BASE), 1)).xyz);
+vec3 DOWN = ((vp * vec4(normalize(vec3(0, -1, 0) + FRONT_BASE), 1)).xyz);
+vec3 DOWN_DIR = normalize(DOWN);
+vec3 UP = ((vp * vec4(normalize(vec3(0, 1, 0) + FRONT_BASE), 1)).xyz);
+vec3 UP_DIR = normalize(UP);
 vec3 TO_UP = UP - DOWN;
-vec3 FRONT = normalize((vp * vec4(FRONT_BASE, 1)).xyz);
+vec3 FRONT = ((vp * vec4(FRONT_BASE, 1)).xyz);
+vec3 FRONT_DIR = normalize(FRONT);
 
 ivec2 dir_to_pixel(vec3 dir) {
     dir = normalize(dir);
     vec2 ratio = vec2(dot((dir - LEFT), normalize(TO_RIGHT)) / length(TO_RIGHT), dot((dir - DOWN), normalize(TO_UP)) / length(TO_UP));
 
-    if (dot(cross(LEFT, dir), cross(LEFT, RIGHT)) >= 0 && dot(cross(RIGHT, dir), cross(RIGHT, LEFT)) >= 0) {
+    if ((dot(cross(LEFT_DIR, dir), cross(LEFT_DIR, RIGHT_DIR)) >= 0 && dot(cross(RIGHT_DIR, dir), cross(RIGHT_DIR, LEFT_DIR)) >= 0) || (dot(cross(DOWN_DIR, dir), cross(DOWN_DIR, UP_DIR)) >= 0 && dot(cross(UP_DIR, dir), cross(UP_DIR, DOWN_DIR)) >= 0)) {
         return ivec2(ratio * (view_size - ivec2(1)));
     }
 
@@ -91,7 +96,6 @@ void main() {
 
     if (self == other && (objects[self].state & SHOW) != 0) {
         uint steps = 64;
-        float dist = distance(objects[self].position.xyz, camera_pos.xyz);
         float step_size = 2 * PI / steps;
 
         vec3 center_dir = objects[self].position.xyz - camera_pos.xyz;
@@ -102,16 +106,24 @@ void main() {
         vec3 patam = normalize(cross(center_dir, para));
 
         for (float i = 0; i < 2 * PI; i += step_size) {
+
+            float dist = length(center_dir);
+
+            for (uint s = 0; s < 10; s++) {
+
+                vec3 spup = normalize((para) * sin(i) + (patam) * cos(i));
+                vec4 resulte = closest_point(spup + objects[self].position.xyz, self);
+
+                dist -= resulte.w / 2;
+
+                draw_world_point(resulte.xyz, vec4(hsv2rgb(vec3(float(self) / gl_NumWorkGroups.x, 1, 1)), 1));
+            }
+
 //            vec3 dir = normalize(center_dir + FRONT + (TO_RIGHT) * sin(i) + (TO_UP) * cos(i));
 //            result = trace(camera_pos.xyz, dir, 4, gl_WorkGroupID.x);
 //
 //            draw_relative_point(result.xyz, vec4(hsv2rgb(vec3(mod(length(result.xyz) / length(center_dir), 1), 0.5, 1)), 1));
 
-
-            vec3 spup = normalize((para) * sin(i) + (patam) * cos(i));
-            vec3 resulte = closest_point(spup + objects[self].position.xyz, self);
-
-            draw_world_point(resulte.xyz, vec4(hsv2rgb(vec3(float(self) / gl_NumWorkGroups.x, 1, 1)), 1));
         }
     }
 

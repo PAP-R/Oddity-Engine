@@ -26,6 +26,7 @@ namespace OddityEngine::Physics {
         glDispatchCompute(object_count(), 1, 1);
 
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        glFinish();
 
 
         glUseProgram(physics_other);
@@ -35,6 +36,7 @@ namespace OddityEngine::Physics {
         glDispatchCompute(object_count(), object_count(), 1);
 
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        glFinish();
 
 
         glUseProgram(physics_combine);
@@ -44,6 +46,7 @@ namespace OddityEngine::Physics {
         glDispatchCompute(object_count(), 1, 1);
 
         glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        glFinish();
 
 
         auto result = object_buffer.get();
@@ -79,14 +82,30 @@ namespace OddityEngine::Physics {
         object_buffer.bind_base(Graphics::OBJECT);
         temp_object_buffer.bind_base(Graphics::TEMP);
         physics_buffer.bind_base(Graphics::PHYSICS);
+        network_buffer.bind_base(Graphics::NETWORK);
     }
 
     void World::add_object(Object* object) {
         objects.push_back(object);
+        update_networks();
     }
 
     void World::remove_object(Object* object) {
         objects.erase(std::remove(objects.begin(), objects.end(), object));
+        update_networks();
+    }
+
+    Vector<Object*> World::get_objects() {
+        return objects;
+    }
+
+    void World::update_networks() {
+        network_buffer.clear();
+
+        for (auto o : objects) {
+            auto net = o->net.front().to_csv();
+            o->network_index = *network_buffer.insert_back(net.size(), net.data())[0];
+        }
     }
 
     size_t World::object_count() {

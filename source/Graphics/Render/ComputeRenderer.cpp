@@ -41,8 +41,8 @@ namespace OddityEngine::Graphics::Render {
         glDispatchCompute(world->object_count(), world->object_count(), 1);
         // glDispatchCompute(world->object_count(), 1, 1);
 
-        glFinish();
         // glMemoryBarrier(GL_ALL_BARRIER_BITS);
+        glFinish();
     }
 
     void ComputeRenderer::set_screen_size(const glm::vec2& size) {

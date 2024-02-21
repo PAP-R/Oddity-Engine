@@ -25,6 +25,14 @@ set(GRAPHICS
 set(MATH
         Math/basics.h
         Math/random.h
+        Math/Vector.h
+)
+
+set(NEURAL_NETWORK
+        NeuralNetwork/Network.cpp
+        NeuralNetwork/Network.h
+        NeuralNetwork/Internal/Layer.h
+        NeuralNetwork/Internal/Random_evolve.h
 )
 
 set(PHYSICS
@@ -32,7 +40,6 @@ set(PHYSICS
         Physics/Object.h
         Physics/World.cpp
         Physics/World.h
-
 )
 
 set(UTIL
@@ -41,6 +48,7 @@ set(UTIL
         Util/File.cpp
         Util/File.h
         Util/Vector.h
+        Util/SortableVector.h
         Util/Time.cpp
         Util/Time.h
         Util/Eventable.h
@@ -49,6 +57,7 @@ set(UTIL
 set(SOURCES
         ${GRAPHICS}
         ${MATH}
+        ${NEURAL_NETWORK}
         ${PHYSICS}
         ${UTIL}
         OddityEngine.cpp

@@ -22,7 +22,7 @@ public:
     OddityEngine::Graphics::Camera* camera;
     glm::vec3 camera_shift = {0, 0, 5};
 
-    glm::vec3 closest(glm::vec3 point) override;
+    glm::vec4 closest(glm::vec3 point) override;
     float distance(glm::vec3 point) override;
 };
 

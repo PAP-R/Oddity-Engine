@@ -5,6 +5,7 @@
 
 #include "Math/basics.h"
 #include "Util/Debug.h"
+#include "Util/Time.h"
 
 Player::Player(OddityEngine::Graphics::Camera* camera) : camera(camera) {
     mass = 0;
@@ -41,7 +42,11 @@ void Player::event(const SDL_Event& event) {
                         angle_velocity = {0, 0, 0, 1};
                         angle_acceleration = {0, 0, 0, 1};
                         break;
+                    case SDLK_BACKQUOTE:
+                        SDL_SetRelativeMouseMode(SDL_GetRelativeMouseMode() == SDL_FALSE ? SDL_TRUE : SDL_FALSE);
+                        break;
                 }
+                OddityEngine::Debug::message("Key: {}", SDL_GetKeyName(event.key.keysym.sym));
             }
             break;
         case SDL_KEYUP:
@@ -75,6 +80,7 @@ void Player::event(const SDL_Event& event) {
         case SDL_MOUSEBUTTONDOWN:
             switch (event.button.button) {
                 case SDL_BUTTON_LEFT:
+                    OddityEngine::Debug::message("FPS: [ {} ]", OddityEngine::Util::Time::fps<size_t>());
                     OddityEngine::Debug::message("State: [ {} | {} ]", state & OddityEngine::Physics::SHOW, state & OddityEngine::Physics::HIT);
                     OddityEngine::Debug::message("Position: [ {} | {} | {} ]", position.x, position.y, position.z);
                     OddityEngine::Debug::message("Velocity: [ {} | {} | {} ]", velocity.x, velocity.y, velocity.z);
@@ -110,7 +116,7 @@ void Player::event(const SDL_Event& event) {
 }
 
 bool Player::update() {
-    acceleration = glm::vec4(glm::mat3(right(), glm::vec3(0, 1, 0), front()) * delta_acceleration, 1);
+    acceleration = glm::vec4(glm::mat3(right(), up(), front()) * delta_acceleration, 1);
 
     normalize();
 
@@ -122,14 +128,22 @@ bool Player::update() {
     return true;
 }
 
-glm::vec3 Player::closest(const glm::vec3 point) {
+glm::vec4 Player::closest(const glm::vec3 point) {
     const glm::vec3 pa = point - glm::vec3(position);
     const glm::vec3 ba = camera_shift - glm::vec3(position);
     const float h = glm::clamp(dot(pa,ba)/dot(ba,ba), 0.0f, 1.0f);
     const glm::vec3 from_point = pa - ba * h;
     const float len = length(from_point);
 
-    return point + glm::normalize(from_point) * (len - radius);
+    glm::vec3 diff = glm::normalize(from_point) * (len - radius);
+
+    glm::vec4 result(diff, glm::length(diff));
+
+    if (glm::distance(diff, from_point) > glm::distance(point, from_point)) {
+        result.w *= -1;
+    }
+
+    return result;
 }
 
 float Player::distance(const glm::vec3 point) {

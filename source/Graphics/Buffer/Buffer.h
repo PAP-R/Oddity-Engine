@@ -34,9 +34,11 @@ namespace OddityEngine::Graphics {
         Vector<GLsizei*> indices;
 
     public:
-        explicit Buffer(const GLuint type = GL_SHADER_STORAGE_BUFFER, const GLuint usage = GL_DYNAMIC_DRAW) : type(type), usage(usage) {
+        Buffer(const GLuint type = GL_SHADER_STORAGE_BUFFER, const GLuint usage = GL_DYNAMIC_DRAW) : type(type), usage(usage) {
             glGenBuffers(1, &ID);
         }
+
+        Buffer(Buffer&&) = default;
 
         ~Buffer() {
             for (auto i : indices) {

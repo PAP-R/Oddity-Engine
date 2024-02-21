@@ -40,8 +40,22 @@ namespace OddityEngine::Physics {
         return qrot(orientation, glm::vec3(0, 1, 0));
     }
 
-    glm::vec3 Object::closest(glm::vec3 point) {
-        return position;
+    glm::vec4 Object::closest(glm::vec3 point) {
+        return closest(point, glm::vec3(position), glm::vec3(angle));
+    }
+
+    glm::vec4 Object::closest(glm::vec3 point, glm::vec3 position, glm::vec3 angle) {
+        glm::vec3 diff = glm::vec3(position) - point;
+
+        diff = glm::normalize(diff) * (glm::length(diff) - radius);
+
+        glm::vec4 result(diff, glm::length(diff));
+
+        if (glm::distance(diff + point, glm::vec3(position)) > glm::distance(point, glm::vec3(position))) {
+            result.w *= -1;
+        }
+
+        return result;
     }
 
     float Object::distance(glm::vec3 point) {

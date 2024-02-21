@@ -26,6 +26,7 @@ namespace OddityEngine::Physics {
         Graphics::Buffer<Object_struct> object_buffer = Graphics::Buffer<Object_struct>();
         Graphics::Buffer<Object_struct> temp_object_buffer = Graphics::Buffer<Object_struct>();
         Graphics::Buffer<Physics> physics_buffer = Graphics::Buffer<Physics>();
+        Graphics::Buffer<float> network_buffer = Graphics::Buffer<float>();
 
     public:
         void update();
@@ -33,6 +34,9 @@ namespace OddityEngine::Physics {
 
         void add_object(Object* object);
         void remove_object(Object* object);
+        Vector<Object*> get_objects();
+
+        void update_networks();
 
         size_t object_count();
     };
