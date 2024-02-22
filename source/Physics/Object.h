@@ -11,6 +11,7 @@ namespace OddityEngine::Physics {
         TO_DELETE = 1,
         SHOW = 1 << 1,
         HIT = 1 << 2,
+        MOVE = 1 << 3,
     };
 
     struct alignas(16) Object_struct {

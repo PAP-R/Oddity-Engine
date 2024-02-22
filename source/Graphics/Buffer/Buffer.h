@@ -38,8 +38,6 @@ namespace OddityEngine::Graphics {
             glGenBuffers(1, &ID);
         }
 
-        Buffer(Buffer&&) = default;
-
         ~Buffer() {
             for (auto i : indices) {
                 delete(i);

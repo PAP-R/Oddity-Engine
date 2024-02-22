@@ -40,7 +40,7 @@ int main(int argc, char* args[]) {
 
     // renderer->set_size({11, 11});
 
-    player.position.z = 15;
+    player.position.z = 5;
 
     player.radius = 1;
     player.mass = 1;
@@ -58,7 +58,7 @@ int main(int argc, char* args[]) {
 
     world.add_object(&player);
 
-    OddityEngine::Physics::Object center_ball({0, 10, 0});
+    OddityEngine::Physics::Object center_ball({0, 0, 0});
     OddityEngine::Physics::Object ball1({-10, 0, 0});
     OddityEngine::Physics::Object ball2({10, 0, 0});
     OddityEngine::Physics::Object ball3({0, -10, 0});
@@ -73,7 +73,7 @@ int main(int argc, char* args[]) {
     // center_ball.velocity.y = -10;
 
     center_ball.mass = 100;
-    center_ball.radius = 5;
+    center_ball.radius = 1;
     ball1.radius = 0.5;
     ball2.radius = 0.5;
     ball3.radius = 0.5;
@@ -109,11 +109,14 @@ int main(int argc, char* args[]) {
         world.add_object(b);
     }
 
+    world.gravity = glm::vec4(0);
+    world.ground_height = -std::numeric_limits<float>::infinity();
+
     // renderer->set_size({10, 10});
 
     long double delta_added = 0;
 
-    // OddityEngine::Util::Time::set_framerate(180);
+    OddityEngine::Util::Time::set_framerate(10);
 
     OddityEngine::NeuralNetwork::Trainer trainer(10, 10, 0.01, 0.01);
 
@@ -132,7 +135,7 @@ int main(int argc, char* args[]) {
                     auto result = obj->closest({in[0], in[1], in[2]}, {in[3], in[4], in[5]}, {in[6], in[7], in[8]});
                     return OddityEngine::Vector<float>({result.x, result.y, result.z, result.w});
                 };
-                obj->net = trainer.train(obj->net, 1000, random_point, closest, 100);
+                obj->net = trainer.train(obj->net, 1000, random_point, closest);
             }
         });
     };

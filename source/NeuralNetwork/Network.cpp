@@ -70,6 +70,11 @@ namespace OddityEngine::NeuralNetwork {
         }
 
         std::cout << best_nets.scores()[0] << "\n";
+
+        if (std::isnan(best_nets.scores()[0]) || std::isinf(best_nets.scores()[0])) {
+            return nets;
+        }
+
         return best_nets.resize(nets.size());
     }
 

@@ -15,13 +15,13 @@ namespace OddityEngine::NeuralNetwork {
 
         Matrix<> weights;
         Vector<> bias;
-        Vector<size_t> functions;
+        Vector<Vector<size_t>> functions;
         Vector<> input;
         Vector<> output;
 
     public:
         Layer(const size_t input_count = 1, const size_t output_count = 1) : _input_size(input_count), _output_size(output_count), weights(output_count, input_count, default_weight), bias(output_count, default_bias), functions(output_count), input(input_count, 0), output(output_count, 0) {}
-        Layer(const Matrix<>& weights, const Vector<>& bias, const Vector<size_t>& functions) : _input_size(weights.size(1)), _output_size(weights.size(0)), weights(weights), bias(bias), functions(functions), input(weights.size(1), 0), output(weights.size(0), 0) {}
+        Layer(const Matrix<>& weights, const Vector<>& bias, const Vector<Vector<size_t>>& functions) : _input_size(weights.size(1)), _output_size(weights.size(0)), weights(weights), bias(bias), functions(functions), input(weights.size(1), 0), output(weights.size(0), 0) {}
         virtual ~Layer() = default;
 
         virtual void resize_input(const size_t size) {

@@ -15,21 +15,21 @@ float function(uint func, float x, float y) {
         case 1:
             return 1 / x;
         case 2:
-            return sqrt(x);
+            return sqrt(abs(x));
         case 3:
-            return x * x;
-        case 4:
-            return x * x * x;
-        case 5:
             return sin(x);
-        case 6:
+        case 4:
             return cos(x);
-        case 7:
+        case 5:
             return tanh(x);
-        case 8:
-            return 1 / (1 + exp(x));
-        case 9:
+        case 6:
             return x * y;
+        case 7:
+            return pow(x, 2);
+        case 8:
+            return pow(x, 3);
+        case 9:
+            return abs(x);
     }
     return x;
 }
@@ -65,11 +65,11 @@ float[MAX_THROUGHPUT] apply(uint net_start, float[MAX_THROUGHPUT] net_input) {
 
         uint function_layer_start = function_start + 2;
 
-        for (uint i = 0; i < nets[function_start + 1]; i += 3) {
-            uint x = i + 1;
-            uint y = i + 2;
-
-            throughput[x] = function(i, throughput[x], throughput[y]);
+        for (uint x = 0; x < nets[function_start + 1]; x++) {
+            for (uint y = 0; y < nets[function_layer_start + 1]; y += 2) {
+                throughput[x] = function(uint(nets[function_layer_start + 2 + y]), throughput[x], throughput[uint(nets[function_layer_start + 2 + y + 1])]);
+            }
+            function_layer_start = function_layer_start + uint(nets[function_layer_start]);
         }
 
         net_input = throughput;
