@@ -8,12 +8,14 @@
 const uint SHOW = 1 << 1;
 const uint HIT = 1 << 2;
 const uint MOVE = 1 << 3;
+const uint CLIP = 1 << 4;
+const uint CONNECTED = 1 << 5;
 
 //SHAPE
 const uint SHAPE_SPHERE = 0;
 const uint SHAPE_NETWORK = 1;
 
-shared struct Object {
+struct Object {
     vec4 position;
     vec4 velocity;
     vec4 acceleration;
@@ -32,10 +34,13 @@ shared struct Object {
     uint shape;
 
     uint net_index;
+
+    uint prev;
+    uint next;
 };
 
 Object make_empty_object() {
-    return Object(vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), float[10](0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 0, 0, 0, 0, 0, 0);
+    return Object(vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), float[10](0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 layout(std140, std430, binding = OBJECT) buffer object_buffer {
@@ -79,7 +84,6 @@ vec4 closest(vec3 point, uint obj) {
         case SHAPE_NETWORK:
             return closest_network(point, obj);
     }
-
 }
 
 vec4 closest_point(vec3 point, uint obj) {
@@ -111,4 +115,8 @@ vec4 trace(vec3 point, vec3 dir, uint max_steps, uint obj) {
     }
 
     return min_diff + vec4(min_point - start_point, 0);
+}
+
+vec4 trace_point(vec3 point, vec3 dir, uint max_steps, uint obj) {
+    return trace(point, dir, max_steps, obj) + vec4(point, 0);
 }

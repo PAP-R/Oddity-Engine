@@ -20,6 +20,8 @@ set(GRAPHICS
         Util/Event_Poller.h
         Graphics/Render/ComputeRenderer.cpp
         Graphics/Render/ComputeRenderer.h
+        Graphics/Object.cpp
+        Graphics/Object.h
 )
 
 set(MATH

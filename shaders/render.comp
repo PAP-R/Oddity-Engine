@@ -81,6 +81,49 @@ void draw_world_line(vec3 start, vec3 end) {
 
 float line_step = 0.01;
 
+void draw(uint obj) {
+    uint steps = 64;
+    float step_size = 2 * PI / steps;
+
+    vec3 center_dir = objects[obj].position.xyz - camera_pos.xyz;
+    vec4 result = trace(camera_pos.xyz, center_dir, 2, gl_WorkGroupID.x);
+    draw_relative_point(result.xyz, vec4(hsv2rgb(vec3(mod(result.w * gl_WorkGroupID.x / gl_NumWorkGroups.x, 1), 1, 1)), 1));
+
+    vec3 para = normalize(cross(center_dir, UP));
+    vec3 patam = normalize(cross(center_dir, para));
+
+    for (float i = 0; i < 2 * PI; i += step_size) {
+
+        float dist = length(center_dir);
+
+        for (uint s = 0; s < 10; s++) {
+
+            vec3 spup = normalize((para) * sin(i) + (patam) * cos(i));
+            vec4 resulte = closest_point(spup + objects[obj].position.xyz, obj);
+//            vec4 resulte = trace_point(camera_pos.xyz, spup + objects[obj].position.xyz, 2, obj);
+
+            dist -= resulte.w / 2;
+
+            draw_world_point(resulte.xyz, vec4(hsv2rgb(vec3(float(obj) / gl_NumWorkGroups.x, 1, 1)), 1));
+        }
+
+        //            vec3 dir = normalize(center_dir + FRONT + (TO_RIGHT) * sin(i) + (TO_UP) * cos(i));
+        //            result = trace(camera_pos.xyz, dir, 4, gl_WorkGroupID.x);
+        //
+        //            draw_relative_point(result.xyz, vec4(hsv2rgb(vec3(mod(length(result.xyz) / length(center_dir), 1), 0.5, 1)), 1));
+
+    }
+
+}
+
+void draw_connection(uint start, uint end) {
+    uint count = end - start + 1;
+    for (uint i = 0; i < count; i++) {
+        draw(start + i);
+        draw_world_line(objects[start + i].position.xyz, objects[start + (i + 1) % count].position.xyz);
+    }
+}
+
 void main() {
     if (gl_WorkGroupID.x == 0 && gl_WorkGroupID.y == 0 && gl_WorkGroupID.z == 0) {
         draw_relative_point(LEFT, vec4(0, 1, 1, 1));
@@ -95,35 +138,18 @@ void main() {
     uint other = gl_WorkGroupID.y;
 
     if (self == other && (objects[self].state & SHOW) != 0) {
-        uint steps = 64;
-        float step_size = 2 * PI / steps;
+        if ((objects[self].state & CONNECTED) != 0) {
+            if (objects[self].prev == self) {
+                uint end = self;
+                while (objects[end].next != end) {
+                    end = objects[end].next;
+                }
 
-        vec3 center_dir = objects[self].position.xyz - camera_pos.xyz;
-        vec4 result = trace(camera_pos.xyz, center_dir, 2, gl_WorkGroupID.x);
-        draw_relative_point(result.xyz, vec4(hsv2rgb(vec3(mod(result.w * gl_WorkGroupID.x / gl_NumWorkGroups.x, 1), 1, 1)), 1));
-
-        vec3 para = normalize(cross(center_dir, UP));
-        vec3 patam = normalize(cross(center_dir, para));
-
-        for (float i = 0; i < 2 * PI; i += step_size) {
-
-            float dist = length(center_dir);
-
-            for (uint s = 0; s < 10; s++) {
-
-                vec3 spup = normalize((para) * sin(i) + (patam) * cos(i));
-                vec4 resulte = closest_point(spup + objects[self].position.xyz, self);
-
-                dist -= resulte.w / 2;
-
-                draw_world_point(resulte.xyz, vec4(hsv2rgb(vec3(float(self) / gl_NumWorkGroups.x, 1, 1)), 1));
+                draw_connection(self, end);
             }
-
-//            vec3 dir = normalize(center_dir + FRONT + (TO_RIGHT) * sin(i) + (TO_UP) * cos(i));
-//            result = trace(camera_pos.xyz, dir, 4, gl_WorkGroupID.x);
-//
-//            draw_relative_point(result.xyz, vec4(hsv2rgb(vec3(mod(length(result.xyz) / length(center_dir), 1), 0.5, 1)), 1));
-
+        }
+        else {
+            draw(self);
         }
     }
 

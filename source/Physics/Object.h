@@ -4,7 +4,12 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+
+#include <map>
+
 #include <NeuralNetwork/Network.h>
+
+#include "Graphics/Buffer/Buffer.h"
 
 namespace OddityEngine::Physics {
     enum STATES {
@@ -12,6 +17,13 @@ namespace OddityEngine::Physics {
         SHOW = 1 << 1,
         HIT = 1 << 2,
         MOVE = 1 << 3,
+        CLIP = 1 << 4,
+        CONNECTED = 1 << 5,
+    };
+
+    enum SHAPES {
+        SPHERE,
+        NETWORK,
     };
 
     struct alignas(16) Object_struct {
@@ -29,22 +41,37 @@ namespace OddityEngine::Physics {
 
         float mass = 1;
         float restitution = 1;
-        GLuint state = SHOW;
+        GLuint state = SHOW | MOVE | CLIP;
+        GLuint shape = SPHERE;
         GLuint network_index = 0;
+
+        GLuint prev_index = 0;
+        GLuint next_index = 0;
     };
 
     struct Object : public Object_struct {
+        Object* parent = nullptr;
+        Object* prev = nullptr;
+        Object* next = nullptr;
+
+        std::map<void*, GLuint> buffer_indices;
+
         glm::quat orientation = {1, 0, 0, 0};
 
         Vector<NeuralNetwork::Network> net = Vector<NeuralNetwork::Network>(10, NeuralNetwork::Network(9, 4));
+        Vector<Object*> conections;
 
         virtual ~Object() = default;
 
         explicit Object(glm::vec3 position = {0, 0, 0}, glm::vec3 angle = {0, 0, 0});
 
         virtual bool update();
+        virtual bool update(void* context);
 
         void normalize();
+
+        void set_next(Object* next);
+        void set_prev(Object* prev);
 
         glm::vec3 front();
         glm::vec3 right();

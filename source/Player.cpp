@@ -128,6 +128,11 @@ bool Player::update() {
     return true;
 }
 
+bool Player::update(void* context) {
+    update();
+    return Object::update(context);
+}
+
 glm::vec4 Player::closest(const glm::vec3 point) {
     const glm::vec3 pa = point - glm::vec3(position);
     const glm::vec3 ba = camera_shift - glm::vec3(position);

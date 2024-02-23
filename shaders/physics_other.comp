@@ -30,7 +30,7 @@ void main() {
     reset(self_write);
     reset(other_write);
 
-    if (self < other && (objects[self].state & MOVE) > 0 && (objects[other].state & MOVE) > 0) {
+    if (self < other && (objects[self].state & CLIP) > 0 && (objects[other].state & CLIP) > 0) {
         vec3 inner = objects[other].position.xyz - objects[self].position.xyz;
         vec3 outer = closest_point(objects[self].position.xyz, other).xyz - closest_point(objects[other].position.xyz, self).xyz;
 

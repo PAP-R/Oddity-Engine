@@ -5,10 +5,11 @@
 namespace OddityEngine::Physics {
     void World::update() {
         for (auto o : objects) {
-            if (!o->update()) {
+            if (!o->update(this)) {
                 remove_object(o);
             }
         }
+
         time_delta = Util::Time::delta<float>();
 
         physics_buffer.set(0, this);
@@ -86,11 +87,13 @@ namespace OddityEngine::Physics {
     }
 
     void World::add_object(Object* object) {
+        object->buffer_indices.insert(std::make_pair(this, objects.size()));
         objects.push_back(object);
         update_networks();
     }
 
     void World::remove_object(Object* object) {
+        object->buffer_indices.erase(this);
         objects.erase(std::remove(objects.begin(), objects.end(), object));
         update_networks();
     }

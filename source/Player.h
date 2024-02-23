@@ -18,6 +18,7 @@ public:
     void event(const SDL_Event& event) override;
 
     bool update() override;
+    bool update(void* context) override;
 
     OddityEngine::Graphics::Camera* camera;
     glm::vec3 camera_shift = {0, 0, 5};
