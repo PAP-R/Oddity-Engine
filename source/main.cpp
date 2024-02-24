@@ -25,8 +25,6 @@ using namespace std::chrono_literals;
 int main(int argc, char* args[]) {
     OddityEngine::init();
 
-    std::cout << SteamFriends()->GetPersonaName() << std::endl;
-
     auto window = OddityEngine::Graphics::Window("Hallo", 800, 600, SDL_WINDOW_RESIZABLE);
 
     OddityEngine::Graphics::Scene scene;
@@ -44,6 +42,8 @@ int main(int argc, char* args[]) {
 
     player.radius = 1;
     player.mass = 1;
+
+    player.camera->fov = 100;
 
     // player.state &= ~OddityEngine::Physics::SHOW;
 
@@ -84,7 +84,7 @@ int main(int argc, char* args[]) {
     OddityEngine::Vector<OddityEngine::Physics::Object*> balls;
 
     int round = 8;
-    float height = 1;
+    float height = 10;
     float width = 6;
     float layer_width = 2;
     int count = round * 1;

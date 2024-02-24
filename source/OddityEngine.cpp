@@ -10,18 +10,18 @@
 
 namespace OddityEngine {
     void init() {
-        if(SteamAPI_RestartAppIfNecessary(360)) {
-            exit(0);
-        }
-        if(!SteamAPI_Init()) {
-            Debug::error("Failed to initialize Steam API");
-        }
+        // if(SteamAPI_RestartAppIfNecessary(360)) {
+        //     exit(0);
+        // }
+        // if(!SteamAPI_Init()) {
+        //     Debug::error("Failed to initialize Steam API");
+        // }
         Graphics::init();
     }
 
     void terminate() {
         Graphics::terminate();
-        SteamAPI_Shutdown();
+        // SteamAPI_Shutdown();
     }
 
     bool update() {

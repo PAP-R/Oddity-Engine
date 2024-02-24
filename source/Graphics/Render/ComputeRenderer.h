@@ -9,7 +9,7 @@ namespace OddityEngine::Graphics::Render {
     struct alignas(16) render_struct {
         glm::vec4 camera_pos;
         glm::mat4 render_vp;
-        glm::vec2 view_size;
+        glm::ivec2 view_size;
         GLuint layer;
     };
 
