@@ -104,6 +104,12 @@ void draw_arc(ivec2 start, ivec2 start_dir, ivec2 end, ivec2 end_dir) {
     float dist = distance(start, end);
     vec2 dir = normalize(vec2(end - start));
 
+    for (float t = 0; t <= 1; t += 0.02) {
+        draw_point(ivec2(((1 - t) * ((1 - t) * start + (start_dir * t)) + t * (t * end + ((1 - t) * end_dir)))), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
+        ivec2 point = ivec2((1 - t) * ((1 - t) * start + 0 * start_dir) + t * (t * end + (0) * end_dir));
+        draw_point(point, vec4(hsv2rgb(vec3(t, 0, 1)), 1));
+    }
+
 //    vec2 center = (start + end) / 2 + normalize(cross(start_dir, end_dir)) * distance(start, end) / 2;
 
     for (float t = 0; t <= 1; t += 0.01) {
@@ -246,6 +252,8 @@ void main() {
         draw_line(LEFT_PIXEL, DOWN_PIXEL);
         draw_line(LEFT_PIXEL, UP_PIXEL);
         draw_line(RIGHT_PIXEL, DOWN_PIXEL);
+        draw_arc(LEFT_PIXEL, ivec2(0, -1), DOWN_PIXEL, ivec2(-1, 0));
+        draw_line(DOWN_PIXEL, RIGHT_PIXEL);
         draw_line(RIGHT_PIXEL, UP_PIXEL);
 
         draw_line(ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y), ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y));
