@@ -45,7 +45,7 @@ ivec2 dir_to_pixel(vec3 dir) {
 
     if (!(dot(cross(LEFT_DIR, dir), cross(LEFT_DIR, RIGHT_DIR)) >= 0 && dot(cross(RIGHT_DIR, dir), cross(RIGHT_DIR, LEFT_DIR)) >= 0)) {
         if (result.x < (view_size.x / 2)) {
-            result.x = 2 * LEFT_PIXEL.x - result.x;
+            result.x = LEFT_PIXEL.x - result.x;
         }
         else {
             result.x = 2 * RIGHT_PIXEL.x - result.x;
@@ -104,15 +104,39 @@ void draw_arc(ivec2 start, ivec2 start_dir, ivec2 end, ivec2 end_dir) {
     float dist = distance(start, end);
     vec2 dir = normalize(vec2(end - start));
 
-    for (float t = 0; t <= 1; t += 0.025) {
-        draw_point(ivec2((start + start_dir * (1 - t))), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
+//    vec2 center = (start + end) / 2 + normalize(cross(start_dir, end_dir)) * distance(start, end) / 2;
+
+    for (float t = 0; t <= 1; t += 0.01) {
         draw_point(ivec2((start + (dir * t * dist) + start_dir * (1 - t)) + (end_dir * t)), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
-        draw_point(ivec2((end + end_dir * t)), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
+        ivec2 point = ivec2((1 - t) * (start + t * start_dir) + t * (end + (1 - t) * end_dir));
+        draw_point(point, vec4(hsv2rgb(vec3(t, 1, 1)), 1));
     }
 }
 
 void draw_world_line(vec3 start, vec3 end) {
     draw_line(dir_to_pixel(start - camera_pos.xyz), dir_to_pixel(end - camera_pos.xyz));
+}
+
+void draw_world_arc(vec3 start, vec3 start_dir, vec3 end, vec3 end_dir) {
+    vec3 center = (start + end) / 2 + normalize(cross(start_dir, end_dir)) * distance(start, end) / 2;
+
+    float radius = distance(start, center);
+
+    float angle = acos(dot(normalize(start_dir), normalize(end_dir)));
+
+    vec3 last = start;
+
+    float step_size = 0.1;
+
+    for (float t = step_size; t <= 1; t += step_size) {
+        float current_angle = angle * t;
+
+        vec3 current = center + vec3(radius * cos(current_angle), radius * sin(current_angle), 0);
+
+        draw_world_line(last, current);
+
+        last = current;
+    }
 }
 
 float line_step = 0.01;
@@ -160,6 +184,8 @@ void draw_connection(uint start, uint end) {
     for (uint i = 0; i < count; i++) {
         draw(start + i, vec4(1));
         draw_world_line(objects[start + i].position.xyz, objects[start + (i + 1) % count].position.xyz);
+
+        draw_world_arc(objects[start + i].position.xyz, objects[start + i].velocity.xyz, objects[start + (i + 1) % count].position.xyz, objects[start + (i + 1) % count].velocity.xyz);
 
         center_dir += objects[start + i].position.xyz;
     }
@@ -212,9 +238,18 @@ void main() {
         draw_relative_point(FRONT_BASE, vec4(0, 1, 1, 1));
 
         draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - LEFT_PIXEL, DOWN_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - DOWN_PIXEL);
-        draw_line(DOWN_PIXEL, RIGHT_PIXEL);
+        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - LEFT_PIXEL, UP_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - UP_PIXEL);
+
+        draw_arc(RIGHT_PIXEL, ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y) - RIGHT_PIXEL, DOWN_PIXEL, ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y) - DOWN_PIXEL);
+        draw_arc(RIGHT_PIXEL, ivec2(RIGHT_PIXEL.x, UP_PIXEL.y) - RIGHT_PIXEL, UP_PIXEL, ivec2(RIGHT_PIXEL.x, UP_PIXEL.y) - UP_PIXEL);
+
+        draw_line(LEFT_PIXEL, DOWN_PIXEL);
+        draw_line(LEFT_PIXEL, UP_PIXEL);
+        draw_line(RIGHT_PIXEL, DOWN_PIXEL);
         draw_line(RIGHT_PIXEL, UP_PIXEL);
-        draw_line(UP_PIXEL, LEFT_PIXEL);
+
+        draw_line(ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y), ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y));
+        draw_line(ivec2(LEFT_PIXEL.x, UP_PIXEL.y), ivec2(RIGHT_PIXEL.x, UP_PIXEL.y));
     }
 
     uint self = gl_WorkGroupID.x;
