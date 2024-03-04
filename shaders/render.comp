@@ -101,13 +101,10 @@ void draw_line(ivec2 start, ivec2 end) {
 }
 
 void draw_arc(ivec2 start, ivec2 start_dir, ivec2 end, ivec2 end_dir) {
-    float dist = distance(start, end);
-    vec2 dir = normalize(vec2(end - start));
-
-    for (float t = 0; t <= 1; t += 0.025) {
-        draw_point(ivec2((start + start_dir * (1 - t))), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
-        draw_point(ivec2((start + (dir * t * dist) + start_dir * (1 - t)) + (end_dir * t)), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
-        draw_point(ivec2((end + end_dir * t)), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
+    for (float t = 0; t <= 1; t += 0.02) {
+        draw_point(ivec2(((1 - t) * ((1 - t) * start + (start_dir * t)) + t * (t * end + ((1 - t) * end_dir)))), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
+        ivec2 point = ivec2((1 - t) * ((1 - t) * start + 0 * start_dir) + t * (t * end + (0) * end_dir));
+        draw_point(point, vec4(hsv2rgb(vec3(t, 0, 1)), 1));
     }
 }
 
@@ -184,10 +181,10 @@ void draw_connection(uint start, uint end) {
 
     for (float i = 0; i < 2 * PI; i += step_size) {
 
-        float dist = 0.1;
+        float dist = -1;
 
         for (uint s = 0; s < 4; s++) {
-            vec3 trace_dir = normalize(center_dir * dist + UP_DIR * sin(i) + RIGHT_DIR * cos(i));
+            vec3 trace_dir = normalize(FRONT_DIR * dist + UP_DIR * sin(i) + RIGHT_DIR * cos(i));
             result = multi_trace(camera_pos.xyz, trace_dir, 5, start, end);
 
             if (result.w > 0) {
@@ -211,7 +208,7 @@ void main() {
         draw_relative_point(FRONT, vec4(0, 1, 1, 1));
         draw_relative_point(FRONT_BASE, vec4(0, 1, 1, 1));
 
-        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - LEFT_PIXEL, DOWN_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - DOWN_PIXEL);
+        draw_arc(LEFT_PIXEL, ivec2(0, -1), DOWN_PIXEL, ivec2(-1, 0));
         draw_line(DOWN_PIXEL, RIGHT_PIXEL);
         draw_line(RIGHT_PIXEL, UP_PIXEL);
         draw_line(UP_PIXEL, LEFT_PIXEL);
