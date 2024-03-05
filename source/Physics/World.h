@@ -9,9 +9,6 @@
 
 namespace OddityEngine::Physics {
     struct alignas(16) Physics {
-        glm::vec4 gravity = {0, -9.81, 0, 1};
-        float air_density = 1;
-        float ground_height = 0;
         float time_delta;
     };
 

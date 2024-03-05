@@ -70,7 +70,8 @@ vec3 pixel_to_dir(ivec2 pixel) {
     return normalize(LEFT + TO_RIGHT * ratio.x + DOWN + TO_UP * ratio.y);
 }
 
-vec3 hsv2rgb(vec3 c) {
+vec3 hsv2rgb(float h, float s, float v) {
+    vec3 c = vec3(h, s, v);
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
@@ -96,7 +97,7 @@ void draw_line(ivec2 start, ivec2 end) {
     vec2 dir = normalize(vec2(end - start));
 
     for (float i = 0; i < dist; i++) {
-        draw_point(start + ivec2(dir * i), vec4(hsv2rgb(vec3(i / dist, 1, 1)), 1));
+        draw_point(start + ivec2(dir * i), vec4(hsv2rgb(i / dist, 1, 1), 1));
     }
 }
 
@@ -105,17 +106,17 @@ void draw_arc(ivec2 start, ivec2 start_dir, ivec2 end, ivec2 end_dir) {
     vec2 dir = normalize(vec2(end - start));
 
     for (float t = 0; t <= 1; t += 0.02) {
-        draw_point(ivec2(((1 - t) * ((1 - t) * start + (start_dir * t)) + t * (t * end + ((1 - t) * end_dir)))), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
+        draw_point(ivec2(((1 - t) * ((1 - t) * start + (start_dir * t)) + t * (t * end + ((1 - t) * end_dir)))), vec4(hsv2rgb(t, 1, 1), 1));
         ivec2 point = ivec2((1 - t) * ((1 - t) * start + 0 * start_dir) + t * (t * end + (0) * end_dir));
-        draw_point(point, vec4(hsv2rgb(vec3(t, 0, 1)), 1));
+        draw_point(point, vec4(hsv2rgb(t, 0, 1), 1));
     }
 
 //    vec2 center = (start + end) / 2 + normalize(cross(start_dir, end_dir)) * distance(start, end) / 2;
 
     for (float t = 0; t <= 1; t += 0.01) {
-        draw_point(ivec2((start + (dir * t * dist) + start_dir * (1 - t)) + (end_dir * t)), vec4(hsv2rgb(vec3(t, 1, 1)), 1));
+        draw_point(ivec2((start + (dir * t * dist) + start_dir * (1 - t)) + (end_dir * t)), vec4(hsv2rgb(t, 1, 1), 1));
         ivec2 point = ivec2((1 - t) * (start + t * start_dir) + t * (end + (1 - t) * end_dir));
-        draw_point(point, vec4(hsv2rgb(vec3(t, 1, 1)), 1));
+        draw_point(point, vec4(hsv2rgb(t, 1, 1), 1));
     }
 }
 
@@ -160,25 +161,38 @@ void draw(uint obj, vec4 color) {
 
     for (float i = 0; i < 2 * PI; i += step_size) {
 
-        float dist = length(center_dir);
+        vec3 trace_dir = normalize(normalize(center_dir) + UP_DIR * sin(i) + RIGHT_DIR * cos(i));
 
-        for (uint s = 0; s < 10; s++) {
+        for (uint s = 0; s < 4; s++) {
+            result = trace(camera_pos.xyz, trace_dir, 5, obj);
 
-            vec3 spup = normalize((para) * sin(i) + (patam) * cos(i));
-            vec4 resulte = closest_point(spup + objects[obj].position.xyz, obj);
-//            vec4 resulte = trace_point(camera_pos.xyz, spup + objects[obj].position.xyz, 2, obj);
+            draw_relative_point(result.xyz, vec4(hsv2rgb(result.w, 1, 1), 1));
 
-            dist -= resulte.w / 2;
-
-            draw_world_point(resulte.xyz, color);
+            trace_dir += result.xyz * 0.1;
         }
-
-        //            vec3 dir = normalize(center_dir + FRONT + (TO_RIGHT) * sin(i) + (TO_UP) * cos(i));
-        //            result = trace(camera_pos.xyz, dir, 4, gl_WorkGroupID.x);
-        //
-        //            draw_relative_point(result.xyz, vec4(hsv2rgb(vec3(mod(length(result.xyz) / length(center_dir), 1), 0.5, 1)), 1));
-
     }
+
+//    for (float i = 0; i < 2 * PI; i += step_size) {
+//
+//        float dist = length(center_dir);
+//
+//        for (uint s = 0; s < 10; s++) {
+//
+//            vec3 spup = normalize((para) * sin(i) + (patam) * cos(i));
+//            vec4 resulte = closest_point(spup + objects[obj].position.xyz, obj);
+////            vec4 resulte = trace_point(camera_pos.xyz, spup + objects[obj].position.xyz, 2, obj);
+//
+//            dist -= resulte.w / 2;
+//
+//            draw_world_point(resulte.xyz, color);
+//        }
+//
+//        //            vec3 dir = normalize(center_dir + FRONT + (TO_RIGHT) * sin(i) + (TO_UP) * cos(i));
+//        //            result = trace(camera_pos.xyz, dir, 4, gl_WorkGroupID.x);
+//        //
+//        //            draw_relative_point(result.xyz, vec4(hsv2rgb(mod(length(result.xyz) / length(center_dir), 1), 0.5, 1)), 1));
+//
+//    }
 
 }
 
@@ -188,10 +202,11 @@ void draw_connection(uint start, uint end) {
     vec3 center_dir;
 
     for (uint i = 0; i < count; i++) {
-        draw(start + i, vec4(1));
-        draw_world_line(objects[start + i].position.xyz, objects[start + (i + 1) % count].position.xyz);
+//        draw_world_line(objects[start + i].position.xyz, objects[start + (i + 1) % count].position.xyz);
+//
+//        draw_world_arc(objects[start + i].position.xyz, objects[start + i].velocity.xyz, objects[start + (i + 1) % count].position.xyz, objects[start + (i + 1) % count].velocity.xyz);
 
-        draw_world_arc(objects[start + i].position.xyz, objects[start + i].velocity.xyz, objects[start + (i + 1) % count].position.xyz, objects[start + (i + 1) % count].velocity.xyz);
+        draw(start + i, vec4(hsv2rgb(float(i) / count, 1, 1), 1));
 
         center_dir += objects[start + i].position.xyz;
     }
@@ -216,20 +231,14 @@ void draw_connection(uint start, uint end) {
 
     for (float i = 0; i < 2 * PI; i += step_size) {
 
-        float dist = 0.1;
+        vec3 trace_dir = normalize(UP_DIR * sin(i) + RIGHT_DIR * cos(i));
 
         for (uint s = 0; s < 4; s++) {
-            vec3 trace_dir = normalize(center_dir * dist + UP_DIR * sin(i) + RIGHT_DIR * cos(i));
             result = multi_trace(camera_pos.xyz, trace_dir, 5, start, end);
 
-            if (result.w > 0) {
-                dist += result.w * 0.1;
-            }
-            else {
-                dist -= 1;
-            }
+            draw_relative_point(result.xyz, vec4(hsv2rgb(result.w, 1, 1), 1));
 
-            draw_relative_point(result.xyz, vec4(hsv2rgb(vec3(result.w, 1, 1)), 1));
+            trace_dir += result.xyz * 0.1;
         }
     }
 }
@@ -243,21 +252,21 @@ void main() {
         draw_relative_point(FRONT, vec4(0, 1, 1, 1));
         draw_relative_point(FRONT_BASE, vec4(0, 1, 1, 1));
 
-        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - LEFT_PIXEL, DOWN_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - DOWN_PIXEL);
-        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - LEFT_PIXEL, UP_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - UP_PIXEL);
-
-        draw_arc(RIGHT_PIXEL, ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y) - RIGHT_PIXEL, DOWN_PIXEL, ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y) - DOWN_PIXEL);
-        draw_arc(RIGHT_PIXEL, ivec2(RIGHT_PIXEL.x, UP_PIXEL.y) - RIGHT_PIXEL, UP_PIXEL, ivec2(RIGHT_PIXEL.x, UP_PIXEL.y) - UP_PIXEL);
-
-        draw_line(LEFT_PIXEL, DOWN_PIXEL);
-        draw_line(LEFT_PIXEL, UP_PIXEL);
-        draw_line(RIGHT_PIXEL, DOWN_PIXEL);
-        draw_arc(LEFT_PIXEL, ivec2(0, -1), DOWN_PIXEL, ivec2(-1, 0));
-        draw_line(DOWN_PIXEL, RIGHT_PIXEL);
-        draw_line(RIGHT_PIXEL, UP_PIXEL);
-
-        draw_line(ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y), ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y));
-        draw_line(ivec2(LEFT_PIXEL.x, UP_PIXEL.y), ivec2(RIGHT_PIXEL.x, UP_PIXEL.y));
+//        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - LEFT_PIXEL, DOWN_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - DOWN_PIXEL);
+//        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - LEFT_PIXEL, UP_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - UP_PIXEL);
+//
+//        draw_arc(RIGHT_PIXEL, ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y) - RIGHT_PIXEL, DOWN_PIXEL, ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y) - DOWN_PIXEL);
+//        draw_arc(RIGHT_PIXEL, ivec2(RIGHT_PIXEL.x, UP_PIXEL.y) - RIGHT_PIXEL, UP_PIXEL, ivec2(RIGHT_PIXEL.x, UP_PIXEL.y) - UP_PIXEL);
+//
+//        draw_line(LEFT_PIXEL, DOWN_PIXEL);
+//        draw_line(LEFT_PIXEL, UP_PIXEL);
+//        draw_line(RIGHT_PIXEL, DOWN_PIXEL);
+//        draw_arc(LEFT_PIXEL, ivec2(0, -1), DOWN_PIXEL, ivec2(-1, 0));
+//        draw_line(DOWN_PIXEL, RIGHT_PIXEL);
+//        draw_line(RIGHT_PIXEL, UP_PIXEL);
+//
+//        draw_line(ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y), ivec2(RIGHT_PIXEL.x, DOWN_PIXEL.y));
+//        draw_line(ivec2(LEFT_PIXEL.x, UP_PIXEL.y), ivec2(RIGHT_PIXEL.x, UP_PIXEL.y));
     }
 
     uint self = gl_WorkGroupID.x;
@@ -275,7 +284,7 @@ void main() {
             }
         }
         else {
-            draw(self, vec4(hsv2rgb(vec3(float(self) / gl_NumWorkGroups.x, 1, 1)), 1));
+            draw(self, vec4(hsv2rgb(float(self) / gl_NumWorkGroups.x, 1, 1), 1));
         }
     }
 

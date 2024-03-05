@@ -1,4 +1,5 @@
-#define G 0.0001
+#define G 6.6743E-11
+
 #define TOLERANCE 1E-3
 
 #define PI 3.1415926535897932384626433832795

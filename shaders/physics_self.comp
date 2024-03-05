@@ -9,58 +9,46 @@ void main() {
 
     objects[self].state &= ~HIT;
 
-    bool on_ground = (length(objects[self].position.xyz * normalize(gravity.xyz)) - objects[self].radius) <= ground_height;
+    if ((objects[self].state & MOVE) != 0) {
 
-    if (on_ground) {
-        objects[self].position.xyz -= (ground_height - (length(objects[self].position.xyz * normalize(gravity.xyz)) - objects[self].radius)) * normalize(gravity.xyz);
+        float Air_Density = 1;
+
+        vec3 v = objects[self].velocity.xyz;
+        float Cd = 5;
+
+        float A = PI * pow(objects[self].radius, 2);
+
+        vec3 D = Cd * ((Air_Density * v * abs(v)) / 2) * A;
+
+        vec3 acceleration = - D;
+
+        //    objects[self].test_value[0] = acceleration.y; //TODO
+        //    objects[self].test_value[1] = D.y; //TODO
+        //    objects[self].test_value[2] = W.y; //TODO
+        //    objects[self].test_value[3] = A; //TODO
+        //    objects[self].test_value[4] = v.y; //TODO
+        //    objects[self].test_value[5] = (Air_Density * v * abs(v)).y; //TODO
+        //    objects[self].test_value[6] = Cd * (Air_Density * v * abs(v)).y; //TODO
+        //    objects[self].test_value[7] = (Cd * ((Air_Density * v * abs(v)) / 2) * A).y; //TODO
+        objects[self].test_value[0] = 0;//TODO
+        objects[self].test_value[1] = 0;//TODO
+        objects[self].test_value[2] = 0;//TODO
+
+
+        //    if (!on_ground && objects[self].mass > 0 && length(gravity.xyz) != 0) {
+        //        acceleration *= (normalize(gravity.xyz)) / objects[self].mass;
+        //    }
+
+        objects[self].acceleration.xyz += acceleration;
+
+        objects[self].velocity.xyz += objects[self].acceleration.xyz * time_delta * 0.5;
+        objects[self].position.xyz = objects[self].position.xyz + objects[self].velocity.xyz * time_delta;
+        objects[self].velocity.xyz += objects[self].acceleration.xyz * time_delta * 0.5;
+
+        objects[self].angle_velocity.xyz += objects[self].angle_acceleration.xyz * time_delta * 0.5;
+        objects[self].angle.xyz += objects[self].angle_velocity.xyz * time_delta;
+        objects[self].angle_velocity.xyz += objects[self].angle_acceleration.xyz * time_delta * 0.5;
     }
-
-    vec3 g = gravity.xyz;
-
-    if (on_ground) {
-        g *= 0;
-    }
-
-    vec3 v = objects[self].velocity.xyz;
-    float Cd = 5;
-
-    float A = PI * pow(objects[self].radius, 2);
-
-    vec3 W = objects[self].mass * g;
-    vec3 D = Cd * ((Air_Density * v * abs(v)) / 2) * A;
-
-    vec3 acceleration = (W - D);
-
-    if (objects[self].mass != 0) {
-        acceleration /= objects[self].mass;
-    }
-
-//    objects[self].test_value[0] = acceleration.y; //TODO
-//    objects[self].test_value[1] = D.y; //TODO
-//    objects[self].test_value[2] = W.y; //TODO
-//    objects[self].test_value[3] = A; //TODO
-//    objects[self].test_value[4] = v.y; //TODO
-//    objects[self].test_value[5] = (Air_Density * v * abs(v)).y; //TODO
-//    objects[self].test_value[6] = Cd * (Air_Density * v * abs(v)).y; //TODO
-//    objects[self].test_value[7] = (Cd * ((Air_Density * v * abs(v)) / 2) * A).y; //TODO
-    objects[self].test_value[0] = 0; //TODO
-    objects[self].test_value[1] = 0; //TODO
-    objects[self].test_value[2] = 0; //TODO
-
-
-//    if (!on_ground && objects[self].mass > 0 && length(gravity.xyz) != 0) {
-//        acceleration *= (normalize(gravity.xyz)) / objects[self].mass;
-//    }
-
-    objects[self].acceleration.xyz += acceleration;
-
-    objects[self].velocity.xyz += objects[self].acceleration.xyz * time_delta * 0.5;
-    objects[self].position.xyz = objects[self].position.xyz + objects[self].velocity.xyz * time_delta;
-    objects[self].velocity.xyz += objects[self].acceleration.xyz * time_delta * 0.5;
-
-    objects[self].angle_velocity.xyz += objects[self].angle_acceleration.xyz * time_delta * 0.5;
-    objects[self].angle.xyz += objects[self].angle_velocity.xyz * time_delta;
-    objects[self].angle_velocity.xyz += objects[self].angle_acceleration.xyz * time_delta * 0.5;
 
     objects[self].acceleration.xyz = vec3(0);
 }

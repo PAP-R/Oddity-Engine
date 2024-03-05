@@ -34,18 +34,22 @@ namespace OddityEngine::Graphics {
     }
 
     auto create_gl_contextCurrent(SDL_Window* window) {
+        const auto context = SDL_GL_CreateContext(window);
+        SDL_GL_MakeCurrent(window, context);
+
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-        const auto context = SDL_GL_CreateContext(window);
-        SDL_GL_MakeCurrent(window, context);
+        glewExperimental = true;
 
-        if (glewInit() != GLEW_OK) {
+        auto glew_status = glewInit();
+
+        if (glew_status != GLEW_OK) {
+            std::cout << glewGetErrorString(glew_status);
             Debug::error("Failed to initialize GLEW");
         }
 
-        glewExperimental = true;
 
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_BLEND);

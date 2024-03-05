@@ -38,12 +38,14 @@ int main(int argc, char* args[]) {
 
     // renderer->set_size({11, 11});
 
-    player.position.z = 5;
+    player.position = glm::vec4(0, 5, 5, 1);
 
     player.radius = 1;
     player.mass = 1;
 
     player.camera->fov = 100;
+
+    player.state |= OddityEngine::Physics::MOVE | OddityEngine::Physics::CLIP;
 
     // player.state &= ~OddityEngine::Physics::SHOW;
 
@@ -57,6 +59,17 @@ int main(int argc, char* args[]) {
     renderer->world = &world;
 
     world.add_object(&player);
+
+    OddityEngine::Physics::Object earth({0, -6371000, 0});
+
+    earth.mass = 5.972E+24;
+    // earth.mass = 5.972E+22;
+    // earth.mass = 100;
+    earth.restitution = 1;
+    earth.radius = 6371000;
+    earth.state &= ~OddityEngine::Physics::MOVE;
+
+    world.add_object(&earth);
 
     OddityEngine::Physics::Object center_ball({0, 10, 0});
     OddityEngine::Physics::Object ball1({-10, 0, 0});
@@ -72,7 +85,7 @@ int main(int argc, char* args[]) {
 
     // center_ball.velocity.y = -10;
 
-    center_ball.mass = 100;
+    center_ball.mass = 1;
     center_ball.radius = 5;
     ball1.radius = 0.5;
     ball2.radius = 0.5;
@@ -87,7 +100,7 @@ int main(int argc, char* args[]) {
     float height = 10;
     float width = 6;
     float layer_width = 2;
-    int count = round * 1;
+    int count = round * 0;
 
     for (int i = 0; i < count; i++) {
         // balls.push_back(new OddityEngine::Physics::Object({(width + layer_width * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height, (width + layer_width * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round)}));
@@ -99,7 +112,7 @@ int main(int argc, char* args[]) {
 
         // balls.push_back(new OddityEngine::Physics::Object({(width + layer_width * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), (width + layer_width * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), 0}));
         balls.back()->radius = 1;
-        balls.back()->mass = 3;
+        balls.back()->mass = 1;
         // if (balls.back()->position.y > 0) {
         //     balls.back()->velocity.y = -1;
         // }
@@ -115,17 +128,14 @@ int main(int argc, char* args[]) {
         world.add_object(b);
     }
 
-    // world.gravity = glm::vec4(0);
-    // world.ground_height = -std::numeric_limits<float>::infinity();
-
     // renderer->set_size({10, 10});
 
-    long double delta_added = 0;
-
-    OddityEngine::Util::Time::set_framerate(240);
+    OddityEngine::Util::Time::set_framerate(20);
 
     do {
         world.update();
+        // OddityEngine::Debug::message("Ball Acc: [ {} | {} | {} ]", center_ball.acceleration.x, center_ball.acceleration.y, center_ball.acceleration.z);
+        OddityEngine::Debug::message("Acc: [ {} | {} | {} ]", player.acceleration.x, player.acceleration.y, player.acceleration.z);
     } while (OddityEngine::update());
 
     for (auto b : balls) {

@@ -1,9 +1,10 @@
 #include "Object.h"
 
 namespace OddityEngine::Physics {
-    Object::Object(glm::vec3 position, glm::vec3 angle) {
+    Object::Object(glm::vec3 position, glm::vec3 angle, SHAPES shape) {
         this->position = {position, 1};
         this->angle = {angle, 1};
+        this->shape = shape;
         normalize();
     }
 

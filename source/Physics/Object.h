@@ -24,9 +24,10 @@ namespace OddityEngine::Physics {
     enum SHAPES {
         SPHERE,
         NETWORK,
+        PLANE,
     };
 
-    struct alignas(16) Object_struct {
+    struct alignas(32) Object_struct {
         glm::vec4 position = {0, 0, 0, 1};
         glm::vec4 velocity = {0, 0, 0, 1};
         glm::vec4 acceleration = {0, 0, 0, 1};
@@ -42,6 +43,7 @@ namespace OddityEngine::Physics {
         float mass = 1;
         float restitution = 1;
         GLuint state = SHOW | MOVE | CLIP;
+
         GLuint shape = SPHERE;
         GLuint network_index = 0;
 
@@ -63,7 +65,7 @@ namespace OddityEngine::Physics {
 
         virtual ~Object() = default;
 
-        explicit Object(glm::vec3 position = {0, 0, 0}, glm::vec3 angle = {0, 0, 0});
+        explicit Object(glm::vec3 position = {0, 0, 0}, glm::vec3 angle = {0, 0, 0}, SHAPES shape = SPHERE);
 
         virtual bool update();
         virtual bool update(void* context);

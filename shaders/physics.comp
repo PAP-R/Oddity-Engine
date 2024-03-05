@@ -3,9 +3,6 @@
 #include <definitions.glsl>
 
 layout(std140, std430, binding = PHYSICS) buffer time_buffer {
-    vec4 gravity;
-    float Air_Density;
-    float ground_height;
     float time_delta;
 };
 

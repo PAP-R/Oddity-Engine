@@ -8,20 +8,29 @@
 #include <Util/Debug.h>
 #include "Util/Time.h"
 
+#define ODDITYENGINE_STEAM false
+
 namespace OddityEngine {
     void init() {
-        // if(SteamAPI_RestartAppIfNecessary(360)) {
-        //     exit(0);
-        // }
-        // if(!SteamAPI_Init()) {
-        //     Debug::error("Failed to initialize Steam API");
-        // }
+        if constexpr (ODDITYENGINE_STEAM) {
+            if(SteamAPI_RestartAppIfNecessary(360)) {
+                exit(0);
+            }
+
+            if(!SteamAPI_Init()) {
+                Debug::error("Failed to initialize Steam API");
+            }
+        }
+
+
         Graphics::init();
     }
 
     void terminate() {
         Graphics::terminate();
-        // SteamAPI_Shutdown();
+        if constexpr (ODDITYENGINE_STEAM) {
+            SteamAPI_Shutdown();
+        }
     }
 
     bool update() {

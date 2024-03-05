@@ -14,6 +14,7 @@ const uint CONNECTED = 1 << 5;
 //SHAPE
 const uint SHAPE_SPHERE = 0;
 const uint SHAPE_NETWORK = 1;
+const uint SHAPE_PLANE = 2;
 
 struct Object {
     vec4 position;
@@ -75,6 +76,10 @@ vec4 closest_network(vec3 point, uint obj) {
     return vec4(temp[0], temp[1], temp[2], temp[3]);
 }
 
+vec4 closest_plane(vec3 point, uint obj) {
+    return vec4(0, objects[obj].position.y - point.y, 0, point.y - objects[obj].position.y);
+}
+
 vec4 closest(vec3 point, uint obj) {
     switch (objects[obj].shape) {
         default:
@@ -83,6 +88,8 @@ vec4 closest(vec3 point, uint obj) {
             return closest_sphere(point, obj);
         case SHAPE_NETWORK:
             return closest_network(point, obj);
+        case SHAPE_PLANE:
+            return closest_plane(point, obj);
     }
 }
 
