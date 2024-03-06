@@ -14,54 +14,70 @@ layout(std140, std430, binding = RENDER) buffer render_buffer {
     uint layer;
 };
 
-vec3 FRONT_BASE = normalize(vec3(0, 0, -1));
-vec3 LEFT = ((vp * vec4(normalize(vec3(-1, 0, 0) + FRONT_BASE), 1)).xyz);
-vec3 LEFT_DIR = normalize(LEFT);
 
-vec3 RIGHT = ((vp * vec4(normalize(vec3(1, 0, 0) + FRONT_BASE), 1)).xyz);
-vec3 RIGHT_DIR = normalize(RIGHT);
+vec3 projection(vec3 a, vec3 b) {
+    return dot(a, normalize(b)) * b;
+}
 
-vec3 TO_RIGHT = RIGHT - LEFT;
-vec3 DOWN = ((vp * vec4(normalize(vec3(0, -1, 0) + FRONT_BASE), 1)).xyz);
-vec3 DOWN_DIR = normalize(DOWN);
+vec3 rejection(vec3 a, vec3 b) {
+    return a - projection(a, b);
+}
 
-vec3 UP = ((vp * vec4(normalize(vec3(0, 1, 0) + FRONT_BASE), 1)).xyz);
-vec3 UP_DIR = normalize(UP);
+vec3 rejection_flat(vec3 a, vec3 b) {
+    b = normalize(b);
+    return rejection(a, b) / length(projection(a, b));
+}
 
-vec3 TO_UP = UP - DOWN;
-vec3 FRONT = ((vp * vec4(FRONT_BASE, 1)).xyz);
-vec3 FRONT_DIR = normalize(FRONT);
 
-ivec2 LEFT_PIXEL = ivec2(vec2(dot((LEFT_DIR - LEFT), normalize(TO_RIGHT)) / length(TO_RIGHT), dot((LEFT_DIR - DOWN), normalize(TO_UP)) / length(TO_UP)) * (view_size - ivec2(1)));
-ivec2 RIGHT_PIXEL = ivec2(vec2(dot((RIGHT_DIR - LEFT), normalize(TO_RIGHT)) / length(TO_RIGHT), dot((RIGHT_DIR - DOWN), normalize(TO_UP)) / length(TO_UP)) * (view_size - ivec2(1)));
-ivec2 DOWN_PIXEL = ivec2(vec2(dot((DOWN_DIR - LEFT), normalize(TO_RIGHT)) / length(TO_RIGHT), dot((DOWN_DIR - DOWN), normalize(TO_UP)) / length(TO_UP)) * (view_size - ivec2(1)));
-ivec2 UP_PIXEL = ivec2(vec2(dot((UP_DIR - LEFT), normalize(TO_RIGHT)) / length(TO_RIGHT), dot((UP_DIR - DOWN), normalize(TO_UP)) / length(TO_UP)) * (view_size - ivec2(1)));
+ivec2 view_center = view_size / 2;
+
+vec3 NORTH = normalize(vec3(0, 0, -1));
+vec4 FRONT_BASE = vp * vec4(NORTH, 1);
+vec3 FRONT = ((vp * vec4(NORTH, 1)).xyz);
+//vec3 FRONT = FRONT_BASE.xyz / FRONT_BASE.w;
+
+vec4 LEFT_BASE = vp * vec4(normalize(vec3(-1, 0, 0) + NORTH), 1);
+vec3 LEFT = normalize((vp * vec4(normalize(vec3(-1, 0, 0) + NORTH), 1)).xyz);
+//vec3 LEFT = LEFT_BASE.xyz / LEFT_BASE.w;
+vec3 TO_LEFT = rejection_flat(LEFT, FRONT);
+float LEFT_ANGLE = dot(LEFT, FRONT);
+
+vec4 RIGHT_BASE = vp * vec4(normalize(vec3(1, 0, 0) + NORTH), 1);
+vec3 RIGHT = normalize((vp * vec4(normalize(vec3(1, 0, 0) + NORTH), 1)).xyz);
+//vec3 RIGHT = RIGHT_BASE.xyz / RIGHT_BASE.w;
+vec3 TO_RIGHT = rejection_flat(RIGHT, FRONT);
+float RIGHT_ANGLE = dot(RIGHT, FRONT);
+
+vec4 DOWN_BASE = vp * vec4(normalize(vec3(0, -1, 0) + NORTH), 1);
+vec3 DOWN = normalize((vp * vec4(normalize(vec3(0, -1, 0) + NORTH), 1)).xyz);
+//vec3 DOWN = DOWN_BASE.xyz / DOWN_BASE.w;
+vec3 TO_DOWN = rejection_flat(DOWN, FRONT);
+float DOWN_ANGLE = dot(DOWN, FRONT);
+
+vec4 UP_BASE = vp * vec4(normalize(vec3(0, 1, 0) + NORTH), 1);
+vec3 UP = normalize((vp * vec4(normalize(vec3(0, 1, 0) + NORTH), 1)).xyz);
+//vec3 UP = UP_BASE.xyz / UP_BASE.w;
+vec3 TO_UP = rejection_flat(UP, FRONT);
+float UP_ANGLE = dot(UP, FRONT);
+
 
 ivec2 dir_to_pixel(vec3 dir) {
-    dir = normalize(dir);
-    vec2 ratio = vec2(dot((dir - LEFT), normalize(TO_RIGHT)) / length(TO_RIGHT), dot((dir - DOWN), normalize(TO_UP)) / length(TO_UP));
+    float center_angle = dot(dir, normalize(FRONT));
 
-    ivec2 result = ivec2(ratio * (view_size - ivec2(1)));
+    vec3 to_dir = rejection_flat(dir, FRONT);
 
-    if (!(dot(cross(LEFT_DIR, dir), cross(LEFT_DIR, RIGHT_DIR)) >= 0 && dot(cross(RIGHT_DIR, dir), cross(RIGHT_DIR, LEFT_DIR)) >= 0)) {
-        if (result.x < (view_size.x / 2)) {
-            result.x = LEFT_PIXEL.x - result.x;
-        }
-        else {
-            result.x = 2 * RIGHT_PIXEL.x - result.x;
-        }
-    }
-    if (!(dot(cross(DOWN_DIR, dir), cross(DOWN_DIR, UP_DIR)) >= 0 && dot(cross(UP_DIR, dir), cross(UP_DIR, DOWN_DIR)) >= 0)) {
-        if (result.y < (view_size.y / 2)) {
-            result.y = DOWN_PIXEL.y - result.y;
-        }
-        else {
-            result.y = 2 * UP_PIXEL.y - result.y;
-        }
+    vec3 dir_right = rejection(to_dir, normalize(TO_UP));
+    vec3 dir_up = rejection(to_dir, normalize(TO_RIGHT));
+
+    vec2 ratio = vec2(dot(dir_right, normalize(TO_RIGHT)) / length(TO_RIGHT), dot(dir_up, normalize(TO_UP)) / length(TO_UP));
+
+    ivec2 from_center = ivec2(ratio * view_center);
+
+    if (center_angle < 0) {
+        from_center += ivec2(sign(ratio) * view_center);
     }
 
-//    return ivec2(ratio * (view_size - ivec2(1)));
-    return result;
+    return view_center + from_center;
 }
 
 vec3 pixel_to_dir(ivec2 pixel) {
@@ -146,31 +162,59 @@ void draw_world_arc(vec3 start, vec3 start_dir, vec3 end, vec3 end_dir) {
     }
 }
 
+vec3 fibonacci_sphere(uint i, uint count) {
+    float phi = PI * (sqrt(5.) - 1.);
+
+    float y = 1 - (i / float(count - 1)) * 2;
+
+    float radius = sqrt(1 - y * y);
+
+    float theta = phi * i;
+
+    float x = cos(theta) * radius;
+    float z = sin(theta) * radius;
+
+    return vec3(x, y, z);
+}
+
 float line_step = 0.01;
 
 void draw(uint obj, vec4 color) {
-    uint steps = 64;
-    float step_size = 2 * PI / steps;
+    uint point_count = uint(1000 * min(objects[obj].radius, 10));
 
-    vec3 center_dir = objects[obj].position.xyz - camera_pos.xyz;
-    vec4 result = trace(camera_pos.xyz, center_dir, 2, obj);
-    draw_relative_point(result.xyz, color);
 
-    vec3 para = normalize(cross(center_dir, UP));
-    vec3 patam = normalize(cross(center_dir, para));
 
-    for (float i = 0; i < 2 * PI; i += step_size) {
+    for (uint i = 0; i < point_count; i++) {
+        vec3 point = objects[obj].position.xyz + fibonacci_sphere(i, point_count) * objects[obj].radius;
 
-        vec3 trace_dir = normalize(normalize(center_dir) + UP_DIR * sin(i) + RIGHT_DIR * cos(i));
+//        vec4 result = trace_point(objects[obj].position.xyz, point, 5, obj);
 
-        for (uint s = 0; s < 4; s++) {
-            result = trace(camera_pos.xyz, trace_dir, 5, obj);
-
-            draw_relative_point(result.xyz, vec4(hsv2rgb(result.w, 1, 1), 1));
-
-            trace_dir += result.xyz * 0.1;
-        }
+        draw_world_point(point, vec4(hsv2rgb(i / float(point_count), 1, 1), 0.5));
     }
+
+
+//    uint steps = 64;
+//    float step_size = 2 * PI / steps;
+//
+//    vec3 center_dir = objects[obj].position.xyz - camera_pos.xyz;
+//    vec4 result = trace(camera_pos.xyz, center_dir, 2, obj);
+//    draw_relative_point(result.xyz, color);
+//
+//    vec3 para = normalize(cross(center_dir, UP));
+//    vec3 patam = normalize(cross(center_dir, para));
+//
+//    for (float i = 0; i < 2 * PI; i += step_size) {
+//
+//        vec3 trace_dir = normalize(FRONT + UP * sin(i) + RIGHT * cos(i));
+//
+//        for (uint s = 0; s < 4; s++) {
+//            result = trace(camera_pos.xyz, trace_dir, 5, obj);
+//
+//            draw_relative_point(result.xyz, vec4(hsv2rgb(result.w, 1, 1), 1));
+//
+//            trace_dir += result.xyz * 0.1;
+//        }
+//    }
 
 //    for (float i = 0; i < 2 * PI; i += step_size) {
 //
@@ -219,7 +263,7 @@ void draw_connection(uint start, uint end) {
 
     draw_relative_point(result.xyz, vec4(1));
 
-    result = multi_trace(camera_pos.xyz, FRONT_DIR, 5, start, end);
+    result = multi_trace(camera_pos.xyz, FRONT, 5, start, end);
 
     draw_relative_point(result.xyz, vec4(1));
 
@@ -231,7 +275,7 @@ void draw_connection(uint start, uint end) {
 
     for (float i = 0; i < 2 * PI; i += step_size) {
 
-        vec3 trace_dir = normalize(UP_DIR * sin(i) + RIGHT_DIR * cos(i));
+        vec3 trace_dir = normalize(UP * sin(i) + RIGHT * cos(i));
 
         for (uint s = 0; s < 4; s++) {
             result = multi_trace(camera_pos.xyz, trace_dir, 5, start, end);
@@ -250,7 +294,25 @@ void main() {
         draw_relative_point(DOWN, vec4(0, 1, 1, 1));
         draw_relative_point(UP, vec4(0, 1, 1, 1));
         draw_relative_point(FRONT, vec4(0, 1, 1, 1));
-        draw_relative_point(FRONT_BASE, vec4(0, 1, 1, 1));
+        draw_relative_point(NORTH, vec4(0, 1, 1, 1));
+
+        draw_line(view_center, view_center + ivec2(10, 0));
+        draw_line(view_center, view_center + ivec2(-10, 0));
+        draw_line(view_center, view_center + ivec2(0, 10));
+        draw_line(view_center, view_center + ivec2(0, -10));
+
+        float step_size = 0.1;
+
+        for (float t = 0; t < 1; t += step_size) {
+            draw_relative_point(FRONT + TO_LEFT * t, vec4(hsv2rgb(t, 1, 1), 1));
+            draw_relative_point(FRONT + TO_RIGHT * t, vec4(hsv2rgb(t, 1, 1), 1));
+            draw_relative_point(FRONT + TO_DOWN * t, vec4(hsv2rgb(t, 1, 1), 1));
+            draw_relative_point(FRONT + TO_UP * t, vec4(hsv2rgb(t, 1, 1), 1));
+        }
+
+        for (uint i = 0; i < 100; i++) {
+            draw_world_point(fibonacci_sphere(i, 100), vec4(hsv2rgb(i / 100., 1, 1), 1));
+        }
 
 //        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - LEFT_PIXEL, DOWN_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - DOWN_PIXEL);
 //        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - LEFT_PIXEL, UP_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - UP_PIXEL);

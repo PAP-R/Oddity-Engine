@@ -27,7 +27,7 @@ namespace OddityEngine::Physics {
         PLANE,
     };
 
-    struct alignas(32) Object_struct {
+    struct alignas(16) Object_struct {
         glm::vec4 position = {0, 0, 0, 1};
         glm::vec4 velocity = {0, 0, 0, 1};
         glm::vec4 acceleration = {0, 0, 0, 1};

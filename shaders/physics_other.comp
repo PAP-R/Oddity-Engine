@@ -53,20 +53,12 @@ void main() {
             vec3 dist = outer;
 
             if ((objects[self].state & MOVE) != 0) {
-                if ((objects[other].state & MOVE) != 0) {
-                    temp_objects[self_write].position.xyz = dist * (objects[other].mass / (objects[self].mass + objects[other].mass));
-                    temp_objects[self_write].velocity.xyz = - impulse * normal / objects[self].mass;
-
-                    temp_objects[other_write].position.xyz = -dist * (objects[self].mass / (objects[self].mass + objects[other].mass));
-                    temp_objects[other_write].velocity.xyz = + impulse * normal / objects[other].mass;
-                }
-                else {
-                    temp_objects[self_write].position.xyz = dist;
-                    temp_objects[self_write].velocity.xyz = - impulse * normal / objects[self].mass;
-                }
+                temp_objects[self_write].position.xyz = dist * (objects[other].mass / (objects[self].mass + objects[other].mass));
+                temp_objects[self_write].velocity.xyz = - impulse * normal / objects[self].mass;
             }
-            else if ((objects[other].state & MOVE) != 0) {
-                temp_objects[other_write].position.xyz = -dist;
+
+            if ((objects[other].state & MOVE) != 0) {
+                temp_objects[other_write].position.xyz = -dist * (objects[self].mass / (objects[self].mass + objects[other].mass));
                 temp_objects[other_write].velocity.xyz = + impulse * normal / objects[other].mass;
             }
 
@@ -76,10 +68,12 @@ void main() {
         else {
             if ((objects[self].state & MOVE) != 0) {
                 temp_objects[self_write].acceleration.xyz = G * normalize(inner) * objects[self].mass * objects[other].mass / pow(max(length(inner), 1), 2);
+//                temp_objects[self_write].acceleration.xyz = G * normalize(inner) * objects[other].mass / pow(max(length(inner), 1), 2);
             }
 
             if ((objects[other].state & MOVE) != 0) {
                 temp_objects[other_write].acceleration.xyz = -G * normalize(inner) * objects[self].mass * objects[other].mass / pow(max(length(inner), 1), 2);
+//                temp_objects[other_write].acceleration.xyz = -G * normalize(inner) * objects[self].mass / pow(max(length(inner), 1), 2);
             }
         }
     }

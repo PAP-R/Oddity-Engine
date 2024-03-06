@@ -131,8 +131,8 @@ vec4 multi_trace(vec3 point, vec3 dir, uint max_steps, uint start, uint end) {
     vec4 min_diff = current_diff;
 
     for (uint i = 0; i < max_steps; i++) {
-        float angle = dot(dir, current_diff.xyz);
-        if (angle > 0) {
+        float angle = dot(current_diff.xyz, dir);
+        if (angle > TOLERANCE) {
             point = point + dir * angle;
         }
         else {
@@ -141,10 +141,10 @@ vec4 multi_trace(vec3 point, vec3 dir, uint max_steps, uint start, uint end) {
 
         current_diff = multi_closest(point, 1, start, end);
 
-        if (0 <= current_diff.w && current_diff.w < min_diff.w) {
+        if (abs(current_diff.w) < abs(min_diff.w)) {
             min_point = point;
             min_diff = current_diff;
-            if (min_diff.w < TOLERANCE) {
+            if (abs(min_diff.w) < TOLERANCE) {
                 break;
             }
         }

@@ -42,10 +42,13 @@ int main(int argc, char* args[]) {
 
     player.radius = 1;
     player.mass = 1;
+    player.velocity.y = 10;
 
     player.camera->fov = 100;
 
     player.state |= OddityEngine::Physics::MOVE | OddityEngine::Physics::CLIP;
+
+    // player.state &= ~OddityEngine::Physics::SHOW;
 
     // player.state &= ~OddityEngine::Physics::SHOW;
 
@@ -60,13 +63,15 @@ int main(int argc, char* args[]) {
 
     world.add_object(&player);
 
-    OddityEngine::Physics::Object earth({0, -6371000, 0});
+    float earth_radius = 6371E+3;
+
+    OddityEngine::Physics::Object earth({0, -earth_radius, 0});
 
     earth.mass = 5.972E+24;
     // earth.mass = 5.972E+22;
     // earth.mass = 100;
     earth.restitution = 1;
-    earth.radius = 6371000;
+    earth.radius = earth_radius;
     earth.state &= ~OddityEngine::Physics::MOVE;
 
     world.add_object(&earth);
@@ -100,7 +105,7 @@ int main(int argc, char* args[]) {
     float height = 10;
     float width = 6;
     float layer_width = 2;
-    int count = round * 0;
+    int count = round * 6;
 
     for (int i = 0; i < count; i++) {
         // balls.push_back(new OddityEngine::Physics::Object({(width + layer_width * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height, (width + layer_width * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round)}));
@@ -124,7 +129,7 @@ int main(int argc, char* args[]) {
     }
 
     for (auto b : balls) {
-        OddityEngine::Debug::message("Connected? {}", (b->state & OddityEngine::Physics::CONNECTED));
+        // OddityEngine::Debug::message("Connected? {}", (b->state & OddityEngine::Physics::CONNECTED) != 0);
         world.add_object(b);
     }
 
@@ -135,7 +140,7 @@ int main(int argc, char* args[]) {
     do {
         world.update();
         // OddityEngine::Debug::message("Ball Acc: [ {} | {} | {} ]", center_ball.acceleration.x, center_ball.acceleration.y, center_ball.acceleration.z);
-        OddityEngine::Debug::message("Acc: [ {} | {} | {} ]", player.acceleration.x, player.acceleration.y, player.acceleration.z);
+        // OddityEngine::Debug::message("Acc: [ {} | {} | {} ]", player.acceleration.x, player.acceleration.y, player.acceleration.z);
     } while (OddityEngine::update());
 
     for (auto b : balls) {

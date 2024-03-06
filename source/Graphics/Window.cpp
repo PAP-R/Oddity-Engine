@@ -37,6 +37,14 @@ namespace OddityEngine::Graphics {
         const auto context = SDL_GL_CreateContext(window);
         SDL_GL_MakeCurrent(window, context);
 
+        auto count = SDL_GetNumVideoDrivers();
+
+        for (size_t i = 0; i < count; i++) {
+            std::cout << SDL_GetVideoDriver(i) << std::endl;
+        }
+
+        std::cout << std::endl << SDL_GetCurrentVideoDriver() << std::endl;
+
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -49,6 +57,8 @@ namespace OddityEngine::Graphics {
             std::cout << glewGetErrorString(glew_status);
             Debug::error("Failed to initialize GLEW");
         }
+
+        std::cout << std::endl << glGetString(GL_RENDERER) << std::endl;
 
 
         glEnable(GL_DEBUG_OUTPUT);

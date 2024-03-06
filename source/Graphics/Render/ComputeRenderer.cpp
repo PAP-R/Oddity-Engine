@@ -22,6 +22,8 @@ namespace OddityEngine::Graphics::Render {
         auto render_projection = glm::mat4(1);
         render_projection[0][0] = fov / aspect;
         render_projection[1][1] = fov;
+        // render_projection[2][3] = -1;
+        // render_projection = glm::perspective(camera->fov, aspect, 0.1f, 100.0f);
         auto render_view = glm::toMat4(camera->orientation);
 
         render_vp = render_view * render_projection * glm::mat4(1);//TODO maybe change order to leave out mat4(1)
