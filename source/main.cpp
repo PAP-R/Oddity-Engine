@@ -63,9 +63,11 @@ int main(int argc, char* args[]) {
 
     world.add_object(&player);
 
-    float earth_radius = 6371E+3;
+    float earth_radius = 6371E+3 + 1E-1;
 
     OddityEngine::Physics::Object earth({0, -earth_radius, 0});
+
+    std::cout << std::setprecision(15) << earth.position.y << std::endl;
 
     earth.mass = 5.972E+24;
     // earth.mass = 5.972E+22;
@@ -81,6 +83,10 @@ int main(int argc, char* args[]) {
     OddityEngine::Physics::Object ball2({10, 0, 0});
     OddityEngine::Physics::Object ball3({0, -10, 0});
     OddityEngine::Physics::Object ball4({0, 10, 0});
+
+    player.shape = OddityEngine::Physics::CUBE;
+    center_ball.shape = OddityEngine::Physics::CUBE;
+    center_ball.state &= ~OddityEngine::Physics::MOVE;
 
     world.add_object(&center_ball);
     // world.add_object(&ball1);
@@ -105,7 +111,7 @@ int main(int argc, char* args[]) {
     float height = 10;
     float width = 6;
     float layer_width = 2;
-    int count = round * 1;
+    int count = round * 0;
 
     for (int i = 0; i < count; i++) {
         // balls.push_back(new OddityEngine::Physics::Object({(width + layer_width * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height, (width + layer_width * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round)}));
@@ -134,6 +140,7 @@ int main(int argc, char* args[]) {
     }
 
     // renderer->set_size({10, 10});
+    OddityEngine::Debug::message("World: [ {} | {} | {} ]", earth.position.x, earth.position.y, earth.position.z);
 
     OddityEngine::Util::Time::set_framerate(20);
 

@@ -122,7 +122,7 @@ void Player::event(const SDL_Event& event) {
 
         case SDL_MOUSEWHEEL:
             camera->fov = OddityEngine::Math::min(OddityEngine::Math::max(camera->fov - event.wheel.preciseY, 1.0f), 180.0f);
-            camera_shift.z = OddityEngine::Math::min(OddityEngine::Math::max(camera_shift.z - event.wheel.preciseX, 0.0f), 20.0f);
+            camera_shift.z = OddityEngine::Math::min(OddityEngine::Math::max(camera_shift.z - event.wheel.preciseX, 0.0f), 50.0f);
             OddityEngine::Debug::message("FOV: {}", camera->fov);
             OddityEngine::Debug::message("Shift: {}", camera_shift.z);
             break;

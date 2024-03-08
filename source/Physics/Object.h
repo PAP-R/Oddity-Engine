@@ -25,6 +25,7 @@ namespace OddityEngine::Physics {
         SPHERE,
         NETWORK,
         PLANE,
+        CUBE,
     };
 
     struct alignas(16) Object_struct {

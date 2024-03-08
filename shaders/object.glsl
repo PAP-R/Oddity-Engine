@@ -15,6 +15,7 @@ const uint CONNECTED = 1 << 5;
 const uint SHAPE_SPHERE = 0;
 const uint SHAPE_NETWORK = 1;
 const uint SHAPE_PLANE = 2;
+const uint SHAPE_CUBE = 3;
 
 struct Object {
     vec4 position;
@@ -80,6 +81,23 @@ vec4 closest_plane(vec3 point, uint obj) {
     return vec4(0, objects[obj].position.y - point.y, 0, point.y - objects[obj].position.y);
 }
 
+vec4 closest_cube(vec3 point, uint obj) {
+    vec3 relative = point - objects[obj].position.xyz;
+    vec3 edge = vec3(objects[obj].radius);
+
+    vec3 clamped = clamp(relative, -edge, edge);
+
+    vec4 result = vec4(clamped - relative, 0);
+
+    result.w = length(result.xyz);
+
+    if (abs(relative.x) < edge.x && abs(relative.z) < edge.y && abs(relative.z) < edge.z) {
+        result.w *= -1;
+    }
+
+    return result;
+}
+
 vec4 closest(vec3 point, uint obj) {
     switch (objects[obj].shape) {
         default:
@@ -90,6 +108,8 @@ vec4 closest(vec3 point, uint obj) {
             return closest_network(point, obj);
         case SHAPE_PLANE:
             return closest_plane(point, obj);
+        case SHAPE_CUBE:
+            return closest_cube(point, obj);
     }
 }
 

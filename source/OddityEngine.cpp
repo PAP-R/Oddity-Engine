@@ -11,6 +11,8 @@
 #define ODDITYENGINE_STEAM true
 
 namespace OddityEngine {
+    bool steam = true;
+
     void init() {
         if constexpr (ODDITYENGINE_STEAM) {
             if(SteamAPI_RestartAppIfNecessary(360)) {
@@ -18,7 +20,8 @@ namespace OddityEngine {
             }
 
             if(!SteamAPI_Init()) {
-                Debug::error("Failed to initialize Steam API");
+                Debug::message("Failed to initialize Steam API");
+                steam = false;
             }
         }
 
@@ -28,7 +31,7 @@ namespace OddityEngine {
 
     void terminate() {
         Graphics::terminate();
-        if constexpr (ODDITYENGINE_STEAM) {
+        if (steam) {
             SteamAPI_Shutdown();
         }
     }

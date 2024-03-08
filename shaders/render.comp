@@ -40,24 +40,28 @@ vec4 LEFT_BASE = vp * vec4(normalize(vec3(-1, 0, 0) + NORTH), 1);
 vec3 LEFT = normalize((vp * vec4(normalize(vec3(-1, 0, 0) + NORTH), 1)).xyz);
 //vec3 LEFT = LEFT_BASE.xyz / LEFT_BASE.w;
 vec3 TO_LEFT = rejection_flat(LEFT, FRONT);
+vec3 TO_LEFT_DIR = normalize(TO_LEFT);
 float LEFT_ANGLE = dot(LEFT, FRONT);
 
 vec4 RIGHT_BASE = vp * vec4(normalize(vec3(1, 0, 0) + NORTH), 1);
 vec3 RIGHT = normalize((vp * vec4(normalize(vec3(1, 0, 0) + NORTH), 1)).xyz);
 //vec3 RIGHT = RIGHT_BASE.xyz / RIGHT_BASE.w;
 vec3 TO_RIGHT = rejection_flat(RIGHT, FRONT);
+vec3 TO_RIGHT_DIR = normalize(TO_RIGHT);
 float RIGHT_ANGLE = dot(RIGHT, FRONT);
 
 vec4 DOWN_BASE = vp * vec4(normalize(vec3(0, -1, 0) + NORTH), 1);
 vec3 DOWN = normalize((vp * vec4(normalize(vec3(0, -1, 0) + NORTH), 1)).xyz);
 //vec3 DOWN = DOWN_BASE.xyz / DOWN_BASE.w;
 vec3 TO_DOWN = rejection_flat(DOWN, FRONT);
+vec3 TO_DOWN_DIR = normalize(TO_DOWN);
 float DOWN_ANGLE = dot(DOWN, FRONT);
 
 vec4 UP_BASE = vp * vec4(normalize(vec3(0, 1, 0) + NORTH), 1);
 vec3 UP = normalize((vp * vec4(normalize(vec3(0, 1, 0) + NORTH), 1)).xyz);
 //vec3 UP = UP_BASE.xyz / UP_BASE.w;
 vec3 TO_UP = rejection_flat(UP, FRONT);
+vec3 TO_UP_DIR = normalize(TO_UP);
 float UP_ANGLE = dot(UP, FRONT);
 
 
@@ -199,8 +203,37 @@ void draw(uint obj, vec4 color) {
     }
 
 
-//    uint steps = 64;
-//    float step_size = 2 * PI / steps;
+    uint steps = 360;
+    steps = uint(min(steps, steps / distance(objects[obj].position.xyz, camera_pos.xyz)));
+
+    float max_steps = 2 * PI;
+    float step_size = max_steps / steps;
+
+    float radius = length(TO_RIGHT + TO_UP);
+
+    uint smoothing_steps = 5;
+
+    for (float i = 0; i < 2 * PI; i += step_size) {
+        vec3 dir = vec3(FRONT + (TO_UP_DIR * sin(i) + TO_RIGHT_DIR * cos(i)) * radius);
+
+        vec4 result;
+
+        for (uint s = 0; s < smoothing_steps; s++) {
+            draw_relative_point(dir, vec4(hsv2rgb(1 - i / max_steps, 0.5, 1), 1));
+
+            vec4 temp_result = trace(camera_pos.xyz, dir, smoothing_steps - s, obj);
+
+            if (temp_result.w <= TOLERANCE) {
+                break;
+            }
+
+            result = temp_result;
+
+            dir += normalize(temp_result.xyz);
+
+            draw_relative_point(result.xyz, vec4(hsv2rgb(i / max_steps, result.w, 1), 1));
+        }
+    }
 //
 //    vec3 center_dir = objects[obj].position.xyz - camera_pos.xyz;
 //    vec4 result = trace(camera_pos.xyz, center_dir, 2, obj);
@@ -252,7 +285,7 @@ void draw_connection(uint start, uint end) {
     vec3 center_dir;
 
     for (uint i = 0; i < count; i++) {
-        draw_world_line(objects[start + i].position.xyz, objects[start + (i + 1) % count].position.xyz);
+//        draw_world_line(objects[start + i].position.xyz, objects[start + (i + 1) % count].position.xyz);
 //
 //        draw_world_arc(objects[start + i].position.xyz, objects[start + i].velocity.xyz, objects[start + (i + 1) % count].position.xyz, objects[start + (i + 1) % count].velocity.xyz);
 
@@ -341,6 +374,8 @@ void main() {
     uint other = gl_WorkGroupID.y;
 
     if (self == other && (objects[self].state & SHOW) != 0) {
+        draw_world_line(objects[self].position.xyz, objects[self].position.xyz + objects[self].acceleration.xyz);
+
         if ((objects[self].state & CONNECTED) != 0) {
             if (objects[self].prev == self) {
                 uint end = self;
