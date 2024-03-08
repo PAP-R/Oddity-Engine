@@ -105,7 +105,7 @@ int main(int argc, char* args[]) {
     float height = 10;
     float width = 6;
     float layer_width = 2;
-    int count = round * 6;
+    int count = round * 1;
 
     for (int i = 0; i < count; i++) {
         // balls.push_back(new OddityEngine::Physics::Object({(width + layer_width * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height, (width + layer_width * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round)}));

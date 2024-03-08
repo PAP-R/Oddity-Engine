@@ -52,7 +52,7 @@ namespace OddityEngine::Physics {
 
         auto result = object_buffer.get();
 
-        for (GLsizei i = 0; i < objects.size(); i++) {
+        for (GLsizei i = 0; i < object_count(); i++) {
             objects[i]->position = result[i].position;
             objects[i]->velocity = result[i].velocity;
             objects[i]->acceleration = result[i].acceleration;

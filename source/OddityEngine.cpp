@@ -8,7 +8,7 @@
 #include <Util/Debug.h>
 #include "Util/Time.h"
 
-#define ODDITYENGINE_STEAM false
+#define ODDITYENGINE_STEAM true
 
 namespace OddityEngine {
     void init() {

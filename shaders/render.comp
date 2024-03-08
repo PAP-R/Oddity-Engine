@@ -109,11 +109,16 @@ void draw_world_point(vec3 pos, vec4 color) {
 }
 
 void draw_line(ivec2 start, ivec2 end) {
-    float dist = distance(start, end);
-    vec2 dir = normalize(vec2(end - start));
+    vec2 p = start;
 
-    for (float i = 0; i < dist; i++) {
-        draw_point(start + ivec2(dir * i), vec4(hsv2rgb(i / dist, 1, 1), 1));
+    vec2 d = end - p;
+
+    float N = max(abs(d.x), abs(d.y));
+
+    vec2 s = d / N;
+
+    for (float i = 0; i <= N; i++) {
+        draw_point(ivec2(p + s * i), vec4(hsv2rgb(i / N, 1, 1), 1));
     }
 }
 
@@ -180,16 +185,17 @@ vec3 fibonacci_sphere(uint i, uint count) {
 float line_step = 0.01;
 
 void draw(uint obj, vec4 color) {
-    uint point_count = uint(1000 * min(objects[obj].radius, 10));
-
-
+    uint point_count = 1000;
+    point_count = min(point_count, uint(point_count * objects[obj].radius / distance(objects[obj].position.xyz, camera_pos.xyz)));
 
     for (uint i = 0; i < point_count; i++) {
-        vec3 point = objects[obj].position.xyz + fibonacci_sphere(i, point_count) * objects[obj].radius;
+        vec3 point = fibonacci_sphere(i, point_count);
+        vec3 origin = objects[obj].position.xyz + point * objects[obj].radius * 2;
+        vec4 result = trace_point(origin, -point, 5, obj);
 
 //        vec4 result = trace_point(objects[obj].position.xyz, point, 5, obj);
 
-        draw_world_point(point, vec4(hsv2rgb(i / float(point_count), 1, 1), 0.5));
+        draw_world_point(result.xyz, vec4(hsv2rgb(i / float(point_count), 1, 1), 0.5));
     }
 
 
@@ -246,7 +252,7 @@ void draw_connection(uint start, uint end) {
     vec3 center_dir;
 
     for (uint i = 0; i < count; i++) {
-//        draw_world_line(objects[start + i].position.xyz, objects[start + (i + 1) % count].position.xyz);
+        draw_world_line(objects[start + i].position.xyz, objects[start + (i + 1) % count].position.xyz);
 //
 //        draw_world_arc(objects[start + i].position.xyz, objects[start + i].velocity.xyz, objects[start + (i + 1) % count].position.xyz, objects[start + (i + 1) % count].velocity.xyz);
 
@@ -301,18 +307,18 @@ void main() {
         draw_line(view_center, view_center + ivec2(0, 10));
         draw_line(view_center, view_center + ivec2(0, -10));
 
-        float step_size = 0.1;
+//        float step_size = 0.1;
 
-        for (float t = 0; t < 1; t += step_size) {
-            draw_relative_point(FRONT + TO_LEFT * t, vec4(hsv2rgb(t, 1, 1), 1));
-            draw_relative_point(FRONT + TO_RIGHT * t, vec4(hsv2rgb(t, 1, 1), 1));
-            draw_relative_point(FRONT + TO_DOWN * t, vec4(hsv2rgb(t, 1, 1), 1));
-            draw_relative_point(FRONT + TO_UP * t, vec4(hsv2rgb(t, 1, 1), 1));
-        }
-
-        for (uint i = 0; i < 100; i++) {
-            draw_world_point(fibonacci_sphere(i, 100), vec4(hsv2rgb(i / 100., 1, 1), 1));
-        }
+//        for (float t = 0; t < 1; t += step_size) {
+//            draw_relative_point(FRONT + TO_LEFT * t, vec4(hsv2rgb(t, 1, 1), 1));
+//            draw_relative_point(FRONT + TO_RIGHT * t, vec4(hsv2rgb(t, 1, 1), 1));
+//            draw_relative_point(FRONT + TO_DOWN * t, vec4(hsv2rgb(t, 1, 1), 1));
+//            draw_relative_point(FRONT + TO_UP * t, vec4(hsv2rgb(t, 1, 1), 1));
+//        }
+//
+//        for (uint i = 0; i < 100; i++) {
+//            draw_world_point(fibonacci_sphere(i, 100), vec4(hsv2rgb(i / 100., 1, 1), 1));
+//        }
 
 //        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - LEFT_PIXEL, DOWN_PIXEL, ivec2(LEFT_PIXEL.x, DOWN_PIXEL.y) - DOWN_PIXEL);
 //        draw_arc(LEFT_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - LEFT_PIXEL, UP_PIXEL, ivec2(LEFT_PIXEL.x, UP_PIXEL.y) - UP_PIXEL);

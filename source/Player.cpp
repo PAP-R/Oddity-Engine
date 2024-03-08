@@ -8,7 +8,6 @@
 #include "Util/Time.h"
 
 Player::Player(OddityEngine::Graphics::Camera* camera) : camera(camera) {
-    mass = 0;
 }
 
 void Player::event(const SDL_Event& event) {
@@ -79,14 +78,27 @@ void Player::event(const SDL_Event& event) {
 
         case SDL_MOUSEBUTTONDOWN:
             switch (event.button.button) {
-                case SDL_BUTTON_LEFT:
+                case SDL_BUTTON_LEFT: {
                     OddityEngine::Debug::message("FPS: [ {} ]", OddityEngine::Util::Time::fps<size_t>());
-                    OddityEngine::Debug::message("State: [ {} | {} ]", state & OddityEngine::Physics::SHOW, state & OddityEngine::Physics::HIT);
+
+                    std::string state;
+
+                    GLuint temp_state = this->state;
+
+                    while (temp_state != 0) {
+                        if ((temp_state % 2) == 0) state += "0";
+                        else state += "1";
+
+                        temp_state /= 2;
+                    }
+
+                    OddityEngine::Debug::message("State: [ {} ]", state);
                     OddityEngine::Debug::message("Position: [ {} | {} | {} ]", position.x, position.y, position.z);
                     OddityEngine::Debug::message("Velocity: [ {} | {} | {} ]", velocity.x, velocity.y, velocity.z);
                     OddityEngine::Debug::message("Acceleration: [ {} | {} | {} ]", acceleration.x, acceleration.y, acceleration.z);
                     break;
-                case SDL_BUTTON_RIGHT:
+                }
+                case SDL_BUTTON_RIGHT: {
                     for (size_t j = 0; j < 10; j++) {
                         if (j == 0) {
                             fmt::print("[");
@@ -98,11 +110,13 @@ void Player::event(const SDL_Event& event) {
                     }
                     fmt::print("]\n");
                     break;
-                case SDL_BUTTON_MIDDLE:
+                }
+                case SDL_BUTTON_MIDDLE: {
                     camera->fov = 90;
                     camera_shift.z = 5;
                     OddityEngine::Debug::message("FOV: {}", camera->fov);
                     break;
+                }
             }
             break;
 
