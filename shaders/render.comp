@@ -85,10 +85,12 @@ ivec2 dir_to_pixel(vec3 dir) {
 }
 
 vec3 pixel_to_dir(ivec2 pixel) {
-    vec2 ratio = pixel / view_size;
+    vec2 ratio = (pixel - view_center) / view_center;
 
-    return normalize(LEFT + TO_RIGHT * ratio.x + DOWN + TO_UP * ratio.y);
+    return normalize(FRONT + TO_RIGHT * ratio.x + TO_UP * ratio.y);
 }
+
+vec3 pixel_step_size = vec3((1 / view_center.x) * TO_RIGHT + (1 / view_center.y) * TO_UP);
 
 vec3 hsv2rgb(float h, float s, float v) {
     vec3 c = vec3(h, s, v);
@@ -189,18 +191,18 @@ vec3 fibonacci_sphere(uint i, uint count) {
 float line_step = 0.01;
 
 void draw(uint obj, vec4 color) {
-    uint point_count = 1000;
-    point_count = min(point_count, uint(point_count * objects[obj].radius / distance(objects[obj].position.xyz, camera_pos.xyz)));
-
-    for (uint i = 0; i < point_count; i++) {
-        vec3 point = fibonacci_sphere(i, point_count);
-        vec3 origin = objects[obj].position.xyz + point * objects[obj].radius * 2;
-        vec4 result = trace_point(origin, -point, 5, obj);
-
-//        vec4 result = trace_point(objects[obj].position.xyz, point, 5, obj);
-
-        draw_world_point(result.xyz, vec4(hsv2rgb(i / float(point_count), 1, 1), 0.5));
-    }
+//    uint point_count = 1000;
+//    point_count = min(point_count, uint(point_count * objects[obj].radius / distance(objects[obj].position.xyz, camera_pos.xyz)));
+//
+//    for (uint i = 0; i < point_count; i++) {
+//        vec3 point = fibonacci_sphere(i, point_count);
+//        vec3 origin = objects[obj].position.xyz + point * objects[obj].radius * 2;
+//        vec4 result = trace_point(origin, -point, 5, obj);
+//
+////        vec4 result = trace_point(objects[obj].position.xyz, point, 5, obj);
+//
+//        draw_world_point(result.xyz, vec4(hsv2rgb(i / float(point_count), 1, 1), 0.5));
+//    }
 
 
     uint steps = 360;
@@ -211,30 +213,61 @@ void draw(uint obj, vec4 color) {
 
     float radius = length(TO_RIGHT + TO_UP);
 
-    uint smoothing_steps = 5;
+    uint smoothing_steps = 10;
 
-    for (float i = 0; i < 2 * PI; i += step_size) {
+    for (float i = 0; i < max_steps; i += step_size) {
         vec3 dir = vec3(FRONT + (TO_UP_DIR * sin(i) + TO_RIGHT_DIR * cos(i)) * radius);
 
-        vec4 result;
+        vec4 result = vec4(0);
 
         for (uint s = 0; s < smoothing_steps; s++) {
-            draw_relative_point(dir, vec4(hsv2rgb(1 - i / max_steps, 0.5, 1), 1));
+            draw_relative_point(dir + result.xyz, vec4(hsv2rgb(1 - i / max_steps, 0.5, 1), 1));
 
-            vec4 temp_result = trace(camera_pos.xyz, dir, smoothing_steps - s, obj);
+            vec4 temp_result = trace(camera_pos.xyz, dir + result.xyz, smoothing_steps, obj);
+
+            result = temp_result;
+
+            draw_relative_point(result.xyz, vec4(hsv2rgb(i / max_steps, 0.5 + result.w, 0.5 + result.w), 1));
 
             if (temp_result.w <= TOLERANCE) {
                 break;
             }
-
-            result = temp_result;
-
-            dir += normalize(temp_result.xyz);
-
-            draw_relative_point(result.xyz, vec4(hsv2rgb(i / max_steps, result.w, 1), 1));
         }
     }
-//
+
+    vec3 center_dir = objects[obj].position.xyz - camera_pos.xyz;
+
+    ivec2 center_pixel = dir_to_pixel(center_dir);
+
+    draw_relative_point(center_dir, vec4(hsv2rgb(float(obj) / gl_NumWorkGroups.x, 1, 1), 1));
+    draw_point(center_pixel, vec4(hsv2rgb(float(obj) / gl_NumWorkGroups.x, 1, 1), 1));
+
+    steps = 4;
+    steps = uint(min(steps, steps / distance(objects[obj].position.xyz, camera_pos.xyz)));
+
+    step_size = max_steps / steps;
+
+    for (float i = 0; i < max_steps; i += step_size) {
+        vec2 p = center_pixel;
+
+        vec2 d = vec2(sin(i), cos(i));
+
+        float N = max(abs(d.x), abs(d.y));
+
+        vec2 s = d / N;
+
+        vec4 result;
+
+        uint c = 1;
+
+        do {
+            p += s;
+            result = trace(camera_pos.xyz, pixel_to_dir(ivec2(p)), 5, obj);
+            draw_point(ivec2(p), vec4(hsv2rgb(i, 1, 1), 1));
+            c++;
+        } while(result.w < TOLERANCE && abs(p.x - view_center.x) <= view_center.x && abs(p.y - view_center.y) <= view_center.y && c < 100);
+    }
+
 //    vec3 center_dir = objects[obj].position.xyz - camera_pos.xyz;
 //    vec4 result = trace(camera_pos.xyz, center_dir, 2, obj);
 //    draw_relative_point(result.xyz, color);
@@ -328,17 +361,17 @@ void draw_connection(uint start, uint end) {
 
 void main() {
     if (gl_WorkGroupID.x == 0 && gl_WorkGroupID.y == 0 && gl_WorkGroupID.z == 0) {
-        draw_relative_point(LEFT, vec4(0, 1, 1, 1));
-        draw_relative_point(RIGHT, vec4(0, 1, 1, 1));
-        draw_relative_point(DOWN, vec4(0, 1, 1, 1));
-        draw_relative_point(UP, vec4(0, 1, 1, 1));
-        draw_relative_point(FRONT, vec4(0, 1, 1, 1));
-        draw_relative_point(NORTH, vec4(0, 1, 1, 1));
-
-        draw_line(view_center, view_center + ivec2(10, 0));
-        draw_line(view_center, view_center + ivec2(-10, 0));
-        draw_line(view_center, view_center + ivec2(0, 10));
-        draw_line(view_center, view_center + ivec2(0, -10));
+//        draw_relative_point(LEFT, vec4(0, 1, 1, 1));
+//        draw_relative_point(RIGHT, vec4(0, 1, 1, 1));
+//        draw_relative_point(DOWN, vec4(0, 1, 1, 1));
+//        draw_relative_point(UP, vec4(0, 1, 1, 1));
+//        draw_relative_point(FRONT, vec4(0, 1, 1, 1));
+//        draw_relative_point(NORTH, vec4(0, 1, 1, 1));
+//
+//        draw_line(view_center, view_center + ivec2(10, 0));
+//        draw_line(view_center, view_center + ivec2(-10, 0));
+//        draw_line(view_center, view_center + ivec2(0, 10));
+//        draw_line(view_center, view_center + ivec2(0, -10));
 
 //        float step_size = 0.1;
 
@@ -374,7 +407,7 @@ void main() {
     uint other = gl_WorkGroupID.y;
 
     if (self == other && (objects[self].state & SHOW) != 0) {
-        draw_world_line(objects[self].position.xyz, objects[self].position.xyz + objects[self].acceleration.xyz);
+//        draw_world_line(objects[self].position.xyz, objects[self].position.xyz + objects[self].acceleration.xyz);
 
         if ((objects[self].state & CONNECTED) != 0) {
             if (objects[self].prev == self) {
