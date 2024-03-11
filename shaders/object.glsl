@@ -49,18 +49,41 @@ layout(std140, std430, binding = OBJECT) buffer object_buffer {
     Object objects[];
 };
 
-vec4 closest_sphere(vec3 point, uint obj) {
-    vec4 diff = vec4(objects[obj].position.xyz - point, 0);
+uint object_count() {
+    return objects.length();
+}
 
-    diff.xyz = normalize(diff.xyz) * (length(diff.xyz) - objects[obj].radius);
+struct trace_result {
+    vec3 position;
+    vec3 diff;
 
-    diff.w = length(diff.xyz);
+    float distance;
 
-    if (distance(diff.xyz + point, objects[obj].position.xyz) > distance(point, objects[obj].position.xyz)) {
-        diff.w *= -1;
+    uint obj;
+
+    vec3 normal;
+    vec3 uv;
+};
+
+trace_result closest_sphere(vec3 point, uint obj) {
+    trace_result result;
+
+    result.diff = objects[obj].position.xyz - point;
+
+    result.diff = normalize(result.diff) * (length(result.diff) - objects[obj].radius);
+    result.position = result.diff + point;
+
+    result.distance = length(result.diff);
+
+    if (distance(result.position, objects[obj].position.xyz) > distance(point, objects[obj].position.xyz)) {
+        result.distance *= -1;
     }
 
-    return diff;
+    result.normal = normalize(-result.diff);
+
+    result.obj = obj;
+
+    return result;
 }
 
 vec4 closest_network(vec3 point, uint obj) {
@@ -77,106 +100,55 @@ vec4 closest_network(vec3 point, uint obj) {
     return vec4(temp[0], temp[1], temp[2], temp[3]);
 }
 
-vec4 closest_plane(vec3 point, uint obj) {
-    return vec4(0, objects[obj].position.y - point.y, 0, point.y - objects[obj].position.y);
-}
+trace_result closest_cube(vec3 point, uint obj) {
+    trace_result result;
 
-vec4 closest_cube(vec3 point, uint obj) {
     vec3 relative = point - objects[obj].position.xyz;
     vec3 edge = vec3(objects[obj].radius);
 
     vec3 clamped = clamp(relative, -edge, edge);
 
-    vec4 result = vec4(clamped - relative, 0);
+    result.diff = clamped - relative;
+    result.position = result.diff + point;
 
-    result.w = length(result.xyz);
+    result.distance = length(result.diff);
 
     if (abs(relative.x) < edge.x && abs(relative.z) < edge.y && abs(relative.z) < edge.z) {
-        result.w *= -1;
+        result.distance *= -1;
     }
+
+    result.normal = normalize(result.diff);
+
+    result.obj = obj;
 
     return result;
 }
 
-vec4 closest(vec3 point, uint obj) {
+trace_result closest(vec3 point, uint obj) {
     switch (objects[obj].shape) {
         default:
             return closest_sphere(point, obj);
         case SHAPE_SPHERE:
             return closest_sphere(point, obj);
-        case SHAPE_NETWORK:
-            return closest_network(point, obj);
-        case SHAPE_PLANE:
-            return closest_plane(point, obj);
         case SHAPE_CUBE:
             return closest_cube(point, obj);
     }
 }
 
-vec4 closest_point(vec3 point, uint obj) {
-    return closest(point, obj) + vec4(point, 0);
-}
-
-float sdf(vec3 point, uint obj) {
-    return length(objects[obj].position.xyz - point) - objects[obj].radius;
-}
-
-vec4 multi_closest(vec3 point, float rounding, uint start, uint end) {
+trace_result multi_closest(vec3 point, float rounding, uint start, uint end) {
     uint count = end - start + 1;
 
     float min_dist = 1./0.;
-    vec4 result;
+    trace_result result;
 
     for (uint i = 0; i < count; i++) {
-        vec4 temp = closest(point, start + i);
+        trace_result temp = closest(point, start + i);
 
-        if (temp.w < min_dist) {
+        if (abs(temp.distance) < min_dist) {
             result = temp;
-            min_dist = temp.w;
+            min_dist = abs(temp.distance);
         }
     }
 
     return result;
-}
-
-vec4 multi_closest_point(vec3 point, float rounding, uint start, uint end) {
-    return multi_closest(point, rounding, start, end) + vec4(point, 0);
-}
-
-vec4 multi_trace(vec3 point, vec3 dir, uint max_steps, uint start, uint end) {
-    dir = normalize(dir);
-    vec3 start_point = point;
-    vec3 min_point = point;
-    vec4 current_diff = multi_closest(point, 1, start, end);
-    vec4 min_diff = current_diff;
-
-    for (uint i = 0; i < max_steps; i++) {
-        float angle = dot(current_diff.xyz, dir);
-        if (angle > TOLERANCE) {
-            point = point + dir * angle;
-        }
-        else {
-            point = point + dir * current_diff.w;
-        }
-
-        current_diff = multi_closest(point, 1, start, end);
-
-        if (abs(current_diff.w) < abs(min_diff.w)) {
-            min_point = point;
-            min_diff = current_diff;
-            if (abs(min_diff.w) < TOLERANCE) {
-                break;
-            }
-        }
-    }
-
-    return min_diff + vec4(min_point - start_point, 0);
-}
-
-vec4 trace(vec3 point, vec3 dir, uint max_steps, uint obj) {
-    return multi_trace(point, dir, max_steps, obj, obj);
-}
-
-vec4 trace_point(vec3 point, vec3 dir, uint max_steps, uint obj) {
-    return trace(point, dir, max_steps, obj) + vec4(point, 0);
 }

@@ -22,6 +22,8 @@ set(GRAPHICS
         Graphics/Render/ComputeRenderer.h
         Graphics/Object.cpp
         Graphics/Object.h
+        Graphics/Render/Layered.cpp
+        Graphics/Render/Layered.h
 )
 
 set(MATH

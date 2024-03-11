@@ -4,6 +4,7 @@
 #include <future>
 #include <chrono>
 
+
 using namespace std::chrono_literals;
 
 #include <OddityEngine.h>
@@ -14,6 +15,7 @@ using namespace std::chrono_literals;
 #include "Graphics/Window.h"
 #include "Graphics/Render/ComputeRenderer.h"
 #include "Graphics/Render/TestRenderer.h"
+#include "Graphics/Render/Layered.h"
 #include "Math/random.h"
 #include "Physics/World.h"
 
@@ -33,8 +35,10 @@ int main(int argc, char* args[]) {
 
     Player player;
 
-    auto renderer = new OddityEngine::Graphics::Render::ComputeRenderer(player.camera);
+    auto renderer = new OddityEngine::Graphics::Render::Layered(player.camera);
     scene.add_renderer(renderer);
+    auto renderer2 = new OddityEngine::Graphics::Render::ComputeRenderer(player.camera);
+    scene.add_renderer(renderer2);
 
     // renderer->set_size({11, 11});
 
@@ -60,6 +64,7 @@ int main(int argc, char* args[]) {
     OddityEngine::Physics::World world;
 
     renderer->world = &world;
+    renderer2->world = &world;
 
     world.add_object(&player);
 
@@ -84,9 +89,9 @@ int main(int argc, char* args[]) {
     OddityEngine::Physics::Object ball3({0, -10, 0});
     OddityEngine::Physics::Object ball4({0, 10, 0});
 
-    player.shape = OddityEngine::Physics::CUBE;
-    center_ball.shape = OddityEngine::Physics::CUBE;
-    center_ball.state &= ~OddityEngine::Physics::MOVE;
+    // player.shape = OddityEngine::Physics::CUBE;
+    // center_ball.shape = OddityEngine::Physics::CUBE;
+    // center_ball.state &= ~OddityEngine::Physics::MOVE;
 
     world.add_object(&center_ball);
     // world.add_object(&ball1);
@@ -111,7 +116,7 @@ int main(int argc, char* args[]) {
     float height = 10;
     float width = 6;
     float layer_width = 2;
-    int count = round * 0;
+    int count = round * 1;
 
     for (int i = 0; i < count; i++) {
         // balls.push_back(new OddityEngine::Physics::Object({(width + layer_width * (i / round + 1)) * sin((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round), height, (width + layer_width * (i / round + 1)) * cos((i + 0.5 * ((i / round) % 2)) * std::numbers::pi * 2 / round)}));
@@ -142,7 +147,7 @@ int main(int argc, char* args[]) {
     // renderer->set_size({10, 10});
     OddityEngine::Debug::message("World: [ {} | {} | {} ]", earth.position.x, earth.position.y, earth.position.z);
 
-    OddityEngine::Util::Time::set_framerate(20);
+    // OddityEngine::Util::Time::set_framerate(20);
 
     do {
         world.update();

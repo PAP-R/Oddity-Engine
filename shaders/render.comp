@@ -2,6 +2,7 @@
 
 #include <buffer.glsl>
 #include <object.glsl>
+#include <object_trace.glsl>
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
@@ -218,20 +219,20 @@ void draw(uint obj, vec4 color) {
     for (float i = 0; i < max_steps; i += step_size) {
         vec3 dir = vec3(FRONT + (TO_UP_DIR * sin(i) + TO_RIGHT_DIR * cos(i)) * radius);
 
-        vec4 result = vec4(0);
+        trace_result result;
 
         for (uint s = 0; s < smoothing_steps; s++) {
-            draw_relative_point(dir + result.xyz, vec4(hsv2rgb(1 - i / max_steps, 0.5, 1), 1));
+            draw_relative_point(dir + result.diff, vec4(hsv2rgb(1 - i / max_steps, 0.5, 1), 1));
 
-            vec4 temp_result = trace(camera_pos.xyz, dir + result.xyz, smoothing_steps, obj);
+            trace_result temp_result = trace(camera_pos.xyz, dir + result.diff, smoothing_steps, obj);
+
+            if (temp_result.distance >= TOLERANCE) {
+                break;
+            }
 
             result = temp_result;
 
-            draw_relative_point(result.xyz, vec4(hsv2rgb(i / max_steps, 0.5 + result.w, 0.5 + result.w), 1));
-
-            if (temp_result.w <= TOLERANCE) {
-                break;
-            }
+            draw_relative_point(result.diff, vec4(hsv2rgb(i / max_steps, 0.5 + result.distance, 0.5 + result.distance), 1));
         }
     }
 
@@ -256,7 +257,7 @@ void draw(uint obj, vec4 color) {
 
         vec2 s = d / N;
 
-        vec4 result;
+        trace_result result;
 
         uint c = 1;
 
@@ -265,7 +266,7 @@ void draw(uint obj, vec4 color) {
             result = trace(camera_pos.xyz, pixel_to_dir(ivec2(p)), 5, obj);
             draw_point(ivec2(p), vec4(hsv2rgb(i, 1, 1), 1));
             c++;
-        } while(result.w < TOLERANCE && abs(p.x - view_center.x) <= view_center.x && abs(p.y - view_center.y) <= view_center.y && c < 100);
+        } while(result.distance < TOLERANCE && abs(p.x - view_center.x) <= view_center.x && abs(p.y - view_center.y) <= view_center.y && c < 100);
     }
 
 //    vec3 center_dir = objects[obj].position.xyz - camera_pos.xyz;
@@ -331,13 +332,13 @@ void draw_connection(uint start, uint end) {
 
     center_dir -= camera_pos.xyz;
 
-    vec4 result = multi_closest(camera_pos.xyz, 1, start, end);
+    trace_result result = multi_closest(camera_pos.xyz, 1, start, end);
 
-    draw_relative_point(result.xyz, vec4(1));
+    draw_relative_point(result.diff, vec4(1));
 
     result = multi_trace(camera_pos.xyz, FRONT, 5, start, end);
 
-    draw_relative_point(result.xyz, vec4(1));
+    draw_relative_point(result.diff, vec4(1));
 
     uint steps = 64;
     float step_size = 2 * PI / steps;
@@ -352,9 +353,9 @@ void draw_connection(uint start, uint end) {
         for (uint s = 0; s < 4; s++) {
             result = multi_trace(camera_pos.xyz, trace_dir, 5, start, end);
 
-            draw_relative_point(result.xyz, vec4(hsv2rgb(result.w, 1, 1), 1));
+            draw_relative_point(result.diff, vec4(hsv2rgb(result.distance, 1, 1), 1));
 
-            trace_dir += result.xyz * 0.1;
+            trace_dir += result.diff * 0.1;
         }
     }
 }
