@@ -2,6 +2,8 @@
 
 #include <glm/gtx/quaternion.hpp>
 
+#include "Util/Time.h"
+
 namespace OddityEngine::Graphics::Render {
     Layered::Layered(Camera* camera) : camera(camera) {
         Vector<float> screen = {
@@ -43,6 +45,8 @@ namespace OddityEngine::Graphics::Render {
         glUniformMatrix4fv(screen_program.uniform_location("render_vp"), 1, GL_FALSE, &render_vp[0][0]);
 
         glUniform3f(screen_program.uniform_location("camera_pos"), camera->position.x, camera->position.y, camera->position.z);
+
+        glUniform1f(screen_program.uniform_location("time"), Util::Time::elapsed<float>());
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, screen_buffer);

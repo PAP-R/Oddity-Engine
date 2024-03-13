@@ -130,7 +130,7 @@ void Player::event(const SDL_Event& event) {
 }
 
 bool Player::update() {
-    acceleration = glm::vec4(glm::mat3(right(), up(), front()) * delta_acceleration, 1);
+    acceleration += glm::vec4(glm::mat3(right(), up(), front()) * delta_acceleration, 1);
 
     normalize();
 

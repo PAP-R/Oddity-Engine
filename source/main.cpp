@@ -42,11 +42,10 @@ int main(int argc, char* args[]) {
 
     // renderer->set_size({11, 11});
 
-    player.position = glm::vec4(0, 5, 5, 1);
+    player.position = glm::vec4(0, 50, 50, 1);
 
     player.radius = 1;
     player.mass = 1;
-    player.velocity.y = 10;
 
     player.camera->fov = 100;
 
@@ -54,7 +53,8 @@ int main(int argc, char* args[]) {
 
     // player.state &= ~OddityEngine::Physics::SHOW;
 
-    // player.state &= ~OddityEngine::Physics::SHOW;
+    // player.state &= ~OddityEngine::Physics::CLIP;
+    // player.state &= ~OddityEngine::Physics::MOVE;
 
     // player.angle_velocity.x = 10;
     // player.angle_velocity.y = 1;

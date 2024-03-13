@@ -33,14 +33,15 @@ void main() {
 
     if (self < other && (objects[self].state & CLIP) > 0 && (objects[other].state & CLIP) > 0) {
         vec3 inner = objects[other].position.xyz - objects[self].position.xyz;
-        vec3 outer = closest(objects[self].position.xyz, other).position - closest(objects[other].position.xyz, self).position;
 
-        temp_objects[self_write].test_value[1] = dot(outer, normalize(inner));
+        trace_result closest_result = closest(objects[self].position.xyz, other);
 
-        if (dot(outer, normalize(inner)) < 0) {
-            temp_objects[self_write].test_value[0] = other * pow(10, other);
-            temp_objects[self_write].test_value[2] = dot(outer, inner);
+        for (uint i = 0; i < 5; i++) {
+            trace_result closest_temp = closest(closest_result.position, self);
+            closest_result = closest(closest_temp.position, other);
+        }
 
+        if (closest_result.distance < 0) {
             vec3 normal = normalize(inner);
 
             float mass = 1 / ((1 / objects[self].mass) + (1 / objects[other].mass));
@@ -51,30 +52,30 @@ void main() {
 
             vec3 impulse = e * mass * impact_velocity;
 
-            vec3 dist = outer;
+            vec3 dist = -closest_result.diff;
 
             if ((objects[self].state & MOVE) != 0) {
-                temp_objects[self_write].position.xyz = dist * (objects[other].mass / (objects[self].mass + objects[other].mass));
+                temp_objects[self_write].position.xyz = + dist * (objects[other].mass / (objects[self].mass + objects[other].mass));
                 temp_objects[self_write].velocity.xyz = - impulse * normal / objects[self].mass;
             }
 
             if ((objects[other].state & MOVE) != 0) {
-                temp_objects[other_write].position.xyz = -dist * (objects[self].mass / (objects[self].mass + objects[other].mass));
+                temp_objects[other_write].position.xyz = - dist * (objects[self].mass / (objects[self].mass + objects[other].mass));
                 temp_objects[other_write].velocity.xyz = + impulse * normal / objects[other].mass;
             }
 
             temp_objects[self_write].state |= HIT;
             temp_objects[other_write].state |= HIT;
         }
-        else {
+        else if ((objects[self].state & CLIP) != 0 && (objects[other].state & CLIP) != 0) {
             if ((objects[self].state & MOVE) != 0) {
                 temp_objects[self_write].acceleration.xyz = G * normalize(inner) * objects[self].mass * objects[other].mass / pow(max(length(inner), 1), 2);
-//                temp_objects[self_write].acceleration.xyz = G * normalize(inner) * objects[other].mass / pow(max(length(inner), 1), 2);
+                //                temp_objects[self_write].acceleration.xyz = G * normalize(inner) * objects[other].mass / pow(max(length(inner), 1), 2);
             }
 
             if ((objects[other].state & MOVE) != 0) {
                 temp_objects[other_write].acceleration.xyz = -G * normalize(inner) * objects[self].mass * objects[other].mass / pow(max(length(inner), 1), 2);
-//                temp_objects[other_write].acceleration.xyz = -G * normalize(inner) * objects[self].mass / pow(max(length(inner), 1), 2);
+                //                temp_objects[other_write].acceleration.xyz = -G * normalize(inner) * objects[self].mass / pow(max(length(inner), 1), 2);
             }
         }
     }

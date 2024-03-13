@@ -6,6 +6,7 @@
 in vec3 ray_dir;
 
 uniform vec3 camera_pos;
+uniform float time;
 
 out vec4 color;
 
@@ -24,5 +25,9 @@ void main() {
     }
     else {
         color = vec4(0);
+    }
+
+    if ((objects[result.obj].state & ERROR) != 0) {
+        color += vec4(sin(TIME), 0, 0, 1);
     }
 }

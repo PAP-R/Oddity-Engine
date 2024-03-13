@@ -10,6 +10,7 @@ const uint HIT = 1 << 2;
 const uint MOVE = 1 << 3;
 const uint CLIP = 1 << 4;
 const uint CONNECTED = 1 << 5;
+const uint ERROR = 1 << 6;
 
 //SHAPE
 const uint SHAPE_SPHERE = 0;
