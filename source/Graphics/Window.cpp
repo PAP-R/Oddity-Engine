@@ -105,8 +105,14 @@ namespace OddityEngine::Graphics {
         SDL_DestroyWindow(window);
     }
 
-    void Window::update() {
+    void Window::make_current() {
         SDL_GL_MakeCurrent(window, gl_context);
+    }
+
+    void Window::update() {
+        make_current();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -208,7 +214,9 @@ namespace OddityEngine::Graphics {
                 }
             }
             else {
-                window->scene->event(event);
+                if (window->scene != nullptr) {
+                    window->scene->event(event);
+                }
             }
         }
     }

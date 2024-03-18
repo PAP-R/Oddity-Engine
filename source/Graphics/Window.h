@@ -34,6 +34,7 @@ namespace OddityEngine::Graphics {
         Window(const char* name, int width, int height, unsigned int flags);
         ~Window();
 
+        void make_current();
         void update();
 
         void set_size(glm::vec2 size);

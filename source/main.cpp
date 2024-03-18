@@ -3,6 +3,7 @@
 #include <thread>
 #include <future>
 #include <chrono>
+#include <complex>
 
 
 using namespace std::chrono_literals;
@@ -23,6 +24,7 @@ using namespace std::chrono_literals;
 
 #include "Util/Time.h"
 #include <Util/Debug.h>
+#include <Util/Commander.h>
 
 int main(int argc, char* args[]) {
     OddityEngine::init();
@@ -31,7 +33,6 @@ int main(int argc, char* args[]) {
 
     OddityEngine::Graphics::Scene scene;
     window.set_scene(&scene);
-
 
     Player player;
 
@@ -68,15 +69,20 @@ int main(int argc, char* args[]) {
 
     world.add_object(&player);
 
-    float earth_radius = 6371E+3 + 1E-1;
+    float earth_scale = 1E-0;
+
+    float earth_radius = 6371E+3 * earth_scale;
+    float earth_volume = (4 * std::numbers::pi * std::pow(earth_radius, 3)) / 3;
+    float earth_density = 5515;
+
+    // float earth_mass = 5.972E+24 * earth_scale;
+    float earth_mass = earth_volume * earth_density;
 
     OddityEngine::Physics::Object earth({0, -earth_radius, 0});
 
     std::cout << std::setprecision(15) << earth.position.y << std::endl;
 
-    earth.mass = 5.972E+24;
-    // earth.mass = 5.972E+22;
-    // earth.mass = 100;
+    earth.mass = earth_mass;
     earth.restitution = 1;
     earth.radius = earth_radius;
     earth.state &= ~OddityEngine::Physics::MOVE;
@@ -147,7 +153,16 @@ int main(int argc, char* args[]) {
     // renderer->set_size({10, 10});
     OddityEngine::Debug::message("World: [ {} | {} | {} ]", earth.position.x, earth.position.y, earth.position.z);
 
-    // OddityEngine::Util::Time::set_framerate(20);
+    OddityEngine::Util::Time::set_framerate(20);
+
+
+    OddityEngine::Util::Commander commander;
+    commander.add_command("print", [](std::string input) {
+        OddityEngine::Debug::message("{}", input);
+        return std::string("printed successfully");
+    });
+
+    OddityEngine::Debug::message("{}", commander.apply("print Hallo"));
 
     do {
         world.update();

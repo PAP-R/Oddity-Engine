@@ -52,7 +52,7 @@ void main() {
 
             vec3 impulse = e * mass * impact_velocity;
 
-            vec3 dist = -closest_result.diff;
+            vec3 dist = closest_result.diff;
 
             if ((objects[self].state & MOVE) != 0) {
                 temp_objects[self_write].position.xyz = + dist * (objects[other].mass / (objects[self].mass + objects[other].mass));

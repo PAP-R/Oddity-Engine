@@ -1,10 +1,10 @@
-#include "Event_Poller.h"
+#include "Input/Event_Poller.h"
 
 #include <Util/Debug.h>
 #include <fmt/core.h>
 
 #include <Graphics/Window.h>
-#include <Util/Eventable.h>
+#include <Input/Eventable.h>
 
 namespace OddityEngine::Event {
     void update() {

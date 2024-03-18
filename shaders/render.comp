@@ -407,8 +407,8 @@ void main() {
     uint other = gl_WorkGroupID.y;
 
     if (self == other && (objects[self].state & SHOW) != 0) {
-        draw_world_line(objects[self].position.xyz, objects[self].position.xyz + objects[self].velocity.xyz);
-        draw_world_line(objects[self].position.xyz + objects[self].velocity.xyz, objects[self].position.xyz + objects[self].velocity.xyz + objects[self].acceleration.xyz);
+//        draw_world_line(objects[self].position.xyz, objects[self].position.xyz + objects[self].velocity.xyz);
+//        draw_world_line(objects[self].position.xyz + objects[self].velocity.xyz, objects[self].position.xyz + objects[self].velocity.xyz + objects[self].acceleration.xyz);
 
 //        if ((objects[self].state & CONNECTED) != 0) {
 //            if (objects[self].prev == self) {

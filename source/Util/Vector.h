@@ -45,7 +45,7 @@ namespace OddityEngine {
     class Vector : public std::vector<T> {
     protected:
         bool use_default = false;
-        T default_value = T();
+        T default_value;
         void resize() {};
         friend Vector<Vector>;
 
@@ -131,6 +131,8 @@ namespace OddityEngine {
             return *this;
         }
 
+        using std::vector<T>::empty;
+
         template<typename S, std::enable_if_t<std::is_same_v<T, std::function<S(S)>>, bool> = true>
         Vector<S> operator () (Vector<S> other) {
             if (this->size() != other.size()) {
@@ -195,6 +197,8 @@ namespace OddityEngine {
         void emplace(size_t idx, const Args& ... args) {
             std::vector<T>::emplace(this->begin() + idx, args...);
         }
+
+
 
         template<typename S = T>
         [[nodiscard]] Vector<S> slice(size_t start, size_t end) const {

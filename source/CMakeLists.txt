@@ -16,14 +16,22 @@ set(GRAPHICS
         Graphics/Render/TestRenderer.h
         Graphics/Camera.cpp
         Graphics/Camera.h
-        Util/Event_Poller.cpp
-        Util/Event_Poller.h
         Graphics/Render/ComputeRenderer.cpp
         Graphics/Render/ComputeRenderer.h
         Graphics/Object.cpp
         Graphics/Object.h
         Graphics/Render/Layered.cpp
         Graphics/Render/Layered.h
+)
+
+set(INPUT
+        Input/Event_Poller.cpp
+        Input/Event_Poller.h
+        Input/Eventable.h
+        Input/Input.cpp
+        Input/Input.h
+        Input/Keyboard.cpp
+        Input/Keyboard.h
 )
 
 set(MATH
@@ -55,11 +63,13 @@ set(UTIL
         Util/SortableVector.h
         Util/Time.cpp
         Util/Time.h
-        Util/Eventable.h
+        Util/Commander.cpp
+        Util/Commander.h
 )
 
 set(SOURCES
         ${GRAPHICS}
+        ${INPUT}
         ${MATH}
         ${NEURAL_NETWORK}
         ${PHYSICS}

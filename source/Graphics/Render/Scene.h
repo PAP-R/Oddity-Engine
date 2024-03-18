@@ -9,7 +9,7 @@
 
 #include <Util/Vector.h>
 
-#include "Util/Eventable.h"
+#include "../../Input/Eventable.h"
 
 namespace OddityEngine::Graphics {
     class Scene {
