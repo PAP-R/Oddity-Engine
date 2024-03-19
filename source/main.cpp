@@ -69,11 +69,11 @@ int main(int argc, char* args[]) {
 
     world.add_object(&player);
 
-    float earth_scale = 1E-0;
+    float earth_scale = 1E-2;
 
     float earth_radius = 6371E+3 * earth_scale;
     float earth_volume = (4 * std::numbers::pi * std::pow(earth_radius, 3)) / 3;
-    float earth_density = 5515;
+    float earth_density = 5515 / earth_scale;
 
     // float earth_mass = 5.972E+24 * earth_scale;
     float earth_mass = earth_volume * earth_density;

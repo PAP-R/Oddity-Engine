@@ -42,7 +42,7 @@ struct Object {
     uint next;
 };
 
-Object make_empty_object() {
+Object default_object() {
     return Object(vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), float[10](0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 0, 0, 0, 0, 0, 0, 0, 0);
 }
 

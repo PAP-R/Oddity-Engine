@@ -19,18 +19,13 @@ void main() {
         float Air_Density = 1;
 
         vec3 v = objects[self].velocity.xyz;
-        float Cd = 5;
 
-        float A = PI * pow(objects[self].radius, 2);
+        float c = QUARTER_PI * Air_Density * pow(objects[self].radius, 2);
 
-        vec3 D = Cd * ((Air_Density * v * abs(v)) / 2) * A;
-
-        vec3 acceleration = - D;
-
-        objects[self].acceleration.xyz += acceleration;
+        objects[self].acceleration.xyz -= c * v * abs(v);
 
         objects[self].velocity.xyz += objects[self].acceleration.xyz * time_delta * 0.5;
-        objects[self].position.xyz = objects[self].position.xyz + objects[self].velocity.xyz * time_delta;
+        objects[self].position.xyz += objects[self].velocity.xyz * time_delta;
         objects[self].velocity.xyz += objects[self].acceleration.xyz * time_delta * 0.5;
 
         objects[self].angle_velocity.xyz += objects[self].angle_acceleration.xyz * time_delta * 0.5;
