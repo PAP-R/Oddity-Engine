@@ -26,6 +26,10 @@ using namespace std::chrono_literals;
 #include <Util/Debug.h>
 #include <Util/Commander.h>
 
+float print(...) {
+    return 0;
+};
+
 int main(int argc, char* args[]) {
     OddityEngine::init();
 
@@ -43,7 +47,7 @@ int main(int argc, char* args[]) {
 
     // renderer->set_size({11, 11});
 
-    player.position = glm::vec4(0, 50, 50, 1);
+    // player.position = glm::vec4(0, 50, 50, 1);
 
     player.radius = 1;
     player.mass = 1;
@@ -157,12 +161,26 @@ int main(int argc, char* args[]) {
 
 
     OddityEngine::Util::Commander commander;
-    commander.add_command("print", [](std::string input) {
-        OddityEngine::Debug::message("{}", input);
-        return std::string("printed successfully");
+    commander.add_command("print", [](const OddityEngine::Vector<float>& values) {
+        std::string result;
+        for (const auto c : values) {
+            result += static_cast<char>(c);
+        }
+
+        OddityEngine::Debug::message("{}", result);
+        return 0.0f;
     });
 
-    OddityEngine::Debug::message("{}", commander.apply("print Hallo"));
+    commander.add_command("teleport", [&](const OddityEngine::Vector<float>& values) {
+        player.position.x = values[0];
+        player.position.y = values[1];
+        player.position.z = values[2];
+        return 0;
+    });
+
+    commander.apply("print Hallo Welt, wie geht's dir heute? 42");
+
+    commander.apply("teleport 50 50 50");
 
     do {
         world.update();

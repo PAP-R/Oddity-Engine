@@ -1,25 +1,22 @@
-#ifndef TRIE_H
-#define TRIE_H
+#ifndef COMMANDER_H
+#define COMMANDER_H
 
 #include <Util/Vector.h>
 #include <functional>
+#include <Util/Trie.h>
 
 namespace OddityEngine::Util {
-    struct CommandNode;
-    struct CommandNode {
-        std::vector<std::function<std::string(std::string)>> functions;
-        std::vector<CommandNode> nodes;
-    };
-
     class Commander {
     protected:
-        CommandNode nodestart;
+        Trie<std::function<Vector<float>(Vector<float>)>> command_tree;
+
+        Vector<float> apply(std::string* command);
 
     public:
-        void add_command(const std::string& command, const std::function<std::string(std::string)>& function);
+        Vector<float> apply(std::string command);
 
-        std::string apply(std::string command);
+        void add_command(const std::string& command, const std::function<Vector<float>(Vector<float>)>& function);
     };
 }
 
-#endif //TRIE_H
+#endif //COMMANDER_H

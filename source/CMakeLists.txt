@@ -65,6 +65,7 @@ set(UTIL
         Util/Time.h
         Util/Commander.cpp
         Util/Commander.h
+        Util/Trie.h
 )
 
 set(SOURCES

@@ -1,47 +1,78 @@
 #include "Commander.h"
 
-namespace OddityEngine::Util {
-    void Commander::add_command(const std::string& command, const std::function<std::string(std::string)>& function) {
-        CommandNode* current = &nodestart;
-        for(auto c : command) {
-            if (current->nodes.size() <= c) {
-                size_t new_size = c + 1;
-                current->nodes.resize(c + 1);
-            }
+#include <type_traits>
+#include <Util/Vector.h>
 
-            current = &current->nodes[c];
+namespace OddityEngine::Util {
+    template<typename F, typename T, typename ... Args>
+    std::invoke_result_t<F, Args> call(F f, Vector<T> rest, Args ... args) {
+        if constexpr (rest.size() > 0) {
+            return call_impl(f, rest.slice(0, rest.size() - 1), rest.back(), args...);
         }
 
-        current->functions.push_back(function);
+        return f(args...);
     }
 
-    std::string Commander::apply(std::string command) {
-        CommandNode* current = &nodestart;
+    Vector<float> Commander::apply(std::string* command) {
+        const size_t whitespace = command->find(' ');
 
-        std::string error = "Command not found";
+        std::string current_command;
 
-        const size_t whitespace = command.find(' ');
-        std::string rest = command.substr(whitespace + 1);
-        command = command.substr(0, whitespace);
+        if (whitespace != command->npos) {
+            current_command = command->substr(0, whitespace);
+            *command = command->substr(whitespace + 1);
+        }
+        else {
+            current_command = *command;
+            *command = "";
+        }
 
-        for(auto c : command) {
-            if (current->nodes.size() <= c) {
-                return error;
+        Debug::message("{} | {}", current_command, *command);
+
+        if ('0' <= current_command.front() && current_command.front() <= '9') {
+            return std::stof(current_command);
+        }
+
+        auto command_list = command_tree.get(current_command);
+
+        if (command_list.empty()) {
+            Vector<float> result;
+
+            for (auto c : current_command) {
+                result.emplace_back(c);
             }
 
-            current = &current->nodes[c];
+            return result;
         }
 
-        if (current->functions.empty()) {
-            return error;
+        Vector<float> args;
+
+        while(!command->empty()) {
+            auto temp = apply(command);
+            for (auto v : temp) {
+                args.push_back(v);
+            }
         }
 
-        std::string result;
+        Vector<float> result;
 
-        for (const auto& f : current->functions) {
-            result += f(rest);
+        for (auto c : command_list) {
+            auto temp = c(args);
+            for (auto v : temp) {
+                result.push_back(v);
+            }
         }
 
         return result;
+    }
+
+    Vector<float> Commander::apply(std::string command) {
+        return apply(&command);
+    }
+
+    void Commander::add_command(const std::string& command, const std::function<Vector<float>(Vector<float>)>& function) {
+        const size_t whitespace = command.find(' ');
+
+        command_tree.add(command.substr(0, whitespace), function);
     }
 }
