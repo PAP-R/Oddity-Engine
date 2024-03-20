@@ -6,16 +6,18 @@
 #include <Util/Trie.h>
 
 namespace OddityEngine::Util {
+    Vector<std::string> separate(std::string command, const std::string& token = " \t\n");
+    std::string chop(std::string* str, const std::string& token = " \t\n");
+
     class Commander {
     protected:
-        Trie<std::function<Vector<float>(Vector<float>)>> command_tree;
-
-        Vector<float> apply(std::string* command);
+        Trie<std::function<std::string(std::string*)>> command_tree;
 
     public:
-        Vector<float> apply(std::string command);
+        std::string apply(std::string* command);
+        std::string apply(std::string command);
 
-        void add_command(const std::string& command, const std::function<Vector<float>(Vector<float>)>& function);
+        void add_command(const std::string& command, const std::function<std::string(std::string*)>& function);
     };
 }
 

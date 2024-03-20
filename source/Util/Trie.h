@@ -36,7 +36,7 @@ namespace OddityEngine::Util {
 
             for (auto c : path) {
                 if (current->nodes.size() <= c) {
-                    break;
+                    return {};
                 }
 
                 current = &current->nodes[c];

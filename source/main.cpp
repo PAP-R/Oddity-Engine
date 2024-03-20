@@ -161,26 +161,37 @@ int main(int argc, char* args[]) {
 
 
     OddityEngine::Util::Commander commander;
-    commander.add_command("print", [](const OddityEngine::Vector<float>& values) {
+    commander.add_command("print", [&](std::string* text) {
         std::string result;
-        for (const auto c : values) {
-            result += static_cast<char>(c);
+
+        while (!text->empty()) {
+            if (text->front() == '/') {
+                *text = text->substr(1);
+                result += commander.apply(text);
+            }
+            else {
+                result += OddityEngine::Util::chop(text);
+            }
+            result += " ";
         }
 
         OddityEngine::Debug::message("{}", result);
-        return 0.0f;
+        return "";
     });
 
-    commander.add_command("teleport", [&](const OddityEngine::Vector<float>& values) {
-        player.position.x = values[0];
-        player.position.y = values[1];
-        player.position.z = values[2];
-        return 0;
+    commander.add_command("teleport", [&](std::string* command) {
+        player.position.x = std::stof(OddityEngine::Util::chop(command));
+        player.position.y = std::stof(OddityEngine::Util::chop(command));
+        player.position.z = std::stof(OddityEngine::Util::chop(command));
+        return fmt::format("{} {} {}", player.position.x, player.position.y, player.position.z);
     });
 
     commander.apply("print Hallo Welt, wie geht's dir heute? 42");
 
     commander.apply("teleport 50 50 50");
+
+    commander.apply("teleport 0 50 50 print teleported back");
+    commander.apply("print teleporting to /teleport 50 50 50 so were at the start again");
 
     do {
         world.update();

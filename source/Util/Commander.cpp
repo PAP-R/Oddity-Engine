@@ -4,6 +4,35 @@
 #include <Util/Vector.h>
 
 namespace OddityEngine::Util {
+    Vector<std::string> separate(std::string command, const std::string& token) {
+        Vector<std::string> result;
+        size_t whitespace;
+
+        while ((whitespace = command.find_first_of(token)) != command.npos) {
+            result.push_back(command.substr(0, whitespace));
+            command = command.substr(whitespace + 1);
+        }
+
+        return result;
+    }
+
+    std::string chop(std::string* str, const std::string& token) {
+        std::string result;
+
+        size_t whitespace = str->find_first_of(token);
+
+        if (whitespace != str->npos) {
+            result = str->substr(0, whitespace);
+            *str = str->substr(whitespace + 1);
+        }
+        else {
+            result = *str;
+            *str = "";
+        }
+
+        return result;
+    }
+
     template<typename F, typename T, typename ... Args>
     std::invoke_result_t<F, Args> call(F f, Vector<T> rest, Args ... args) {
         if constexpr (rest.size() > 0) {
@@ -13,7 +42,7 @@ namespace OddityEngine::Util {
         return f(args...);
     }
 
-    Vector<float> Commander::apply(std::string* command) {
+    std::string Commander::apply(std::string* command) {
         const size_t whitespace = command->find(' ');
 
         std::string current_command;
@@ -27,50 +56,26 @@ namespace OddityEngine::Util {
             *command = "";
         }
 
-        Debug::message("{} | {}", current_command, *command);
-
-        if ('0' <= current_command.front() && current_command.front() <= '9') {
-            return std::stof(current_command);
-        }
-
         auto command_list = command_tree.get(current_command);
 
         if (command_list.empty()) {
-            Vector<float> result;
-
-            for (auto c : current_command) {
-                result.emplace_back(c);
-            }
-
-            return result;
+            return "Command not found";
         }
 
-        Vector<float> args;
-
-        while(!command->empty()) {
-            auto temp = apply(command);
-            for (auto v : temp) {
-                args.push_back(v);
-            }
-        }
-
-        Vector<float> result;
+        std::string result;
 
         for (auto c : command_list) {
-            auto temp = c(args);
-            for (auto v : temp) {
-                result.push_back(v);
-            }
+            result += c(command);
         }
 
         return result;
     }
 
-    Vector<float> Commander::apply(std::string command) {
+    std::string Commander::apply(std::string command) {
         return apply(&command);
     }
 
-    void Commander::add_command(const std::string& command, const std::function<Vector<float>(Vector<float>)>& function) {
+    void Commander::add_command(const std::string& command, const std::function<std::string(std::string*)>& function) {
         const size_t whitespace = command.find(' ');
 
         command_tree.add(command.substr(0, whitespace), function);
