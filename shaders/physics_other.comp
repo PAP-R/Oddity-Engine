@@ -5,10 +5,6 @@
 
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-void reset(uint index) {
-    temp_objects[index] = default_object();
-}
-
 void main() {
     uint self = gl_WorkGroupID.x;
     uint other = gl_WorkGroupID.y;
@@ -29,7 +25,7 @@ void main() {
             closest_result = closest(closest_temp.position, other);
         }
 
-        if (closest_result.distance < 0) {
+        if (closest_result.distance < TOLERANCE) {
             temp_objects[self].test_value[9] = closest_result.distance;
             vec3 normal = normalize(inner);
 

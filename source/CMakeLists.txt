@@ -52,6 +52,8 @@ set(PHYSICS
         Physics/Object.h
         Physics/World.cpp
         Physics/World.h
+        Physics/Constraint.cpp
+        Physics/Constraint.h
 )
 
 set(UTIL
@@ -66,6 +68,7 @@ set(UTIL
         Util/Commander.cpp
         Util/Commander.h
         Util/Trie.h
+        Util/CombinedIndex.h
 )
 
 set(SOURCES

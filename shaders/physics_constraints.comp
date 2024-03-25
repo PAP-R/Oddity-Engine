@@ -1,0 +1,36 @@
+#version 450 core
+
+#include <constraint.glsl>
+#include <physics.comp>
+#include <objects_trace.glsl>
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+void main() {
+    Constraint constraint = constraints[gl_WorkGroupID.x];
+
+    if (constraint.index.count > 1) {
+        uint first = constraint.first;
+        uint second = constraint.second;
+
+        uint write_first = gl_WorkGroupID.x * 2;
+        uint write_second = write_first + 1;
+
+        reset(write_first);
+        reset(write_second);
+
+        switch (constraint.type) {
+            case CONSTRAINT_GRAVITY: {
+                gravity(first, write_first, second, write_second, constraint.offset);
+            }
+            break;
+            case CONSTRAINT_KEEP_IN:
+                collision(first, write_first, second, write_second, constraint.offset, -1);
+            break;
+            case CONSTRAINT_KEEP_OUT: {
+                collision(first, write_first, second, write_second, constraint.offset, 1);
+            }
+            break;
+        }
+    }
+}

@@ -33,14 +33,14 @@ namespace OddityEngine::Util {
         return result;
     }
 
-    template<typename F, typename T, typename ... Args>
-    std::invoke_result_t<F, Args> call(F f, Vector<T> rest, Args ... args) {
-        if constexpr (rest.size() > 0) {
-            return call_impl(f, rest.slice(0, rest.size() - 1), rest.back(), args...);
-        }
-
-        return f(args...);
-    }
+    // template<typename F, typename T, typename ... Args>
+    // std::invoke_result_t<F, Args> call(F f, Vector<T> rest, Args ... args) {
+    //     if constexpr (rest.size() > 0) {
+    //         return call_impl(f, rest.slice(0, rest.size() - 1), rest.back(), args...);
+    //     }
+    //
+    //     return f(args...);
+    // }
 
     std::string Commander::apply(std::string* command) {
         const size_t whitespace = command->find(' ');

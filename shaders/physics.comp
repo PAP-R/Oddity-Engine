@@ -9,3 +9,63 @@ layout(std140, std430, binding = PHYSICS) buffer time_buffer {
 layout(std140, std430, binding = TEMP) buffer temp_object_buffer {
     Object temp_objects[];
 };
+
+void reset(uint index) {
+    temp_objects[index] = default_object();
+}
+
+void gravity (uint first_read, uint first_write, uint second_read, uint second_write, float multiplier) {
+    if ((objects[first_read].state & MOVE) != 0) {
+        temp_objects[first_write].acceleration.xyz = G * normalize(inner) * objects[first_read].mass * objects[second_read].mass / pow(length(inner), 2);
+        //                temp_objects[first_write].acceleration.xyz = G * normalize(inner) * objects[second_read].mass / pow(max(length(inner), 1), 2);
+    }
+
+    if ((objects[second_read].state & MOVE) != 0) {
+        temp_objects[second_write].acceleration.xyz = -G * normalize(inner) * objects[first_read].mass * objects[second_read].mass / pow(length(inner), 2);
+        //                temp_objects[second_write].acceleration.xyz = -G * normalize(inner) * objects[first_read].mass / pow(max(length(inner), 1), 2);
+    }
+}
+
+void collision (uint first_read, uint first_write, uint second_read, uint second_write, float offset, float multiplier) {
+    vec3 inner = objects[second_read].position.xyz - objects[first_read].position.xyz;
+
+    trace_result closest_result = closest(objects[first_read].position.xyz, second_read);
+
+    for (uint i = 0; i < 5; i++) {
+        trace_result closest_temp = closest(closest_result.position, first_read);
+        closest_result = closest(closest_temp.position, second_read);
+    }
+
+    float dist_sign = sign(closest_result.distance);
+    closest_result.distance *= multiplier;
+    closest_result.distance += offset;
+    closest_result.diff = normalize(closest_result.diff) * closest_result.distance * dist_sign;
+
+    if (closest_result.distance < TOLERANCE) {
+        temp_objects[first_read].test_value[9] = closest_result.distance;
+        vec3 normal = normalize(inner);
+
+        float mass = 1 / ((1 / objects[first_read].mass) + (1 / objects[second_read].mass));
+
+        vec3 impact_velocity = normal * (objects[first_read].velocity.xyz - objects[second_read].velocity.xyz);
+
+        float e = (objects[first_read].restitution + objects[second_read].restitution) / 2;
+
+        vec3 impulse = e * mass * impact_velocity;
+
+        vec3 dist = closest_result.diff;
+
+        if ((objects[first_read].state & MOVE) != 0) {
+            temp_objects[first_write].position.xyz = + dist / 2;// * (objects[second_read].mass / (objects[first_read].mass + objects[second_read].mass));
+            temp_objects[first_write].velocity.xyz = - impulse * normal / objects[first_read].mass;
+        }
+
+        if ((objects[second_read].state & MOVE) != 0) {
+            temp_objects[second_write].position.xyz = - dist / 2;//* (objects[first_read].mass / (objects[first_read].mass + objects[second_read].mass));
+            temp_objects[second_write].velocity.xyz = + impulse * normal / objects[second_read].mass;
+        }
+
+        temp_objects[first_write].state |= HIT;
+        temp_objects[second_write].state |= HIT;
+    }
+}

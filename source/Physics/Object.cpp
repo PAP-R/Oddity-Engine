@@ -1,5 +1,7 @@
 #include "Object.h"
 
+#include <glm/gtx/quaternion.hpp>
+
 namespace OddityEngine::Physics {
     Object::Object(glm::vec3 position, glm::vec3 angle, SHAPES shape) {
         this->position = {position, 1};
@@ -8,7 +10,14 @@ namespace OddityEngine::Physics {
         normalize();
     }
 
+    Object& Object::operator=(Object_struct obj) {
+        Object_struct::operator=(obj);
+
+        return *this;
+    }
+
     bool Object::update() {
+        orientation = glm::normalize(orientation);
         return true;
     }
 
@@ -25,7 +34,8 @@ namespace OddityEngine::Physics {
         else {
             next_index = next->buffer_indices.at(context);
         }
-        return true;
+
+        return update();
     }
 
     void Object::normalize() {
@@ -35,6 +45,9 @@ namespace OddityEngine::Physics {
 
         orientation = glm::angleAxis(glm::radians(angle.x), glm::vec3(0, 1, 0));
         orientation *= glm::angleAxis(glm::radians(angle.y), glm::vec3(1, 0, 0));
+
+        transform = glm::translate(glm::toMat4(orientation), glm::vec3(position));
+        inverse_transform = glm::inverse(transform);
     }
 
     void Object::set_next(Object* next) {
@@ -70,17 +83,17 @@ namespace OddityEngine::Physics {
 
     glm::vec3 Object::front() {
         normalize();
-        return qrot(orientation, glm::vec3(0, 0, -1));
+        return qrot(orientation, _front);
     }
 
     glm::vec3 Object::right() {
         normalize();
-        return qrot(orientation, glm::vec3(1, 0, 0));
+        return qrot(orientation, _right);
     }
 
     glm::vec3 Object::up() {
         normalize();
-        return qrot(orientation, glm::vec3(0, 1, 0));
+        return qrot(orientation, _up);
     }
 
     glm::vec4 Object::closest(glm::vec3 point) {

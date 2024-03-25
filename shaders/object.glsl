@@ -27,6 +27,11 @@ struct Object {
     vec4 angle_velocity;
     vec4 angle_acceleration;
 
+    vec4 orientation;
+
+    mat4 transform;
+    mat4 inverse_transform;
+
     float test_value[10];
 
     float radius;
@@ -43,7 +48,7 @@ struct Object {
 };
 
 Object default_object() {
-    return Object(vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), float[10](0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 0, 0, 0, 0, 0, 0, 0, 0);
+    return Object(vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(0), vec4(1, 0, 0, 0), mat4(1), mat4(1), float[10](0, 0, 0, 0, 0, 0, 0, 0, 0, 0), 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 layout(std140, std430, binding = OBJECT) buffer object_buffer {
@@ -67,11 +72,15 @@ struct trace_result {
 };
 
 trace_result closest_sphere(vec3 point, uint obj) {
+    vec3 relative = (objects[obj].inverse_transform * vec4(point - objects[obj].position.xyz, 1)).xyz;
+
     trace_result result;
 
-    result.diff = objects[obj].position.xyz - point;
+    result.diff = - relative;
+//    result.diff = objects[obj].position.xyz - point;
 
-    result.diff = normalize(result.diff) * (length(result.diff) - objects[obj].radius);
+    result.diff = (objects[obj].transform * vec4(normalize(result.diff) * (length(result.diff) - objects[obj].radius), 1)).xyz;
+//    result.position = (objects[obj].transform * vec4(result.diff + relative, 1)).xyz;
     result.position = result.diff + point;
 
     result.distance = length(result.diff);
@@ -88,6 +97,7 @@ trace_result closest_sphere(vec3 point, uint obj) {
 }
 
 vec4 closest_network(vec3 point, uint obj) {
+    point = (objects[obj].inverse_transform * vec4(point, 1)).xyz;
     float temp[MAX_THROUGHPUT];
 
     for (uint i = 0; i < 3; i++) {
@@ -104,21 +114,23 @@ vec4 closest_network(vec3 point, uint obj) {
 trace_result closest_cube(vec3 point, uint obj) {
     trace_result result;
 
-    vec3 relative = point - objects[obj].position.xyz;
+    vec3 relative = (objects[obj].inverse_transform * vec4(point - objects[obj].position.xyz, 1)).xyz;
+//    vec3 relative = point - objects[obj].position.xyz;
     vec3 edge = vec3(objects[obj].radius);
 
     vec3 clamped = clamp(relative, -edge, edge);
 
-    result.diff = clamped - relative;
+    result.diff = (objects[obj].transform * vec4(clamped - relative, 1)).xyz;
+//    result.position = (objects[obj].transform * vec4(result.diff + relative, 1)).xyz;
     result.position = result.diff + point;
 
     result.distance = length(result.diff);
 
-    if (abs(relative.x) < edge.x && abs(relative.z) < edge.y && abs(relative.z) < edge.z) {
+    if (abs(relative.x) < edge.x && abs(relative.y) < edge.y && abs(relative.z) < edge.z) {
         result.distance *= -1;
     }
 
-    result.normal = normalize(result.diff);
+    result.normal = normalize(-result.diff);
 
     result.obj = obj;
 

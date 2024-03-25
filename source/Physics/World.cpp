@@ -53,29 +53,7 @@ namespace OddityEngine::Physics {
         auto result = object_buffer.get();
 
         for (GLsizei i = 0; i < object_count(); i++) {
-            objects[i]->position = result[i].position;
-            objects[i]->velocity = result[i].velocity;
-            objects[i]->acceleration = result[i].acceleration;
-
-            objects[i]->angle = result[i].angle;
-            objects[i]->angle_velocity = result[i].angle_velocity;
-            objects[i]->angle_acceleration = result[i].angle_acceleration;
-
-
-            for (size_t j = 0; j < 10; j++) objects[i]->test_value[j] = result[i].test_value[j];
-            objects[i]->state = result[i].state;
-
-            // fmt::print("[{}]\n\t[ {} | {} | {} ]\n\t[ {} | {} | {} ]\n\t[ {} | {} | {} ]\n", i, objects[i]->position.x, objects[i]->position.y, objects[i]->position.z, objects[i]->velocity.x, objects[i]->velocity.y, objects[i]->velocity.z, objects[i]->acceleration.x, objects[i]->acceleration.y, objects[i]->acceleration.z);
-            // for (size_t j = 0; j < 10; j++) {
-            //     if (j == 0) {
-            //         fmt::print("[");
-            //     }
-            //     else {
-            //         fmt::print("|");
-            //     }
-            //     fmt::print(" {}: {} ", j, objects[i]->test_value[j]);
-            // }
-            // fmt::print("]\n");
+            *objects[i] = result[i];
         }
     }
 

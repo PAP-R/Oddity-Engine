@@ -5,6 +5,8 @@
 #include <chrono>
 #include <complex>
 
+#include "Util/CombinedIndex.h"
+
 
 using namespace std::chrono_literals;
 
@@ -100,8 +102,8 @@ int main(int argc, char* args[]) {
     OddityEngine::Physics::Object ball4({0, 10, 0});
 
     // player.shape = OddityEngine::Physics::CUBE;
-    // center_ball.shape = OddityEngine::Physics::CUBE;
-    // center_ball.state &= ~OddityEngine::Physics::MOVE;
+    center_ball.shape = OddityEngine::Physics::CUBE;
+    center_ball.state &= ~OddityEngine::Physics::MOVE;
 
     world.add_object(&center_ball);
     // world.add_object(&ball1);
@@ -123,7 +125,7 @@ int main(int argc, char* args[]) {
     OddityEngine::Vector<OddityEngine::Physics::Object*> balls;
 
     int round = 8;
-    float height = 10;
+    float height = 12;
     float width = 6;
     float layer_width = 2;
     int count = round * 1;
@@ -193,7 +195,19 @@ int main(int argc, char* args[]) {
     commander.apply("teleport 0 50 50 print teleported back");
     commander.apply("print teleporting to /teleport 50 50 50 so were at the start again");
 
+    OddityEngine::Vector<GLuint> indices = {6, 17, 20};
+    auto indices_simplified = OddityEngine::Util::CombinedIndex::generate(indices);
+    auto indices_restored = OddityEngine::Util::CombinedIndex::get(indices_simplified);
+
+    OddityEngine::Debug::message("Simplified: {}\t{}\t{}\t{}", indices_simplified.offset, indices_simplified.base, indices_simplified.count, indices_simplified.indices);
+
+    std::cout << indices << std::endl << indices_restored << std::endl;
+
     do {
+        center_ball.orientation.x = cos(OddityEngine::Util::Time::now<float>());
+        center_ball.orientation.y = cos(OddityEngine::Util::Time::now<float>());
+        center_ball.orientation.z = sin(OddityEngine::Util::Time::now<float>());
+        center_ball.orientation.w = sin(OddityEngine::Util::Time::now<float>());
         world.update();
         // OddityEngine::Debug::message("Ball Acc: [ {} | {} | {} ]", center_ball.acceleration.x, center_ball.acceleration.y, center_ball.acceleration.z);
         // OddityEngine::Debug::message("Acc: [ {} | {} | {} ]", player.acceleration.x, player.acceleration.y, player.acceleration.z);

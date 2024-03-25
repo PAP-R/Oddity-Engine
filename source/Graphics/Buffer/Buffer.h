@@ -22,6 +22,7 @@ namespace OddityEngine::Graphics {
         TIME,
         RENDER,
         TEMP,
+        CONSTRAINT,
     };
 
     template<typename T>

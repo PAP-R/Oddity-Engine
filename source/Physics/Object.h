@@ -37,6 +37,11 @@ namespace OddityEngine::Physics {
         glm::vec4 angle_velocity = {0, 0, 0, 1};
         glm::vec4 angle_acceleration = {0, 0, 0, 1};
 
+        glm::quat orientation = {1, 0, 0, 0};
+
+        glm::mat4 transform;
+        glm::mat4 inverse_transform;
+
         float test_value[10];
 
         float radius = 0;
@@ -52,14 +57,17 @@ namespace OddityEngine::Physics {
         GLuint next_index = 0;
     };
 
-    struct Object : public Object_struct {
+    class Object : public Object_struct {
+    protected:
+        glm::vec3 _front = {0, 0, -1};
+        glm::vec3 _right = {1, 0, 0};
+        glm::vec3 _up = {0, 1, 0};
+    public:
         Object* parent = nullptr;
         Object* prev = nullptr;
         Object* next = nullptr;
 
         std::map<void*, GLuint> buffer_indices;
-
-        glm::quat orientation = {1, 0, 0, 0};
 
         Vector<NeuralNetwork::Network> net = Vector<NeuralNetwork::Network>(10, NeuralNetwork::Network(9, 4));
         Vector<Object*> conections;
@@ -67,6 +75,8 @@ namespace OddityEngine::Physics {
         virtual ~Object() = default;
 
         explicit Object(glm::vec3 position = {0, 0, 0}, glm::vec3 angle = {0, 0, 0}, SHAPES shape = SPHERE);
+
+        Object& operator= (Object_struct obj);
 
         virtual bool update();
         virtual bool update(void* context);
