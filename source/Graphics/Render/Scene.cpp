@@ -60,8 +60,8 @@ namespace OddityEngine::Graphics {
         return index;
     }
 
-    GLsizei Scene::add_input(Util::Eventable* eventable) {
-        eventables.emplace_back(eventable);
+    GLsizei Scene::add_eventable(Util::Eventable* input) {
+        eventables.push_back(input);
         return eventables.size() - 1;
     }
 

@@ -1,14 +1,15 @@
-#ifndef INPUT_H
-#define INPUT_H
+#ifndef EVENTABLE_H
+#define EVENTABLE_H
 
-#include <backends/imgui_impl_sdl2.h>
+#include <SDL.h>
 
 namespace OddityEngine::Util {
     class Eventable {
     public:
+        bool active;
         virtual void event(const SDL_Event& event) = 0;
     };
 }
 
 
-#endif //INPUT_H
+#endif //EVENTABLE_H

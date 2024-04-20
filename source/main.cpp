@@ -27,10 +27,7 @@ using namespace std::chrono_literals;
 #include "Util/Time.h"
 #include <Util/Debug.h>
 #include <Util/Commander.h>
-
-float print(...) {
-    return 0;
-};
+#include <Input/Input.h>
 
 int main(int argc, char* args[]) {
     OddityEngine::init();
@@ -66,7 +63,7 @@ int main(int argc, char* args[]) {
     // player.angle_velocity.x = 10;
     // player.angle_velocity.y = 1;
 
-    scene.add_input(&player);
+    scene.add_eventable(&player);
 
     OddityEngine::Physics::World world;
 
@@ -202,6 +199,23 @@ int main(int argc, char* args[]) {
     OddityEngine::Debug::message("Simplified: {}\t{}\t{}\t{}", indices_simplified.offset, indices_simplified.base, indices_simplified.count, indices_simplified.indices);
 
     std::cout << indices << std::endl << indices_restored << std::endl;
+
+
+    OddityEngine::Input::Input input;
+    scene.add_eventable(&input);
+
+    input.add_action("KeyCheck", [](const SDL_Event& event){OddityEngine::Debug::message("Hallo, sie haben {} gedrückt. Key sagt {}, aber Button sagt {}", SDL_GetKeyName(event.key.keysym.sym), event.key.keysym.sym, event.button.button);});
+    input.add_mapping("KeyCheck", SDL_KEYDOWN, SDL_GetKeyFromName("Q"));
+    input.add_mapping("KeyCheck", SDL_KEYDOWN, SDL_GetKeyFromName("E"));
+    input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 1);
+    input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 2);
+    input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 3);
+    input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 4);
+    input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 5);
+
+    input.add_action("MouseMove", [](const SDL_Event& event){OddityEngine::Debug::message("You moved your mouse by [{}/{}]", event.motion.xrel, event.motion.yrel);});
+    input.add_mapping("MouseMove", SDL_MOUSEMOTION);
+
 
     do {
         center_ball.orientation.x = cos(OddityEngine::Util::Time::now<float>());

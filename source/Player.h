@@ -1,7 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <Input/Eventable.h>
+#include "Util/Eventable.h"
 #include <Physics/Object.h>
 
 #include "Graphics/Camera.h"

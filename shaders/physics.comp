@@ -15,6 +15,8 @@ void reset(uint index) {
 }
 
 void gravity (uint first_read, uint first_write, uint second_read, uint second_write, float multiplier) {
+    vec3 inner = objects[second_read].position.xyz - objects[first_read].position.xyz;
+
     if ((objects[first_read].state & MOVE) != 0) {
         temp_objects[first_write].acceleration.xyz = G * normalize(inner) * objects[first_read].mass * objects[second_read].mass / pow(length(inner), 2);
         //                temp_objects[first_write].acceleration.xyz = G * normalize(inner) * objects[second_read].mass / pow(max(length(inner), 1), 2);

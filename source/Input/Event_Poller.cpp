@@ -4,7 +4,7 @@
 #include <fmt/core.h>
 
 #include <Graphics/Window.h>
-#include <Input/Eventable.h>
+#include "Util/Eventable.h"
 
 namespace OddityEngine::Event {
     void update() {

@@ -27,7 +27,7 @@ set(GRAPHICS
 set(INPUT
         Input/Event_Poller.cpp
         Input/Event_Poller.h
-        Input/Eventable.h
+        Util/Eventable.h
         Input/Input.cpp
         Input/Input.h
         Input/Keyboard.cpp

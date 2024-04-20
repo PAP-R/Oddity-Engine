@@ -9,7 +9,7 @@
 
 #include <Util/Vector.h>
 
-#include "../../Input/Eventable.h"
+#include "Util/Eventable.h"
 
 namespace OddityEngine::Graphics {
     class Scene {
@@ -34,7 +34,7 @@ namespace OddityEngine::Graphics {
 
         void set_size(const glm::vec<2, int>& size);
         GLsizei add_renderer(Render::Interface* renderer);
-        GLsizei add_input(Util::Eventable* input);
+        GLsizei add_eventable(Util::Eventable* input);
 
         GLsizei layer_count() const;
         Buffer<Render::render_transform>* get_texture_transform_buffer();
