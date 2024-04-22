@@ -25,7 +25,6 @@ namespace OddityEngine {
             }
         }
 
-
         Graphics::init();
     }
 

@@ -18,15 +18,25 @@ vec3 hsv2rgb(float h, float s, float v) {
 }
 
 void main() {
-    trace_result result = multi_trace_hit(camera_pos, ray_dir, 100, 0, object_count() - 1);
+    trace_result result = multi_trace_hit(camera_pos, ray_dir, 10, 0, object_count() - 1);
 
-    if (result.distance < TOLERANCE) {
-        color = vec4(hsv2rgb(float(result.obj) / object_count(), 1, 1), 1);
-//        color = vec4(abs(result.diff / (result.distance + 1)), 1);
-    }
-    else {
-        color = vec4(result.diff, 1);
-    }
+    color = vec4(hsv2rgb(float(result.obj) / object_count(), 1, 1), 1) * clamp(1 - result.distance, 0, 1);
+
+//    if (result.distance < 1) {
+//        color = vec4(hsv2rgb(float(result.obj) / object_count(), 1, 1), 1) * clamp(1 - result.distance, 0, 1);
+////        color = vec4(abs(result.diff / (result.distance + 1)), 1);
+//    }
+//    else {
+//        color = vec4(0);
+//    }
+
+//    if (result.distance < TOLERANCE) {
+//        color = vec4(hsv2rgb(float(result.obj) / object_count(), 1, 1), 1) * (1 - result.distance);
+////        color = vec4(abs(result.diff / (result.distance + 1)), 1);
+//    }
+//    else {
+//        color = vec4(result.diff, 1);
+//    }
 
     if ((objects[result.obj].state & ERROR) != 0) {
         color += vec4(sin(TIME), 0, 0, 1);

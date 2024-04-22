@@ -3,12 +3,13 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 namespace OddityEngine::Util {
     template<typename T>
     struct TrieNode {
         std::vector<T> values;
-        std::vector<TrieNode> nodes;
+        std::map<size_t, TrieNode> nodes;
     };
 
     template<typename T>
@@ -20,12 +21,8 @@ namespace OddityEngine::Util {
             current->values.push_back(value);
         }
 
-        template<typename ... Args, std::enable_if_t<((std::is_arithmetic_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...)) || sizeof...(Args) == 0, bool> = true>
+        template<typename ... Args, std::enable_if_t<((std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...)) || sizeof...(Args) == 0, bool> = true>
         void _add(TrieNode<T>* current, const T& value, size_t path, Args ... rest) {
-            if (current->nodes.size() <= path) {
-                current->nodes.resize(path + 1);
-            }
-
             current = &current->nodes[path];
 
             this->_add(current, value, rest...);
@@ -35,14 +32,15 @@ namespace OddityEngine::Util {
             return &current->values;
         }
 
-        template<typename ... Args, std::enable_if_t<((std::is_arithmetic_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...)) || sizeof...(Args) == 0, bool> = true>
+        template<typename ... Args, std::enable_if_t<((std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...)) || sizeof...(Args) == 0, bool> = true>
         std::vector<T>* _get(TrieNode<T>* current, size_t path, Args ... rest) {
-            if (current->nodes.size() > path) {
-                current = &current->nodes[path];
-
-                return this->_get(current, rest...);
+            if (!current->nodes.contains(path)) {
+                return nullptr;
             }
-            return nullptr;
+
+            current = &current->nodes[path];
+
+            return this->_get(current, rest...);
         }
 
         void _get_all(const TrieNode<T>& current, std::string path, std::vector<std::pair<std::string, std::vector<T>*>>* result) {
@@ -50,8 +48,8 @@ namespace OddityEngine::Util {
                 result->emplace_back(path, &current.values);
             }
 
-            for (size_t i = 0; i < current.nodes.size(); i++) {
-                _get_all(current.nodes, path + std::to_string(i));
+            for (auto c : current.nodes) {
+                _get_all(c.second, path + std::to_string(c.first));
             }
         }
 
@@ -65,17 +63,13 @@ namespace OddityEngine::Util {
             TrieNode<T>* current = &root;
 
             for (auto c : path) {
-                if (current->nodes.size() <= c) {
-                    current->nodes.resize(c + 1);
-                }
-
                 current = &current->nodes[c];
             }
 
             current->values.push_back(value);
         }
 
-        template<typename ... Args, std::enable_if_t<(std::is_arithmetic_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...), bool> = true>
+        template<typename ... Args, std::enable_if_t<(std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...), bool> = true>
         void add(const T& value, Args ... path) {
             this->_add(&root, value, path...);
         }
@@ -84,7 +78,7 @@ namespace OddityEngine::Util {
             TrieNode<T>* current = &root;
 
             for (auto c : path) {
-                if (current->nodes.size() <= c) {
+                if (!current->nodes.contains(c)) {
                     return nullptr;
                 }
 
@@ -94,7 +88,7 @@ namespace OddityEngine::Util {
             return &current->values;
         }
 
-        template<typename ... Args, std::enable_if_t<(std::is_arithmetic_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...), bool> = true>
+        template<typename ... Args, std::enable_if_t<(std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...), bool> = true>
         std::vector<T>* get(Args ... path) {
             return this->_get(&root, path...);
         }

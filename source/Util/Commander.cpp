@@ -58,7 +58,7 @@ namespace OddityEngine::Util {
 
         auto command_list = command_tree.get(current_command);
 
-        if (command_list->empty()) {
+        if (command_list == nullptr) {
             return "Command not found";
         }
 

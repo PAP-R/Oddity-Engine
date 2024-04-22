@@ -6,16 +6,22 @@
 #define ODDITYENGINE_SHADER_H
 
 #include "GL/glew.h"
+#include "Util/Vector.h"
 
 #include <string>
 
 namespace OddityEngine {
     namespace Graphics {
+        struct ShaderElement {
+            std::string name;
+            std::string content;
+        };
 
         class Shader {
         protected:
-            GLuint ID;
-            GLuint type;
+            GLuint ID = 0;
+            GLuint type = 0;
+            Vector<ShaderElement> elements;
 
         public:
             Shader() = default;
@@ -34,6 +40,8 @@ namespace OddityEngine {
              * @return shader ID
              */
             operator GLuint() const;
+
+            static Vector<ShaderElement> parse(const std::string& string);
         };
 
     } // OddityEngine

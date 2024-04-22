@@ -12,64 +12,64 @@ Player::Player(OddityEngine::Graphics::Camera* camera) : camera(camera) {
 
 void Player::event(const SDL_Event& event) {
     switch (event.type) {
-        case SDL_KEYDOWN:
-            if (!event.key.repeat) {
-                switch(event.key.keysym.sym) {
-                    case SDLK_w:
-                        delta_acceleration.z += manual_acceleration.z;
-                    break;
-                    case SDLK_s:
-                        delta_acceleration.z -= manual_acceleration.z;
-                    break;
-                    case SDLK_a:
-                        delta_acceleration.x -= manual_acceleration.x;
-                    break;
-                    case SDLK_d:
-                        delta_acceleration.x += manual_acceleration.x;
-                    break;
-                    case SDLK_SPACE:
-                        delta_acceleration.y += manual_acceleration.y;
-                    break;
-                    case SDLK_LCTRL:
-                        delta_acceleration.y -= manual_acceleration.y;
-                    break;
-                    case SDLK_r:
-                        // position = {0, 0, 0, 1};
-                        velocity = {0, 0, 0, 1};
-                        acceleration = {0, 0, 0, 1};
-                        // angle = {0, 0, 0, 1};
-                        angle_velocity = {0, 0, 0, 1};
-                        angle_acceleration = {0, 0, 0, 1};
-                        break;
-                    case SDLK_BACKQUOTE:
-                        SDL_SetRelativeMouseMode(SDL_GetRelativeMouseMode() == SDL_FALSE ? SDL_TRUE : SDL_FALSE);
-                        break;
-                }
-                OddityEngine::Debug::message("Key: {}", SDL_GetKeyName(event.key.keysym.sym));
-            }
-            break;
-        case SDL_KEYUP:
-            switch(event.key.keysym.sym) {
-                case SDLK_w:
-                    delta_acceleration.z -= manual_acceleration.z;
-                break;
-                case SDLK_s:
-                    delta_acceleration.z += manual_acceleration.z;
-                break;
-                case SDLK_a:
-                    delta_acceleration.x += manual_acceleration.x;
-                break;
-                case SDLK_d:
-                    delta_acceleration.x -= manual_acceleration.x;
-                break;
-                case SDLK_SPACE:
-                    delta_acceleration.y -= manual_acceleration.y;
-                break;
-                case SDLK_LCTRL:
-                    delta_acceleration.y += manual_acceleration.y;
-                break;
-            }
-            break;
+//        case SDL_KEYDOWN:
+//            if (!event.key.repeat) {
+//                switch(event.key.keysym.sym) {
+//                    case SDLK_w:
+//                        delta_acceleration.z += manual_acceleration.z;
+//                    break;
+//                    case SDLK_s:
+//                        delta_acceleration.z -= manual_acceleration.z;
+//                    break;
+//                    case SDLK_a:
+//                        delta_acceleration.x -= manual_acceleration.x;
+//                    break;
+//                    case SDLK_d:
+//                        delta_acceleration.x += manual_acceleration.x;
+//                    break;
+//                    case SDLK_SPACE:
+//                        delta_acceleration.y += manual_acceleration.y;
+//                    break;
+//                    case SDLK_LCTRL:
+//                        delta_acceleration.y -= manual_acceleration.y;
+//                    break;
+//                    case SDLK_r:
+//                        // position = {0, 0, 0, 1};
+//                        velocity = {0, 0, 0, 1};
+//                        acceleration = {0, 0, 0, 1};
+//                        // angle = {0, 0, 0, 1};
+//                        angle_velocity = {0, 0, 0, 1};
+//                        angle_acceleration = {0, 0, 0, 1};
+//                        break;
+//                    case SDLK_BACKQUOTE:
+//                        SDL_SetRelativeMouseMode(SDL_GetRelativeMouseMode() == SDL_FALSE ? SDL_TRUE : SDL_FALSE);
+//                        break;
+//                }
+//                OddityEngine::Debug::message("Key: {}", SDL_GetKeyName(event.key.keysym.sym));
+//            }
+//            break;
+//        case SDL_KEYUP:
+//            switch(event.key.keysym.sym) {
+//                case SDLK_w:
+//                    delta_acceleration.z -= manual_acceleration.z;
+//                break;
+//                case SDLK_s:
+//                    delta_acceleration.z += manual_acceleration.z;
+//                break;
+//                case SDLK_a:
+//                    delta_acceleration.x += manual_acceleration.x;
+//                break;
+//                case SDLK_d:
+//                    delta_acceleration.x -= manual_acceleration.x;
+//                break;
+//                case SDLK_SPACE:
+//                    delta_acceleration.y -= manual_acceleration.y;
+//                break;
+//                case SDLK_LCTRL:
+//                    delta_acceleration.y += manual_acceleration.y;
+//                break;
+//            }
+//            break;
 
         case SDL_MOUSEMOTION:
             angle.x += -event.motion.xrel * mouse_sensitivity.x;
@@ -167,4 +167,28 @@ glm::vec4 Player::closest(const glm::vec3 point) {
 
 float Player::distance(const glm::vec3 point) {
     return glm::length(closest(point));
+}
+
+void Player::set_acceleration_front(float scale) {
+    delta_acceleration.z = manual_acceleration.z * scale;
+}
+
+void Player::set_acceleration_right(float scale) {
+    delta_acceleration.x = manual_acceleration.x * scale;
+}
+
+void Player::set_acceleration_up(float scale) {
+    delta_acceleration.y = manual_acceleration.y * scale;
+}
+
+void Player::add_acceleration_front(float scale) {
+    delta_acceleration.z += manual_acceleration.z * scale;
+}
+
+void Player::add_acceleration_right(float scale) {
+    delta_acceleration.x += manual_acceleration.x * scale;
+}
+
+void Player::add_acceleration_up(float scale) {
+    delta_acceleration.y += manual_acceleration.y * scale;
 }

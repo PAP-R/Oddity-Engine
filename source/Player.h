@@ -25,6 +25,13 @@ public:
 
     glm::vec4 closest(glm::vec3 point) override;
     float distance(glm::vec3 point) override;
+
+    void set_acceleration_front(float scale);
+    void set_acceleration_right(float scale);
+    void set_acceleration_up(float scale);
+    void add_acceleration_front(float scale);
+    void add_acceleration_right(float scale);
+    void add_acceleration_up(float scale);
 };
 
 

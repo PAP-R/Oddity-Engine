@@ -154,7 +154,7 @@ int main(int argc, char* args[]) {
     }
 
     // renderer->set_size({10, 10});
-    OddityEngine::Debug::message("World: [ {} | {} | {} ]", earth.position.x, earth.position.y, earth.position.z);
+//    OddityEngine::Debug::message("World: [ {} | {} | {} ]", earth.position.x, earth.position.y, earth.position.z);
 
     OddityEngine::Util::Time::set_framerate(20);
 
@@ -185,27 +185,29 @@ int main(int argc, char* args[]) {
         return fmt::format("{} {} {}", player.position.x, player.position.y, player.position.z);
     });
 
-    commander.apply("print Hallo Welt, wie geht's dir heute? 42");
+//    commander.apply("print Hallo Welt, wie geht's dir heute? 42");
+//
+//    commander.apply("teleport 50 50 50");
+//
+//    commander.apply("teleport 0 50 50 print teleported back");
+    commander.apply("print teleporting to /teleport 50 50 50");
 
-    commander.apply("teleport 50 50 50");
-
-    commander.apply("teleport 0 50 50 print teleported back");
-    commander.apply("print teleporting to /teleport 50 50 50 so were at the start again");
-
-    OddityEngine::Vector<GLuint> indices = {6, 17, 20};
-    auto indices_simplified = OddityEngine::Util::CombinedIndex::generate(indices);
-    auto indices_restored = OddityEngine::Util::CombinedIndex::get(indices_simplified);
-
-    OddityEngine::Debug::message("Simplified: {}\t{}\t{}\t{}", indices_simplified.offset, indices_simplified.base, indices_simplified.count, indices_simplified.indices);
-
-    std::cout << indices << std::endl << indices_restored << std::endl;
-
+//    OddityEngine::Vector<GLuint> indices = {6, 17, 20};
+//    auto indices_simplified = OddityEngine::Util::CombinedIndex::generate(indices);
+//    auto indices_restored = OddityEngine::Util::CombinedIndex::get(indices_simplified);
+//
+//    OddityEngine::Debug::message("Simplified: {}\t{}\t{}\t{}", indices_simplified.offset, indices_simplified.base, indices_simplified.count, indices_simplified.indices);
+//
+//    std::cout << indices << std::endl << indices_restored << std::endl;
 
     OddityEngine::Input::Input input;
     scene.add_eventable(&input);
 
+    input.add_action("CaptureMouse", [](const SDL_Event& event){SDL_SetRelativeMouseMode(SDL_GetRelativeMouseMode() == SDL_FALSE ? SDL_TRUE : SDL_FALSE);});
+    input.add_mapping("CaptureMouse", SDL_KEYDOWN, SDL_GetKeyFromName("`"));
+
     input.add_action("KeyCheck", [](const SDL_Event& event){OddityEngine::Debug::message("Hallo, sie haben {} gedrückt. Key sagt {}, aber Button sagt {}", SDL_GetKeyName(event.key.keysym.sym), event.key.keysym.sym, event.button.button);});
-    input.add_mapping("KeyCheck", SDL_KEYDOWN, SDL_GetKeyFromName("Q"));
+    input.add_mapping("KeyCheck", SDL_KEYDOWN, SDLK_q);
     input.add_mapping("KeyCheck", SDL_KEYDOWN, SDL_GetKeyFromName("E"));
     input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 1);
     input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 2);
@@ -214,8 +216,110 @@ int main(int argc, char* args[]) {
     input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 5);
 
     input.add_action("MouseMove", [](const SDL_Event& event){OddityEngine::Debug::message("You moved your mouse by [{}/{}]", event.motion.xrel, event.motion.yrel);});
-    input.add_mapping("MouseMove", SDL_MOUSEMOTION);
+//    input.add_mapping("MouseMove", SDL_MOUSEMOTION);
 
+    input.add_action("GeneralCheck", [](const SDL_Event& event){OddityEngine::Debug::message("Event Type : {}", event.type);});
+    input.add_mapping("GeneralCheck", SDL_JOYAXISMOTION);
+    input.add_mapping("GeneralCheck", SDL_JOYBUTTONUP);
+    input.add_mapping("GeneralCheck", SDL_CONTROLLERDEVICEADDED);
+    input.add_mapping("GeneralCheck", SDL_CONTROLLERAXISMOTION);
+    input.add_mapping("GeneralCheck", SDL_CONTROLLERBUTTONDOWN);
+
+    input.add_action("MoveForward", [&](const SDL_Event& event){player.add_acceleration_front(1);});
+    input.add_action("MoveBack", [&](const SDL_Event& event){player.add_acceleration_front(-1);});
+    input.add_action("MoveRight", [&](const SDL_Event& event){player.add_acceleration_right(1);});
+    input.add_action("MoveLeft", [&](const SDL_Event& event){player.add_acceleration_right(-1);});
+    input.add_action("MoveUp", [&](const SDL_Event& event){player.add_acceleration_up(1);});
+    input.add_action("MoveDown", [&](const SDL_Event& event){player.add_acceleration_up(-1);});
+
+    input.add_action("MoveForwardAxis", [&](const SDL_Event& event){player.set_acceleration_front(-(event.jaxis.value + 0.5f) / CONTROLLER_AXIS_MAX);});
+    input.add_mapping("MoveForwardAxis", SDL_JOYAXISMOTION, 1);
+
+    input.add_action("MoveRightAxis", [&](const SDL_Event& event){player.set_acceleration_right((event.jaxis.value + 0.5f) / CONTROLLER_AXIS_MAX);});
+    input.add_mapping("MoveRightAxis", SDL_JOYAXISMOTION, 0);
+
+    input.add_action("ControllerButton", [&](const SDL_Event& event){OddityEngine::Debug::message("Pressed Controller Button {}", event.jbutton.button);});
+    for (int i = 0; i < 16; i++) input.add_mapping("ControllerButton", SDL_JOYBUTTONDOWN, i);
+
+    input.add_action("NumJoysticks", [&](const SDL_Event& event) {
+        for (size_t i = 0; i < SDL_NumJoysticks(); i++) {
+            OddityEngine::Debug::message("Joystick {} : {}", i, SDL_JoystickNameForIndex(i));
+        }
+    });
+    input.add_mapping("NumJoysticks", SDL_KEYDOWN, SDLK_n);
+
+    std::vector<SDL_Joystick*> joysticks;
+
+//    for (size_t i = 0; i < SDL_NumJoysticks(); i++) {
+//        joysticks.push_back(SDL_JoystickOpen(i));
+//        OddityEngine::Debug::message("Connected Joystick {} : {}", i, SDL_JoystickName(joysticks.back()));
+//    }
+
+    input.add_action("JoystickAdd", [&](const SDL_Event& event){
+        joysticks.push_back(SDL_JoystickOpen(event.jdevice.which));
+        OddityEngine::Debug::message("Connected Joystick {} : {}", event.jdevice.which, SDL_JoystickName(joysticks.back()));
+    });
+    input.add_mapping("JoystickAdd", SDL_JOYDEVICEADDED);
+
+    input.add_action("JoystickRemove", [&](const SDL_Event& event){
+        OddityEngine::Debug::message("Removed Joystick {} : {}", event.jdevice.which, SDL_JoystickNameForIndex(event.jdevice.which));
+        SDL_JoystickClose(SDL_JoystickFromInstanceID(event.jdevice.which));
+        joysticks.erase(std::remove(joysticks.begin(), joysticks.end(), SDL_JoystickFromInstanceID(event.jdevice.which)), joysticks.end());
+    });
+    input.add_mapping("JoystickRemove", SDL_JOYDEVICEREMOVED);
+
+
+    std::vector<SDL_GameController*> controllers;
+
+    input.add_action("ControllerAdd", [&](const SDL_Event& event){
+        controllers.push_back(SDL_GameControllerOpen(event.cdevice.which));
+        OddityEngine::Debug::message("Connected Controller {} : {}", event.cdevice.which, SDL_GameControllerName(controllers.back()));
+    });
+    input.add_mapping("ControllerAdd", SDL_CONTROLLERDEVICEADDED);
+
+    input.add_action("ControllerRemove", [&](const SDL_Event& event){
+        OddityEngine::Debug::message("Removed Controller {} : {}", event.jdevice.which, SDL_GameControllerNameForIndex(event.cdevice.which));
+        SDL_JoystickClose(SDL_JoystickFromInstanceID(event.cdevice.which));
+        controllers.erase(std::remove(controllers.begin(), controllers.end(), SDL_GameControllerFromInstanceID(event.cdevice.which)), controllers.end());
+    });
+    input.add_mapping("ControllerRemove", SDL_CONTROLLERDEVICEREMOVED);
+
+
+//    SDL_JoystickRumbleTriggers();
+
+    input.add_mapping("MoveForward", SDL_KEYDOWN, SDL_GetKeyFromName("w"));
+    input.add_mapping("MoveBack", SDL_KEYDOWN, SDL_GetKeyFromName("s"));
+    input.add_mapping("MoveRight", SDL_KEYDOWN, SDL_GetKeyFromName("d"));
+    input.add_mapping("MoveLeft", SDL_KEYDOWN, SDL_GetKeyFromName("a"));
+    input.add_mapping("MoveUp", SDL_KEYDOWN, SDLK_SPACE);
+    input.add_mapping("MoveDown", SDL_KEYDOWN, SDLK_LCTRL);
+
+    input.add_mapping("MoveForward", SDL_KEYUP, SDL_GetKeyFromName("s"));
+    input.add_mapping("MoveBack", SDL_KEYUP, SDL_GetKeyFromName("w"));
+    input.add_mapping("MoveRight", SDL_KEYUP, SDL_GetKeyFromName("a"));
+    input.add_mapping("MoveLeft", SDL_KEYUP, SDL_GetKeyFromName("d"));
+    input.add_mapping("MoveUp", SDL_KEYUP, SDLK_LCTRL);
+    input.add_mapping("MoveDown", SDL_KEYUP, SDLK_SPACE);
+
+
+    auto testparse = OddityEngine::Graphics::Shader::parse("int function() {\nHallo; dies ist eine function;}");
+
+
+    OddityEngine::Input::Input text_input;
+    text_input.disable();
+    scene.add_eventable(&text_input);
+
+    input.add_action("TextEnter", [&](const SDL_Event& event){OddityEngine::Debug::message("Swapped to text input"); text_input.enable(); input.disable();});
+    input.add_mapping("TextEnter", SDL_KEYDOWN, SDLK_RETURN);
+
+    std::string input_text;
+
+    text_input.add_action("Text", [&](const SDL_Event& event){ input_text += event.text.text; OddityEngine::Debug::message("{}", input_text);});
+    text_input.add_mapping("Text", SDL_TEXTINPUT);
+    text_input.add_action("TextBack", [&](const SDL_Event& event){if (!input_text.empty()) input_text.pop_back(); OddityEngine::Debug::message("{}", input_text);});
+    text_input.add_mapping("TextBack", SDL_KEYDOWN, SDLK_BACKSPACE);
+    text_input.add_action("TextEnter", [&](const SDL_Event& event){OddityEngine::Debug::message("Applying command and swapping back {}", commander.apply(input_text)); input_text.clear(); input.enable(); text_input.disable();});
+    text_input.add_mapping("TextEnter", SDL_KEYDOWN, SDLK_RETURN);
 
     do {
         center_ball.orientation.x = cos(OddityEngine::Util::Time::now<float>());

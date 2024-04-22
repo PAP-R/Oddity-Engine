@@ -117,5 +117,41 @@ namespace OddityEngine {
         GLuint Shader::get_ID() const {
             return ID;
         }
+
+
+        Vector<ShaderElement> Shader::parse(const std::string& string) {
+            size_t roundbracket = 0, swirlybracket = 0, squarebracket = 0, index = 0, next = 0;
+            Vector<ShaderElement> elements;
+
+            std::stringstream stream(string);
+            std::string line;
+            std::string current;
+
+            while(std::getline(stream, line, '\n')) {
+                std::stringstream linestream(line);
+                std::string cell;
+                while(std::getline(linestream, cell, ';')) {
+                    current += cell;
+                    if (line.back() == ';') {
+                        current += ";";
+                    }
+                    current += "\n";
+
+                    roundbracket += std::ranges::count(line, '(');
+                    roundbracket -= std::ranges::count(line, ')');
+                    swirlybracket += std::ranges::count(line, '{');
+                    swirlybracket -= std::ranges::count(line, '}');
+                    squarebracket += std::ranges::count(line, '[');
+                    squarebracket -= std::ranges::count(line, ']');
+
+                    if (roundbracket == 0 && swirlybracket == 0 && squarebracket == 0) {
+                        elements.emplace_back("", current);
+                        current.clear();
+                    }
+                }
+            }
+
+            return elements;
+        }
     } // OddityEngine
 } // Graphics

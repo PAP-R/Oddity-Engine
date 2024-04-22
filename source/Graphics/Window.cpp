@@ -41,15 +41,6 @@ namespace OddityEngine::Graphics {
         const auto context = SDL_GL_CreateContext(window);
         SDL_GL_MakeCurrent(window, context);
 
-        auto count = SDL_GetNumVideoDrivers();
-
-        for (size_t i = 0; i < count; i++) {
-            std::cout << SDL_GetVideoDriver(i) << std::endl;
-        }
-
-        std::cout << std::endl << SDL_GetCurrentVideoDriver() << std::endl;
-
-
         glewExperimental = true;
 
         auto glew_status = glewInit();
