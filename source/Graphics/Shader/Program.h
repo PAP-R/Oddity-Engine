@@ -2,6 +2,7 @@
 #define ODDITYENGINE_PROGRAM_H
 
 #include "GL/glew.h"
+#include "Shader.h"
 
 #include <string>
 #include <vector>
@@ -12,6 +13,7 @@ namespace OddityEngine {
         class Program {
         protected:
             GLuint ID;
+            std::vector<Shader> shaders;
 
         public:
             Program() = default;
@@ -20,9 +22,11 @@ namespace OddityEngine {
              * @param vertex vertex shader
              * @param fragment fragment shader
              */
-            Program(std::initializer_list<GLuint> shaders);
+            Program(std::initializer_list<Shader> shaders);
             // Program(std::string vertex, std::string fragment);
             ~Program();
+
+            GLuint compile();
 
             /***
              * Finds uniform location in shader

@@ -8,27 +8,8 @@
 
 namespace OddityEngine {
     namespace Graphics {
-        Program::Program(std::initializer_list<GLuint> shaders) {
-            ID = glCreateProgram();
-            for (auto s : shaders) {
-                glAttachShader(ID, s);
-            }
-            glLinkProgram(ID);
-
-            GLint result = GL_FALSE;
-            int info_length = 0;
-
-            glGetProgramiv(ID, GL_LINK_STATUS, &result);
-            glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &info_length);
-
-            if (result == GL_FALSE) {
-                int info_length;
-                glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &info_length);
-
-                std::vector<char> program_error(info_length + 1);
-                glGetProgramInfoLog(ID, info_length, nullptr, &program_error[0]);
-                Debug::error("{} Shader Program Error : {}\n", info_length, &program_error[0]);
-            }
+        Program::Program(std::initializer_list<Shader> shaders) : shaders{shaders} {
+            compile();
         }
 
         // Program::Program(std::string vertex, std::string fragment) : Program(Shader(GL_VERTEX_SHADER, vertex), Shader(GL_FRAGMENT_SHADER, fragment)) {
@@ -48,6 +29,32 @@ namespace OddityEngine {
 
         GLint Program::uniform_location(const std::string& name) const {
             return glGetUniformLocation(ID, name.c_str());
+        }
+
+        GLuint Program::compile() {
+            ID = glCreateProgram();
+            for (auto s : shaders) {
+                s.compile();
+                glAttachShader(ID, s);
+            }
+            glLinkProgram(ID);
+
+            GLint result = GL_FALSE;
+            int info_length = 0;
+
+            glGetProgramiv(ID, GL_LINK_STATUS, &result);
+            glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &info_length);
+
+            if (result == GL_FALSE) {
+                int info_length;
+                glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &info_length);
+
+                std::vector<char> program_error(info_length + 1);
+                glGetProgramInfoLog(ID, info_length, nullptr, &program_error[0]);
+                Debug::error("{} Shader Program Error : {}\n", info_length, &program_error[0]);
+            }
+
+            return ID;
         }
     } // OddityEngine
 } // Graphics

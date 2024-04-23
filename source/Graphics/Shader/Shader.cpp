@@ -16,9 +16,8 @@ namespace OddityEngine {
     namespace Graphics {
         std::vector<std::string> paths;
         std::vector<std::string> uniforms;
-        bool version_inserted;
 
-        std::string read_shader(const std::string &path) {
+        std::string Shader::read_shader(const std::string &path) {
             paths.emplace_back(path);
 
             std::stringstream shader_stream = Util::File::stream(fmt::format("{}/{}",SHADER_DIR, path));
@@ -33,11 +32,7 @@ namespace OddityEngine {
                     line.erase(std::unique(line.begin() + first_char, line.end(), [](unsigned char a, unsigned char b){return std::isspace(a) && std::isspace(b);}), line.end());
                 }
                 if (line.contains("#version")) {
-                    if (version_inserted) {
-                        continue;
-                    } else {
-                        version_inserted = true;
-                    }
+                    continue;
                 }
                 if (line.rfind("#include", first_char) != std::string::npos) {
                     auto first = line.find('<') + 1;
@@ -62,12 +57,15 @@ namespace OddityEngine {
             return shader_code;
         }
 
+        Shader::Shader(GLuint type) : type(type) {}
+
         Shader::Shader(GLuint type, const std::string &path) : type(type), ID(glCreateShader(type)) {
             paths.clear();
             uniforms.clear();
-            version_inserted = false;
 
-            std::string shader_code = read_shader(path);
+            add(read_shader(path));
+
+            compile();
 
             // fmt::print("\t{} :\n", path);
             // std::stringstream shader_stream(shader_code);
@@ -76,6 +74,96 @@ namespace OddityEngine {
             //     fmt::print("{:3d} \t: {}\n", i, line);
             // }
             // fmt::print("\n");
+
+
+            paths.clear();
+        }
+
+        Shader::~Shader() {
+            glDeleteShader(ID);
+        }
+
+        Shader::operator GLuint() const {
+            return ID;
+        }
+
+        GLuint Shader::get_ID() const {
+            return ID;
+        }
+
+
+        Vector<ShaderElement> Shader::add(const std::string& string) {
+            size_t roundbracket = 0, swirlybracket = 0, squarebracket = 0, index = 0, next = 0;
+
+            std::stringstream stream(string);
+            std::string line;
+            std::string current;
+
+            while(std::getline(stream, line, '\n')) {
+                std::stringstream linestream(line);
+                std::string cell;
+                size_t semicount = std::ranges::count(line, ';');
+                for(size_t cellindex = 0; std::getline(linestream, cell, ';'); cellindex++) {
+                    if (cell.contains("//")) {
+                        break;
+                    }
+
+                    current += cell;
+                    if (cellindex < semicount) {
+                        current += ";";
+                    }
+                    current += "\n";
+
+
+                    roundbracket += std::ranges::count(cell, '(');
+                    roundbracket -= std::ranges::count(cell, ')');
+                    swirlybracket += std::ranges::count(cell, '{');
+                    swirlybracket -= std::ranges::count(cell, '}');
+                    squarebracket += std::ranges::count(cell, '[');
+                    squarebracket -= std::ranges::count(cell, ']');
+
+                    if (roundbracket == 0 && swirlybracket == 0 && squarebracket == 0) {
+                        size_t start = 0;
+                        if (current.contains("layout")) {
+                            start = current.find_first_of(')');
+                        }
+
+                        size_t after = current.find_first_of("({[=;", start);
+                        if (after == current.npos) {
+                            continue;
+                        }
+                        size_t before = current.find_last_of(' ', after - 2);
+                        if(before == current.npos) {
+                            before = 0;
+                        }
+
+                        std::string name = current.substr(before + 1, after - before);
+
+                        size_t offset = elements.size();
+
+                        for (size_t i = 0; i < elements.size(); i++) {
+                            if (elements[i].content.contains(fmt::format(" {}", name))) {
+                                offset = i;
+                                break;
+                            }
+                        }
+
+                        elements.emplace(offset, name, current);
+                        current.clear();
+                    }
+                }
+            }
+
+            return elements;
+        }
+
+        std::string Shader::compile() {
+            std::string shader_code = fmt::format("#version {}\n", VERSION);
+
+            for (const auto& e : elements) {
+                shader_code += e.content;
+                shader_code += '\n';
+            }
 
             GLint result = GL_FALSE;
 
@@ -103,55 +191,7 @@ namespace OddityEngine {
                 Debug::error(&shaderError[0]);
             }
 
-            paths.clear();
-        }
-
-        Shader::~Shader() {
-            glDeleteShader(ID);
-        }
-
-        Shader::operator GLuint() const {
-            return ID;
-        }
-
-        GLuint Shader::get_ID() const {
-            return ID;
-        }
-
-
-        Vector<ShaderElement> Shader::parse(const std::string& string) {
-            size_t roundbracket = 0, swirlybracket = 0, squarebracket = 0, index = 0, next = 0;
-            Vector<ShaderElement> elements;
-
-            std::stringstream stream(string);
-            std::string line;
-            std::string current;
-
-            while(std::getline(stream, line, '\n')) {
-                std::stringstream linestream(line);
-                std::string cell;
-                while(std::getline(linestream, cell, ';')) {
-                    current += cell;
-                    if (line.back() == ';') {
-                        current += ";";
-                    }
-                    current += "\n";
-
-                    roundbracket += std::ranges::count(line, '(');
-                    roundbracket -= std::ranges::count(line, ')');
-                    swirlybracket += std::ranges::count(line, '{');
-                    swirlybracket -= std::ranges::count(line, '}');
-                    squarebracket += std::ranges::count(line, '[');
-                    squarebracket -= std::ranges::count(line, ']');
-
-                    if (roundbracket == 0 && swirlybracket == 0 && squarebracket == 0) {
-                        elements.emplace_back("", current);
-                        current.clear();
-                    }
-                }
-            }
-
-            return elements;
+            return shader_code;
         }
     } // OddityEngine
 } // Graphics

@@ -301,8 +301,15 @@ int main(int argc, char* args[]) {
     input.add_mapping("MoveUp", SDL_KEYUP, SDLK_LCTRL);
     input.add_mapping("MoveDown", SDL_KEYUP, SDLK_SPACE);
 
-
-    auto testparse = OddityEngine::Graphics::Shader::parse("int function() {\nHallo; dies ist eine function;}");
+//    std::vector<std::string> files = {"test.frag"};
+//
+//    OddityEngine::Graphics::Shader shader(GL_FRAGMENT_SHADER);
+//
+//    for (auto f : files) {
+//        shader.add(OddityEngine::Graphics::Shader::read_shader(f));
+//
+//        OddityEngine::Debug::message("Shadercode:\n{}", shader.compile());
+//    }
 
 
     OddityEngine::Input::Input text_input;

@@ -10,6 +10,8 @@
 
 #include <string>
 
+#define VERSION "450 core"
+
 namespace OddityEngine {
     namespace Graphics {
         struct ShaderElement {
@@ -25,6 +27,13 @@ namespace OddityEngine {
 
         public:
             Shader() = default;
+
+            /**
+             * Creates and compiles an Opengl shader from a source file with #include combinations
+             * @param type shader type
+             */
+            Shader(GLuint type);
+
             /**
              * Creates and compiles an Opengl shader from a source file with #include combinations
              * @param type shader type
@@ -41,7 +50,11 @@ namespace OddityEngine {
              */
             operator GLuint() const;
 
-            static Vector<ShaderElement> parse(const std::string& string);
+            static std::string read_shader(const std::string& path);
+
+            Vector<ShaderElement> add(const std::string& string);
+
+            std::string compile();
         };
 
     } // OddityEngine
