@@ -6,7 +6,7 @@
 
 #include "Graphics/Camera.h"
 
-class Player : public OddityEngine::Physics::Object, public OddityEngine::Util::Eventable {
+class Player : public OddityEngine::Physics::Object {
 protected:
     glm::vec3 delta_acceleration = {0, 0, 0};
     glm::vec3 manual_acceleration = {40, 40, 40};
@@ -14,8 +14,6 @@ protected:
 
 public:
     Player(OddityEngine::Graphics::Camera* camera = new OddityEngine::Graphics::Camera());
-
-    void event(const SDL_Event& event) override;
 
     bool update() override;
     bool update(void* context) override;
@@ -32,6 +30,10 @@ public:
     void add_acceleration_front(float scale);
     void add_acceleration_right(float scale);
     void add_acceleration_up(float scale);
+
+    void turn(float right, float up);
+    void turn_up(float scale);
+    void turn_right(float scale);
 };
 
 

@@ -63,8 +63,6 @@ int main(int argc, char* args[]) {
     // player.angle_velocity.x = 10;
     // player.angle_velocity.y = 1;
 
-    scene.add_eventable(&player);
-
     OddityEngine::Physics::World world;
 
     renderer->world = &world;
@@ -185,12 +183,16 @@ int main(int argc, char* args[]) {
         return fmt::format("{} {} {}", player.position.x, player.position.y, player.position.z);
     });
 
+    commander.add_command("stat", [&](std::string* command){
+        return fmt::format("{}", OddityEngine::Util::Time::fps<size_t>());
+    });
+
 //    commander.apply("print Hallo Welt, wie geht's dir heute? 42");
 //
 //    commander.apply("teleport 50 50 50");
 //
 //    commander.apply("teleport 0 50 50 print teleported back");
-    commander.apply("print teleporting to /teleport 50 50 50");
+    commander.apply("print teleporting to /teleport 0 10 10");
 
 //    OddityEngine::Vector<GLuint> indices = {6, 17, 20};
 //    auto indices_simplified = OddityEngine::Util::CombinedIndex::generate(indices);
@@ -215,8 +217,8 @@ int main(int argc, char* args[]) {
     input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 4);
     input.add_mapping("KeyCheck", SDL_MOUSEBUTTONDOWN, 5);
 
-    input.add_action("MouseMove", [](const SDL_Event& event){OddityEngine::Debug::message("You moved your mouse by [{}/{}]", event.motion.xrel, event.motion.yrel);});
-//    input.add_mapping("MouseMove", SDL_MOUSEMOTION);
+    input.add_action("MouseMove", [&](const SDL_Event& event){player.turn(event.motion.xrel, event.motion.yrel);});
+    input.add_mapping("MouseMove", SDL_MOUSEMOTION);
 
     input.add_action("GeneralCheck", [](const SDL_Event& event){OddityEngine::Debug::message("Event Type : {}", event.type);});
     input.add_mapping("GeneralCheck", SDL_JOYAXISMOTION);

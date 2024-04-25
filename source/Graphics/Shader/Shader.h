@@ -6,17 +6,23 @@
 #define ODDITYENGINE_SHADER_H
 
 #include "GL/glew.h"
-#include "Util/Vector.h"
-
 #include <string>
 
+#include "Util/Vector.h"
+#include <Util/Trie.h>
+
 #define VERSION "450 core"
+#define SELECTOR "function"
 
 namespace OddityEngine {
     namespace Graphics {
         struct ShaderElement {
             std::string name;
             std::string content;
+            std::string type;
+            Vector<std::string> parameters;
+            Vector<std::string> parameter_types;
+            bool enum_selector;
         };
 
         class Shader {
@@ -24,6 +30,7 @@ namespace OddityEngine {
             GLuint ID = 0;
             GLuint type = 0;
             Vector<ShaderElement> elements;
+            Util::Trie<std::string> selector_elements;
 
         public:
             Shader() = default;
@@ -52,6 +59,7 @@ namespace OddityEngine {
 
             static std::string read_shader(const std::string& path);
 
+            size_t add_element(const std::string& name, const std::string& content, const std::string& type = "", const Vector<std::string>& parameters = Vector<std::string>(), const Vector<std::string>& parameter_types = Vector<std::string>());
             Vector<ShaderElement> add(const std::string& string);
 
             std::string compile();

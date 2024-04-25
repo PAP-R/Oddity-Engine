@@ -91,6 +91,21 @@ namespace OddityEngine {
             return ID;
         }
 
+        size_t Shader::add_element(const std::string& name, const std::string& content, const std::string& type, const Vector<std::string>& parameters, const Vector<std::string>& parameter_types) {
+            size_t offset = elements.size();
+
+            for (size_t i = 0; i < elements.size(); i++) {
+                if (elements[i].content.contains(fmt::format(" {}", name))) {
+                    offset = i;
+                    break;
+                }
+            }
+
+            elements.emplace(offset, name, content, type, parameters, parameter_types);
+
+            return offset;
+        }
+
 
         Vector<ShaderElement> Shader::add(const std::string& string) {
             size_t roundbracket = 0, swirlybracket = 0, squarebracket = 0, index = 0, next = 0;
@@ -100,12 +115,29 @@ namespace OddityEngine {
             std::string current;
 
             while(std::getline(stream, line, '\n')) {
+                if (line.contains("#include")) {
+                    auto first = line.find('<') + 1;
+                    auto last = line.find('>');
+                    std::string sub_path = line.substr(first, last - first);
+                    if (std::find(paths.begin(), paths.end(), sub_path) == paths.end()) {
+                        add(read_shader(sub_path));
+                    }
+                    continue;
+                }
+
                 std::stringstream linestream(line);
                 std::string cell;
                 size_t semicount = std::ranges::count(line, ';');
                 for(size_t cellindex = 0; std::getline(linestream, cell, ';'); cellindex++) {
                     if (cell.contains("//")) {
                         break;
+                    }
+
+                    if (cell.contains(SELECTOR)) {
+                        auto selector = cell.find(SELECTOR);
+                        auto first = cell.find_first_of('(', selector) + 1;
+                        auto last = cell.find_first_of(')', first);
+                        auto selector_name = cell.substr(first, last - first);
                     }
 
                     current += cell;
@@ -128,27 +160,26 @@ namespace OddityEngine {
                             start = current.find_first_of(')');
                         }
 
-                        size_t after = current.find_first_of("({[=;", start);
-                        if (after == current.npos) {
+                        size_t after_name = current.find_first_of("({[=;", start);
+                        if (after_name == current.npos) {
                             continue;
                         }
-                        size_t before = current.find_last_of(' ', after - 2);
-                        if(before == current.npos) {
-                            before = 0;
+                        size_t before_name = current.find_last_of(' ', after_name - 2);
+                        if(before_name == current.npos) {
+                            before_name = 0;
                         }
 
-                        std::string name = current.substr(before + 1, after - before);
+                        std::string name = current.substr(before_name + 1, after_name - before_name);
+                        std::string type = current.substr(0, before_name - 1);
 
-                        size_t offset = elements.size();
-
-                        for (size_t i = 0; i < elements.size(); i++) {
-                            if (elements[i].content.contains(fmt::format(" {}", name))) {
-                                offset = i;
-                                break;
-                            }
+                        if (name.contains(':')) {
+                            std::string selector_name = name.substr(0, name.find_first_of(':') - 1);
+                            current.erase(current.find(selector_name), selector_name.size() + 1);
+                            selector_elements.add(selector_name, name);
                         }
 
-                        elements.emplace(offset, name, current);
+                        add_element(name, current, type);
+
                         current.clear();
                     }
                 }
