@@ -195,7 +195,12 @@ namespace OddityEngine {
 
         template<typename ... Args>
         void emplace(size_t idx, const Args& ... args) {
-            std::vector<T>::emplace(this->begin() + idx, args...);
+            if (idx >= size()) {
+                std::vector<T>::emplace_back(args...);
+            }
+            else {
+                std::vector<T>::emplace(this->begin() + idx, args...);
+            }
         }
 
 
@@ -370,6 +375,15 @@ namespace OddityEngine {
             std::ostringstream str;
             str << (*this);
             return str.str();
+        }
+
+        template<typename ... Args, typename S = T, std::enable_if_t<!std::is_arithmetic_v<S>, bool> = true>
+        Vector& operator += (const Vector& other) {
+            for (const auto& o : other) {
+                this->push_back(o);
+            }
+
+            return *this;
         }
     };
 

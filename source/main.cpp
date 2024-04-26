@@ -34,6 +34,20 @@ int main(int argc, char* args[]) {
 
     auto window = OddityEngine::Graphics::Window("Hallo", 800, 600, SDL_WINDOW_RESIZABLE);
 
+
+
+    std::vector<std::string> files = {"test.frag"};
+
+    OddityEngine::Graphics::Shader shader(GL_FRAGMENT_SHADER);
+
+    for (const auto& f : files) {
+        shader.add(OddityEngine::Graphics::Shader::read_shader(f));
+
+        OddityEngine::Debug::message("Shadercode:\n{}", shader.compile());
+    }
+
+
+
     OddityEngine::Graphics::Scene scene;
     window.set_scene(&scene);
 
@@ -303,15 +317,6 @@ int main(int argc, char* args[]) {
     input.add_mapping("MoveUp", SDL_KEYUP, SDLK_LCTRL);
     input.add_mapping("MoveDown", SDL_KEYUP, SDLK_SPACE);
 
-//    std::vector<std::string> files = {"test.frag"};
-//
-//    OddityEngine::Graphics::Shader shader(GL_FRAGMENT_SHADER);
-//
-//    for (auto f : files) {
-//        shader.add(OddityEngine::Graphics::Shader::read_shader(f));
-//
-//        OddityEngine::Debug::message("Shadercode:\n{}", shader.compile());
-//    }
 
 
     OddityEngine::Input::Input text_input;

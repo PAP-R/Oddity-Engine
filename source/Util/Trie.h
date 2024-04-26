@@ -43,13 +43,23 @@ namespace OddityEngine::Util {
             return this->_get(current, rest...);
         }
 
-        void _get_all(const TrieNode<T>& current, std::string path, std::vector<std::pair<std::string, std::vector<T>*>>* result) {
-            if (!current->values.empty()) {
-                result->emplace_back(path, &current.values);
+        void _get_all(const TrieNode<T>& current, std::string path, std::vector<std::pair<std::string, std::vector<T>>>* result) {
+            if (!current.values.empty()) {
+                result->emplace_back(path, current.values);
             }
 
             for (auto c : current.nodes) {
-                _get_all(c.second, path + std::to_string(c.first));
+                _get_all(c.second, path + static_cast<char>(c.first), result);
+            }
+        }
+
+        void _get_all_paths(const TrieNode<T>& current, std::string path, std::vector<std::string>* result) {
+            if (!current.values.empty()) {
+                result->push_back(path);
+            }
+
+            for (auto c : current.nodes) {
+                _get_all_paths(c.second, path + static_cast<char>(c.first), result);
             }
         }
 
@@ -93,9 +103,15 @@ namespace OddityEngine::Util {
             return this->_get(&root, path...);
         }
 
-        std::vector<std::pair<std::string, std::vector<T>*>> get_all() {
-            std::vector<std::pair<std::string, std::vector<T>*>> all;
+        std::vector<std::pair<std::string, std::vector<T>>> get_all() {
+            std::vector<std::pair<std::string, std::vector<T>>> all;
             _get_all(root, "", &all);
+            return all;
+        }
+
+        std::vector<std::string> get_all_paths() {
+            std::vector<std::string> all;
+            _get_all_paths(root, "", &all);
             return all;
         }
     };

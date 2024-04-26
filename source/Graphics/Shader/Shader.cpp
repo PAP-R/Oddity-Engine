@@ -57,7 +57,7 @@ namespace OddityEngine {
             return shader_code;
         }
 
-        Shader::Shader(GLuint type) : type(type) {}
+        Shader::Shader(GLuint type) : type(type), ID(glCreateShader(type)) {}
 
         Shader::Shader(GLuint type, const std::string &path) : type(type), ID(glCreateShader(type)) {
             paths.clear();
@@ -91,28 +91,23 @@ namespace OddityEngine {
             return ID;
         }
 
-        size_t Shader::add_element(const std::string& name, const std::string& content, const std::string& type, const Vector<std::string>& parameters, const Vector<std::string>& parameter_types) {
-            size_t offset = elements.size();
-
-            for (size_t i = 0; i < elements.size(); i++) {
-                if (elements[i].content.contains(fmt::format(" {}", name))) {
-                    offset = i;
-                    break;
-                }
-            }
-
-            elements.emplace(offset, name, content, type, parameters, parameter_types);
-
-            return offset;
+        std::string Shader::add_element(ShaderElement element) {
+            elements.add(element.name, element);
+            return element.name;
         }
 
 
-        Vector<ShaderElement> Shader::add(const std::string& string) {
+        Vector<std::string> Shader::add(const std::string& string) {
+            Vector<std::string> name_list;
             size_t roundbracket = 0, swirlybracket = 0, squarebracket = 0, index = 0, next = 0;
 
             std::stringstream stream(string);
             std::string line;
             std::string current;
+            Vector<std::string> parameters;
+            Vector<std::string> parameter_types;
+            bool selector = false;
+            std::string select_by;
 
             while(std::getline(stream, line, '\n')) {
                 if (line.contains("#include")) {
@@ -120,7 +115,7 @@ namespace OddityEngine {
                     auto last = line.find('>');
                     std::string sub_path = line.substr(first, last - first);
                     if (std::find(paths.begin(), paths.end(), sub_path) == paths.end()) {
-                        add(read_shader(sub_path));
+                        name_list += add(read_shader(sub_path));
                     }
                     continue;
                 }
@@ -134,10 +129,11 @@ namespace OddityEngine {
                     }
 
                     if (cell.contains(SELECTOR)) {
-                        auto selector = cell.find(SELECTOR);
-                        auto first = cell.find_first_of('(', selector) + 1;
-                        auto last = cell.find_first_of(')', first);
-                        auto selector_name = cell.substr(first, last - first);
+                        selector = true;
+                        size_t first = cell.find_first_of('(') + 1;
+                        size_t last = cell.find_first_of(')', first);
+                        select_by = cell.substr(first, last - first);
+                        cell.erase(0, last + 2);
                     }
 
                     current += cell;
@@ -164,36 +160,126 @@ namespace OddityEngine {
                         if (after_name == current.npos) {
                             continue;
                         }
+
+                        if (current[after_name] == '(') {
+                            size_t after_parameters = current.find_first_of(')') - 1;
+                            std::stringstream parameter_string(current.substr(after_name + 1, after_parameters - after_name));
+                            std::string single_parameter;
+                            while (std::getline(parameter_string, single_parameter, ',')) {
+                                size_t offset_front = 0;
+                                while (single_parameter[offset_front] == ' ') {
+                                    offset_front++;
+                                }
+
+                                size_t offset_back = single_parameter.size() - 1;
+                                while (single_parameter[offset_back] == ' ') {
+                                    offset_back--;
+                                }
+                                size_t space = single_parameter.find(' ', offset_front);
+
+                                parameter_types.emplace_back(single_parameter.substr(offset_front, space - offset_front));
+                                parameters.emplace_back(single_parameter.substr(space, offset_back - space + 1));
+                            }
+                        }
+
                         size_t before_name = current.find_last_of(' ', after_name - 2);
                         if(before_name == current.npos) {
                             before_name = 0;
                         }
+                        before_name += 1;
 
-                        std::string name = current.substr(before_name + 1, after_name - before_name);
-                        std::string type = current.substr(0, before_name - 1);
+                        std::string name = current.substr(before_name, after_name - before_name);
+                        name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
+                        std::string type = current.substr(0, before_name);
 
                         if (name.contains(':')) {
-                            std::string selector_name = name.substr(0, name.find_first_of(':') - 1);
+                            std::string selector_name = name.substr(0, name.find_first_of(':'));
                             current.erase(current.find(selector_name), selector_name.size() + 1);
+                            name.erase(0, selector_name.size() + 1);
                             selector_elements.add(selector_name, name);
                         }
 
-                        add_element(name, current, type);
+                        name_list.emplace_back(add_element({name, current, type, selector, parameters, parameter_types, select_by}));
 
                         current.clear();
+                        selector = false;
+                        parameters.clear();
+                        parameter_types.clear();
                     }
                 }
             }
 
-            return elements;
+            return name_list;
         }
 
         std::string Shader::compile() {
             std::string shader_code = fmt::format("#version {}\n", VERSION);
 
-            for (const auto& e : elements) {
-                shader_code += e.content;
-                shader_code += '\n';
+            Vector<std::string> ordered_names;
+
+            auto elements = this->elements.get_all_paths();
+
+            for (auto& ep : elements) {
+                auto& e = this->elements.get(ep)->back();
+                if (e.enum_selector) {
+                    e.content = fmt::format("{} {}(", e.type, e.name);
+                    std::string parameters;
+                    for (size_t p = 0; p < e.parameters.size(); p++) {
+                        if (p != 0) {
+                            parameters += ", ";
+                            e.content += ", ";
+                        }
+
+                        parameters += e.parameters[p];
+                        e.content += fmt::format("{} {}", e.parameter_types[p], e.parameters[p]);
+                    }
+
+                    e.content += fmt::format(") {{\n\tswitch({}) {{\n", e.select_by);
+
+                    auto funcs = selector_elements.get(e.name);
+                    if (funcs != nullptr) {
+                        for (size_t i = 0; i < funcs->size(); i++) {
+                            if (i == 0) {
+                                e.content += fmt::format("\t\tdefault:\n");
+                            }
+                            else {
+                                e.content += fmt::format("\t\tcase {}:\n", i);
+                            }
+
+                            e.content += fmt::format("\t\t\treturn {}({});\n\t\t\tbreak;\n", (*funcs)[i], parameters);
+                        }
+                    }
+
+                    e.content += "\t}\n}\n";
+                }
+
+                size_t offset;
+
+                if (e.type.contains("buffer")) {
+                    offset = 0;
+                    for (size_t i = ordered_names.size(); i > 0; i--) {
+                        if (e.content.contains(ordered_names[i - 1])) {
+                            offset = i;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    offset = ordered_names.size();
+                    for (size_t i = 0; i < ordered_names.size(); i++) {
+                        if (this->elements.get(ordered_names[i])->back().content.contains(e.name)) {
+                            offset = i;
+                            break;
+                        }
+                    }
+                }
+
+
+                ordered_names.emplace(offset, e.name);
+            }
+
+            for (const auto& c : ordered_names) {
+                shader_code += fmt::format("{}\n", this->elements.get(c)->back().content);
             }
 
             GLint result = GL_FALSE;

@@ -12,7 +12,7 @@
 #include <Util/Trie.h>
 
 #define VERSION "450 core"
-#define SELECTOR "function"
+#define SELECTOR "#selector"
 
 namespace OddityEngine {
     namespace Graphics {
@@ -20,16 +20,17 @@ namespace OddityEngine {
             std::string name;
             std::string content;
             std::string type;
+            bool enum_selector;
             Vector<std::string> parameters;
             Vector<std::string> parameter_types;
-            bool enum_selector;
+            std::string select_by;
         };
 
         class Shader {
         protected:
             GLuint ID = 0;
             GLuint type = 0;
-            Vector<ShaderElement> elements;
+            Util::Trie<ShaderElement> elements;
             Util::Trie<std::string> selector_elements;
 
         public:
@@ -59,8 +60,8 @@ namespace OddityEngine {
 
             static std::string read_shader(const std::string& path);
 
-            size_t add_element(const std::string& name, const std::string& content, const std::string& type = "", const Vector<std::string>& parameters = Vector<std::string>(), const Vector<std::string>& parameter_types = Vector<std::string>());
-            Vector<ShaderElement> add(const std::string& string);
+            std::string add_element(ShaderElement element);
+            Vector<std::string> add(const std::string& string);
 
             std::string compile();
         };
