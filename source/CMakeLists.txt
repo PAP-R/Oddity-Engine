@@ -69,6 +69,8 @@ set(UTIL
         Util/Commander.h
         Util/Trie.h
         Util/CombinedIndex.h
+        Util/Regex.cpp
+        Util/Regex.h
 )
 
 set(SOURCES

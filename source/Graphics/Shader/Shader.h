@@ -64,6 +64,8 @@ namespace OddityEngine {
             Vector<std::string> add(const std::string& string);
 
             std::string compile();
+
+            void needed(const std::string& name, Vector <std::string>* available, Vector <std::string>* ordered);
         };
 
     } // OddityEngine

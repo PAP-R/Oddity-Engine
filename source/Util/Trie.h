@@ -5,10 +5,12 @@
 #include <string>
 #include <map>
 
+#include <Util/Vector.h>
+
 namespace OddityEngine::Util {
     template<typename T>
     struct TrieNode {
-        std::vector<T> values;
+        Vector<T> values;
         std::map<size_t, TrieNode> nodes;
     };
 
@@ -28,12 +30,12 @@ namespace OddityEngine::Util {
             this->_add(current, value, rest...);
         }
 
-        std::vector<T>* _get(TrieNode<T>* current) {
+        Vector<T>* _get(TrieNode<T>* current) {
             return &current->values;
         }
 
         template<typename ... Args, std::enable_if_t<((std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...)) || sizeof...(Args) == 0, bool> = true>
-        std::vector<T>* _get(TrieNode<T>* current, size_t path, Args ... rest) {
+        Vector<T>* _get(TrieNode<T>* current, size_t path, Args ... rest) {
             if (!current->nodes.contains(path)) {
                 return nullptr;
             }
@@ -43,7 +45,7 @@ namespace OddityEngine::Util {
             return this->_get(current, rest...);
         }
 
-        void _get_all(const TrieNode<T>& current, std::string path, std::vector<std::pair<std::string, std::vector<T>>>* result) {
+        void _get_all(const TrieNode<T>& current, std::string path, Vector<std::pair<std::string, Vector<T>>>* result) {
             if (!current.values.empty()) {
                 result->emplace_back(path, current.values);
             }
@@ -53,7 +55,7 @@ namespace OddityEngine::Util {
             }
         }
 
-        void _get_all_paths(const TrieNode<T>& current, std::string path, std::vector<std::string>* result) {
+        void _get_all_paths(const TrieNode<T>& current, std::string path, Vector<std::string>* result) {
             if (!current.values.empty()) {
                 result->push_back(path);
             }
@@ -84,7 +86,7 @@ namespace OddityEngine::Util {
             this->_add(&root, value, path...);
         }
 
-        std::vector<T>* get(const std::string& path) {
+        Vector<T>* get(const std::string& path) {
             TrieNode<T>* current = &root;
 
             for (auto c : path) {
@@ -99,18 +101,18 @@ namespace OddityEngine::Util {
         }
 
         template<typename ... Args, std::enable_if_t<(std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...), bool> = true>
-        std::vector<T>* get(Args ... path) {
+        Vector<T>* get(Args ... path) {
             return this->_get(&root, path...);
         }
 
-        std::vector<std::pair<std::string, std::vector<T>>> get_all() {
-            std::vector<std::pair<std::string, std::vector<T>>> all;
+        Vector<std::pair<std::string, Vector<T>>> get_all() {
+            Vector<std::pair<std::string, Vector<T>>> all;
             _get_all(root, "", &all);
             return all;
         }
 
-        std::vector<std::string> get_all_paths() {
-            std::vector<std::string> all;
+        Vector<std::string> get_all_paths() {
+            Vector<std::string> all;
             _get_all_paths(root, "", &all);
             return all;
         }

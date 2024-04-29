@@ -44,8 +44,6 @@ namespace OddityEngine {
     template<typename T>
     class Vector : public std::vector<T> {
     protected:
-        bool use_default = false;
-        T default_value;
         void resize() {};
         friend Vector<Vector>;
 
@@ -58,10 +56,7 @@ namespace OddityEngine {
         template<typename ... Args, typename S = T, std::enable_if_t<is_vector_v<S>, bool> = true>
         Vector(const size_t size, const size_t next, Args ... args) : Vector(size, S(next, args...)) {}
 
-        Vector(const size_t size, const T& value) : std::vector<T>(size, value) {
-            this->use_default = true;
-            this->default_value = value;
-        }
+        Vector(const size_t size, const T& value) : std::vector<T>(size, value) {}
 
         template<typename ... Args, typename S = T, std::enable_if_t<std::is_arithmetic_v<S>, bool> = true>
         Vector(const T& value) : Vector(1, value) {}
@@ -115,12 +110,6 @@ namespace OddityEngine {
         Vector& resize(size_t size, Sizes ... sizes) {
             const size_t old_size = this->size();
             std::vector<T>::resize(size);
-
-            if (use_default) {
-                for (size_t i = old_size; i < size; i++) {
-                    (*this)[i] = default_value;
-                }
-            }
 
             if constexpr (is_vector_v<T>) {
                 for (auto &v : *this) {

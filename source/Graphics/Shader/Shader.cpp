@@ -109,11 +109,14 @@ namespace OddityEngine {
             bool selector = false;
             std::string select_by;
 
+            bool has_parameters = false;
+            char parameter_delimiter;
+
+            std::smatch m;
+
             while(std::getline(stream, line, '\n')) {
-                if (line.contains("#include")) {
-                    auto first = line.find('<') + 1;
-                    auto last = line.find('>');
-                    std::string sub_path = line.substr(first, last - first);
+                if (std::regex_search(line, m, std::regex(R"((?<=#include\s\<).+(?=\>))"))) {
+                    std::string sub_path = m.str();
                     if (std::find(paths.begin(), paths.end(), sub_path) == paths.end()) {
                         name_list += add(read_shader(sub_path));
                     }
@@ -122,18 +125,18 @@ namespace OddityEngine {
 
                 std::stringstream linestream(line);
                 std::string cell;
+
                 size_t semicount = std::ranges::count(line, ';');
                 for(size_t cellindex = 0; std::getline(linestream, cell, ';'); cellindex++) {
                     if (cell.contains("//")) {
                         break;
                     }
 
-                    if (cell.contains(SELECTOR)) {
+                    if (std::regex_search(cell, m, std::regex(R"((?<=\s*#selector\s*\(\s*).+?(?=\s*\)))"))) {
                         selector = true;
-                        size_t first = cell.find_first_of('(') + 1;
-                        size_t last = cell.find_first_of(')', first);
-                        select_by = cell.substr(first, last - first);
-                        cell.erase(0, last + 2);
+                        select_by = m.str();
+                        std::regex_search(cell, m, std::regex(R"((?<=\s*#selector\s*\(\s*.+?\s*\)\s+)[\s\S]+)"));
+                        cell = m.str();
                     }
 
                     current += cell;
@@ -151,58 +154,29 @@ namespace OddityEngine {
                     squarebracket -= std::ranges::count(cell, ']');
 
                     if (roundbracket == 0 && swirlybracket == 0 && squarebracket == 0) {
-                        size_t start = 0;
-                        if (current.contains("layout")) {
-                            start = current.find_first_of(')');
+                        std::string name = std::regex_replace(current, std::regex(R"(\s*(layout\(.*\))*( *\w+ +)+(?=\w+ *[=\(\{\[;])|(?<=\w+) *(=|\(|\{|\[)[\s\S]*|\/\/.*)"), "");
+                        std::string type = std::regex_replace(current, std::regex(R"( *\w+ *(=|\(|\{)[\s\S]*|\/\/.*)"), "");
+                        std::string parameter_string = std::regex_replace(current, std::regex(R"(^.*?[\(\{]\s*|\s*?[\)\}][\s\S]*)"), "");
+
+                        if (std::regex_search(name, m, std::regex(R"(\w+(?=:))"))) {
+                            name = std::regex_replace(name, std::regex(R"(\w+:)"), "");
+                            selector_elements.add(m.str(), name);
                         }
 
-                        size_t after_name = current.find_first_of("({[=;", start);
-                        if (after_name == current.npos) {
-                            continue;
-                        }
-
-                        if (current[after_name] == '(') {
-                            size_t after_parameters = current.find_first_of(')') - 1;
-                            std::stringstream parameter_string(current.substr(after_name + 1, after_parameters - after_name));
-                            std::string single_parameter;
-                            while (std::getline(parameter_string, single_parameter, ',')) {
-                                size_t offset_front = 0;
-                                while (single_parameter[offset_front] == ' ') {
-                                    offset_front++;
-                                }
-
-                                size_t offset_back = single_parameter.size() - 1;
-                                while (single_parameter[offset_back] == ' ') {
-                                    offset_back--;
-                                }
-                                size_t space = single_parameter.find(' ', offset_front);
-
-                                parameter_types.emplace_back(single_parameter.substr(offset_front, space - offset_front));
-                                parameters.emplace_back(single_parameter.substr(space, offset_back - space + 1));
-                            }
-                        }
-
-                        size_t before_name = current.find_last_of(' ', after_name - 2);
-                        if(before_name == current.npos) {
-                            before_name = 0;
-                        }
-                        before_name += 1;
-
-                        std::string name = current.substr(before_name, after_name - before_name);
-                        name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
-                        std::string type = current.substr(0, before_name);
-
-                        if (name.contains(':')) {
-                            std::string selector_name = name.substr(0, name.find_first_of(':'));
-                            current.erase(current.find(selector_name), selector_name.size() + 1);
-                            name.erase(0, selector_name.size() + 1);
-                            selector_elements.add(selector_name, name);
+                        while (std::regex_search(parameter_string, m, std::regex(R"((?<=\s*)(\w+ *)+(?=\s*))"))) {
+                            auto single_parameter = m.str();
+                            std::smatch paramatch;
+                            std::regex_search(single_parameter, paramatch, std::regex(R"(.+(?=\s+\w+$))"));
+                            parameter_types.emplace_back(paramatch.str());
+                            std::regex_search(single_parameter, paramatch, std::regex(R"(\w+$)"));
+                            parameters.emplace_back(paramatch.str());
                         }
 
                         name_list.emplace_back(add_element({name, current, type, selector, parameters, parameter_types, select_by}));
 
                         current.clear();
                         selector = false;
+                        has_parameters = false;
                         parameters.clear();
                         parameter_types.clear();
                     }
@@ -212,12 +186,69 @@ namespace OddityEngine {
             return name_list;
         }
 
+        void Shader::needed(const std::string& name, Vector<std::string>* available, Vector<std::string>* ordered) {
+            if (std::find(ordered->begin(), ordered->end(), name) != ordered->end()) {
+                return;
+            }
+
+            auto current = this->elements.get(name)->back();
+
+            size_t offset = 0;
+
+            for (size_t i = ordered->size(); i > 0; i--) {
+                auto es = (*ordered)[i - 1];
+                auto el = elements.get(es);
+
+                if (el == nullptr) continue;
+                auto& e = el->back();
+
+                if (e.type.contains("buffer")) {
+                    for (auto p : e.parameters) {
+                        if (std::regex_search(current.content, std::regex(fmt::format(R"(\W+{}\W+)", p)))) {
+                            offset = i;
+                            break;
+                        }
+                    }
+                }
+                else if (std::regex_search(current.content, std::regex(fmt::format(R"(\W+{}\W+)", es)))) {
+                    offset = i;
+                    break;
+                }
+
+                if (offset != 0) break;
+            }
+
+            ordered->emplace(offset, name);
+            available->erase(std::remove(available->begin(), available->end(), name));
+
+            auto temp_available = *available;
+            for (auto& es : temp_available) {
+                if (es.empty()) continue;
+                auto el = elements.get(es);
+
+                if (el == nullptr) continue;
+                auto& e = el->back();
+
+                if (e.type.contains("buffer")) {
+                    for (const auto& p : e.parameters) {
+                        if (std::regex_search(current.content, std::regex(fmt::format(R"(\W+{}\W+)", p)))) {
+                            needed(es, available, ordered);
+                            break;
+                        }
+                    }
+                }
+                else if (std::regex_search(current.content, std::regex(fmt::format(R"(\W+{}\W+)", es)))) {
+                    needed(es, available, ordered);
+                }
+            }
+        }
+
         std::string Shader::compile() {
             std::string shader_code = fmt::format("#version {}\n", VERSION);
 
-            Vector<std::string> ordered_names;
-
             auto elements = this->elements.get_all_paths();
+
+            Vector<std::string> ordered_names;
 
             for (auto& ep : elements) {
                 auto& e = this->elements.get(ep)->back();
@@ -253,30 +284,34 @@ namespace OddityEngine {
                     e.content += "\t}\n}\n";
                 }
 
-                size_t offset;
-
-                if (e.type.contains("buffer")) {
-                    offset = 0;
-                    for (size_t i = ordered_names.size(); i > 0; i--) {
-                        if (e.content.contains(ordered_names[i - 1])) {
-                            offset = i;
-                            break;
-                        }
-                    }
-                }
-                else {
-                    offset = ordered_names.size();
-                    for (size_t i = 0; i < ordered_names.size(); i++) {
-                        if (this->elements.get(ordered_names[i])->back().content.contains(e.name)) {
-                            offset = i;
-                            break;
-                        }
-                    }
-                }
-
-
-                ordered_names.emplace(offset, e.name);
+//                size_t offset;
+//
+//                if (e.type.contains("buffer")) {
+//                    offset = 0;
+//                    for (size_t i = ordered_names.size(); i > 0; i--) {
+//                        if (std::regex_search(e.content, std::regex("[\[^\w_]]" + ordered_names[i - 1] + "[\[^\w_]]"))) {
+//                            offset = i;
+//                            break;
+//                        }
+//                    }
+//                }
+//                else {
+//                    offset = ordered_names.size();
+//                    for (size_t i = 0; i < ordered_names.size(); i++) {
+//                        if (std::regex_search(this->elements.get(ordered_names[i])->back().content, std::regex("[\[^\w_]]" + e.name + "[\[^\w_]]"))) {
+//                            offset = i;
+//                            break;
+//                        }
+//                    }
+//                }
+//
+//
+//                ordered_names.emplace(offset, e.name);
             }
+
+            auto all_elements = this->elements.get_all();
+
+            needed("main", &elements, &ordered_names);
 
             for (const auto& c : ordered_names) {
                 shader_code += fmt::format("{}\n", this->elements.get(c)->back().content);
