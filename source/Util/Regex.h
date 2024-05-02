@@ -5,13 +5,37 @@
 #include "Vector.h"
 
 namespace OddityEngine::Regex {
-    struct Character {
-        std::string possible_chars;
-        bool inverse;
+    struct Set {
+        Vector<std::function<bool(char)>> matches;
+        size_t min = 1;
+        size_t max = 1;
+        bool inverse = false;
+        bool include = true;
+
+        Set* nested = nullptr;
+
+        Set() = default;
+        explicit Set(char c);
+        explicit Set(const std::string &set);
+        explicit Set(std::string::const_iterator start, const std::string::const_iterator& end);
+
+        bool match(char c);
     };
 
     class Pattern {
-        Vector<Character> characters;
+    protected:
+        Vector<Set> sets;
+
+        std::string character_class(char c);
+
+        void insert(const char& c);
+        void insert(const std::string& pattern);
+        std::string set_string(const std::string::const_iterator& start, const std::string::const_iterator& end);
+
+    public:
+        Pattern(const std::string& pattern);
+
+        bool match(const std::string& input);
     };
 }
 
