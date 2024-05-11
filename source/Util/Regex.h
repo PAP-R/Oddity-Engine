@@ -24,8 +24,6 @@ namespace OddityEngine::Regex {
 
     class Pattern {
     protected:
-        Vector<Set> sets;
-
         std::string character_class(char c);
 
         void insert(const char& c);
@@ -33,10 +31,14 @@ namespace OddityEngine::Regex {
         std::string set_string(const std::string::const_iterator& start, const std::string::const_iterator& end);
 
     public:
+        Vector<Set> sets;
+
         Pattern(const std::string& pattern);
 
         bool match(const std::string& input);
     };
+
+    Vector<std::string> search(std::string text, Pattern pattern);
 }
 
 #endif //ODDITYENGINE_REGEX_H

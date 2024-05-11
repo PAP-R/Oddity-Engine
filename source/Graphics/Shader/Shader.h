@@ -20,6 +20,7 @@ namespace OddityEngine {
             std::string name;
             std::string content;
             std::string type;
+            std::string layout;
             bool enum_selector;
             Vector<std::string> parameters;
             Vector<std::string> parameter_types;
@@ -28,6 +29,7 @@ namespace OddityEngine {
 
         class Shader {
         protected:
+            std::string name;
             GLuint ID = 0;
             GLuint type = 0;
             Util::Trie<ShaderElement> elements;
@@ -65,7 +67,9 @@ namespace OddityEngine {
 
             std::string compile();
 
-            void needed(const std::string& name, Vector <std::string>* available, Vector <std::string>* ordered);
+            void needed(const std::string& name, Vector <std::string>* available, Vector <std::string>* ordered, const std::string& path = "");
+
+            void sort(Vector <std::string> *elements);
         };
 
     } // OddityEngine

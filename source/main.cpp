@@ -35,17 +35,15 @@ int main(int argc, char* args[]) {
     auto window = OddityEngine::Graphics::Window("Hallo", 800, 600, SDL_WINDOW_RESIZABLE);
 
 
-
     std::vector<std::string> files = {"test.frag"};
 
     OddityEngine::Graphics::Shader shader(GL_FRAGMENT_SHADER);
 
     for (const auto& f : files) {
         shader.add(OddityEngine::Graphics::Shader::read_shader(f));
-
-        OddityEngine::Debug::message("Shadercode:\n{}", shader.compile());
     }
 
+    OddityEngine::Debug::message("Shadercode:\n{}", shader.compile());
 
 
     OddityEngine::Graphics::Scene scene;
@@ -198,7 +196,14 @@ int main(int argc, char* args[]) {
     });
 
     commander.add_command("stat", [&](std::string* command){
-        return fmt::format("{}", OddityEngine::Util::Time::fps<size_t>());
+        return fmt::format("{}\n[{}, {}, {}]\n[{}, {}, {}]\n[{}, {}, {}]", OddityEngine::Util::Time::fps<size_t>(), player.position.x, player.position.y, player.position.z, player.velocity.x, player.velocity.y, player.velocity.z, player.acceleration.x, player.acceleration.y, player.acceleration.z);
+    });
+
+    commander.add_command("reset", [&](std::string* command){
+        player.position = {0, 0, 0, 1};
+        player.velocity = {0, 0, 0, 1};
+        player.acceleration = {0, 0, 0, 1};
+        return "";
     });
 
 //    commander.apply("print Hallo Welt, wie geht's dir heute? 42");
@@ -266,11 +271,6 @@ int main(int argc, char* args[]) {
 
     std::vector<SDL_Joystick*> joysticks;
 
-//    for (size_t i = 0; i < SDL_NumJoysticks(); i++) {
-//        joysticks.push_back(SDL_JoystickOpen(i));
-//        OddityEngine::Debug::message("Connected Joystick {} : {}", i, SDL_JoystickName(joysticks.back()));
-//    }
-
     input.add_action("JoystickAdd", [&](const SDL_Event& event){
         joysticks.push_back(SDL_JoystickOpen(event.jdevice.which));
         OddityEngine::Debug::message("Connected Joystick {} : {}", event.jdevice.which, SDL_JoystickName(joysticks.back()));
@@ -334,6 +334,8 @@ int main(int argc, char* args[]) {
     text_input.add_mapping("TextBack", SDL_KEYDOWN, SDLK_BACKSPACE);
     text_input.add_action("TextEnter", [&](const SDL_Event& event){OddityEngine::Debug::message("Applying command and swapping back {}", commander.apply(input_text)); input_text.clear(); input.enable(); text_input.disable();});
     text_input.add_mapping("TextEnter", SDL_KEYDOWN, SDLK_RETURN);
+
+    OddityEngine::Util::Time::reset();
 
     do {
         center_ball.orientation.x = cos(OddityEngine::Util::Time::now<float>());

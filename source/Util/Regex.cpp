@@ -120,4 +120,23 @@ namespace OddityEngine::Regex {
 
         return true;
     }
+
+    Vector<std::string> search(std::string text, Pattern pattern) {
+        Vector<std::string> result;
+
+        std::string current;
+        for (size_t i = 0; i < text.size(); i++) {
+            size_t c = 0, set_index = 0, set_count = 0;
+            bool match = true;
+            while (match) {
+                if (pattern.sets[set_index].match(text[i + c])) {
+
+                }
+                else {
+                    set_index += 1;
+                }
+            }
+
+        }
+    }
 } // OddityEngine

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.29.3)
 project(OddityEngine)
 
 set(OUTPUT_DIR ${PROJECT_SOURCE_DIR}/[output])
@@ -12,6 +12,7 @@ find_package(SDL2 REQUIRED)
 
 include_directories(
         source
+        ${BOOST_INCLUDE_DIRS}
         external/glew/include
         external/glm
         external/imgui
@@ -26,6 +27,7 @@ add_subdirectory(libs/steam)
 
 set(LIBS
         ${OPENGL_LIBRARY}
+        Boost::xpressive
         glm
         libglew_static
         IMGUI

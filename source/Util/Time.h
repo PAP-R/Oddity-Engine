@@ -36,6 +36,8 @@ namespace OddityEngine::Util {
             ++_frame;
         }
 
+        static void reset();
+
         template<typename T = long double, std::enable_if_t<std::is_arithmetic_v<T>, bool> = true>
         static T now() {
             return _now;

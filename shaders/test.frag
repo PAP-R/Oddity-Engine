@@ -4,7 +4,7 @@ in vec3 dir;
 
 out vec4 color;
 
-uniform uint function;
+const uint function = 0;
 
 void main() {
     color = colorselector(dir);

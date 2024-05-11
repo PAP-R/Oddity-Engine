@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <boost/xpressive/xpressive.hpp>
+
 #include "Util/Debug.h"
 
 namespace OddityEngine {
@@ -63,6 +65,8 @@ namespace OddityEngine {
             paths.clear();
             uniforms.clear();
 
+            name = path;
+
             add(read_shader(path));
 
             compile();
@@ -112,11 +116,11 @@ namespace OddityEngine {
             bool has_parameters = false;
             char parameter_delimiter;
 
-            std::smatch m;
+            boost::xpressive::smatch match;
 
             while(std::getline(stream, line, '\n')) {
-                if (std::regex_search(line, m, std::regex(R"((?<=#include\s\<).+(?=\>))"))) {
-                    std::string sub_path = m.str();
+                if (boost::xpressive::regex_search(line, match, boost::xpressive::sregex::compile(R"((?<=#include\s\<).+(?=\>))"))) {
+                    std::string sub_path = match[0];
                     if (std::find(paths.begin(), paths.end(), sub_path) == paths.end()) {
                         name_list += add(read_shader(sub_path));
                     }
@@ -132,11 +136,10 @@ namespace OddityEngine {
                         break;
                     }
 
-                    if (std::regex_search(cell, m, std::regex(R"((?<=\s*#selector\s*\(\s*).+?(?=\s*\)))"))) {
+                    if (boost::xpressive::regex_search(cell, match, boost::xpressive::sregex::compile(R"(\s*#selector\s*\(\s*.+?(?=\s*\)))"))) {
                         selector = true;
-                        select_by = m.str();
-                        std::regex_search(cell, m, std::regex(R"((?<=\s*#selector\s*\(\s*.+?\s*\)\s+)[\s\S]+)"));
-                        cell = m.str();
+                        select_by = boost::xpressive::regex_replace(match.str(), boost::xpressive::sregex::compile(R"(\s*#selector\s*\(\s*)"), "");
+                        cell = boost::xpressive::regex_replace(cell, boost::xpressive::sregex::compile(R"(\s*#selector\s*\(\s*.+?\s*\)\s+)"), "");
                     }
 
                     current += cell;
@@ -154,25 +157,31 @@ namespace OddityEngine {
                     squarebracket -= std::ranges::count(cell, ']');
 
                     if (roundbracket == 0 && swirlybracket == 0 && squarebracket == 0) {
-                        std::string name = std::regex_replace(current, std::regex(R"(\s*(layout\(.*\))*( *\w+ +)+(?=\w+ *[=\(\{\[;])|(?<=\w+) *(=|\(|\{|\[)[\s\S]*|\/\/.*)"), "");
-                        std::string type = std::regex_replace(current, std::regex(R"( *\w+ *(=|\(|\{)[\s\S]*|\/\/.*)"), "");
-                        std::string parameter_string = std::regex_replace(current, std::regex(R"(^.*?[\(\{]\s*|\s*?[\)\}][\s\S]*)"), "");
-
-                        if (std::regex_search(name, m, std::regex(R"(\w+(?=:))"))) {
-                            name = std::regex_replace(name, std::regex(R"(\w+:)"), "");
-                            selector_elements.add(m.str(), name);
+                        if (!boost::xpressive::regex_search(current, match, boost::xpressive::sregex::compile(R"(^(?:\s*(layout\(.*?\))?\s*((?:\w+\s*)+)?|#define)\s+(?:(\w+):)?(\w+)\s*(?:\(\s*([\s\S]+?)\s*\)|\{\s*([\s\S]+?)\s*\})?)"))) {
+                            Debug::message("Some shader type things couldn't be found at:\n{}", current);
                         }
 
-                        while (std::regex_search(parameter_string, m, std::regex(R"((?<=\s*)(\w+ *)+(?=\s*))"))) {
-                            auto single_parameter = m.str();
-                            std::smatch paramatch;
-                            std::regex_search(single_parameter, paramatch, std::regex(R"(.+(?=\s+\w+$))"));
-                            parameter_types.emplace_back(paramatch.str());
-                            std::regex_search(single_parameter, paramatch, std::regex(R"(\w+$)"));
-                            parameters.emplace_back(paramatch.str());
+                        std::string layout = match[1];
+                        std::string type = match[2];
+                        std::string name = match[4];
+                        std::string parameter_string = match[5] + match[6];
+
+                        if (match[3]) {
+                            Debug::message("Found selector {}", match[3].str());
+                            selector_elements.add(match[3], name);
+                            current = boost::xpressive::regex_replace(current, boost::xpressive::sregex::compile(fmt::format("{}:", match[3].str())), "");
                         }
 
-                        name_list.emplace_back(add_element({name, current, type, selector, parameters, parameter_types, select_by}));
+                        for (boost::xpressive::sregex_iterator cur(parameter_string.begin(), parameter_string.end(), boost::xpressive::sregex::compile(R"(([\w\s]+))")), end; cur != end; ++cur) {
+                            auto single_parameter = boost::xpressive::regex_replace((*cur).str(), boost::xpressive::sregex::compile(R"(^\s*|\s+$|\s+(?=\s))"), "");
+                            boost::xpressive::smatch paramatch;
+                            if (boost::xpressive::regex_search(single_parameter, paramatch, boost::xpressive::sregex::compile(R"(([\w\s]+)\s+(\w+))"))) {
+                                parameter_types.emplace_back(paramatch[1]);
+                                parameters.emplace_back(paramatch[2]);
+                            }
+                        }
+
+                        name_list.emplace_back(add_element({name, current, type, layout, selector, parameters, parameter_types, select_by}));
 
                         current.clear();
                         selector = false;
@@ -186,12 +195,38 @@ namespace OddityEngine {
             return name_list;
         }
 
-        void Shader::needed(const std::string& name, Vector<std::string>* available, Vector<std::string>* ordered) {
+        void Shader::needed(const std::string& name, Vector<std::string>* available, Vector<std::string>* ordered, const std::string& path) {
             if (std::find(ordered->begin(), ordered->end(), name) != ordered->end()) {
                 return;
             }
 
+            auto new_path = fmt::format("{}{}/", path, name);
+
             auto current = this->elements.get(name)->back();
+            available->erase(std::remove(available->begin(), available->end(), name));
+
+            bool not_struct = !current.type.contains("struct");
+
+            auto temp_available = *available;
+            for (auto& es : temp_available) {
+                if (es.empty()) continue;
+                auto el = elements.get(es);
+
+                if (el == nullptr) continue;
+                auto& e = el->back();
+
+                if (not_struct && e.type.contains("buffer")) {
+                    for (const auto& p : e.parameters) {
+                        if (boost::xpressive::regex_search(current.content, boost::xpressive::sregex::compile(fmt::format(R"(\W+{}\W+)", p)))) {
+                            needed(es, available, ordered, new_path);
+                            break;
+                        }
+                    }
+                }
+                else if ((not_struct || e.type.contains("struct")) && boost::xpressive::regex_search(current.content, boost::xpressive::sregex::compile(fmt::format(R"(\W+{}\W+)", es)))) {
+                    needed(es, available, ordered, new_path);
+                }
+            }
 
             size_t offset = 0;
 
@@ -202,15 +237,15 @@ namespace OddityEngine {
                 if (el == nullptr) continue;
                 auto& e = el->back();
 
-                if (e.type.contains("buffer")) {
+                if (not_struct && e.type.contains("buffer")) {
                     for (auto p : e.parameters) {
-                        if (std::regex_search(current.content, std::regex(fmt::format(R"(\W+{}\W+)", p)))) {
+                        if (boost::xpressive::regex_search(current.content, boost::xpressive::sregex::compile(fmt::format(R"(\W+{}\W+)", p)))) {
                             offset = i;
                             break;
                         }
                     }
                 }
-                else if (std::regex_search(current.content, std::regex(fmt::format(R"(\W+{}\W+)", es)))) {
+                else if ((not_struct || e.type.contains("struct")) && boost::xpressive::regex_search(current.content, boost::xpressive::sregex::compile(fmt::format(R"(\W+{}\W+)", es)))) {
                     offset = i;
                     break;
                 }
@@ -218,32 +253,60 @@ namespace OddityEngine {
                 if (offset != 0) break;
             }
 
+
+            Debug::message("Sorting {}{} to {}", path, name, offset);
+
             ordered->emplace(offset, name);
-            available->erase(std::remove(available->begin(), available->end(), name));
 
-            auto temp_available = *available;
-            for (auto& es : temp_available) {
-                if (es.empty()) continue;
-                auto el = elements.get(es);
+            if (path.empty()) {
+                temp_available = *available;
 
-                if (el == nullptr) continue;
-                auto& e = el->back();
-
-                if (e.type.contains("buffer")) {
-                    for (const auto& p : e.parameters) {
-                        if (std::regex_search(current.content, std::regex(fmt::format(R"(\W+{}\W+)", p)))) {
-                            needed(es, available, ordered);
-                            break;
-                        }
+                for (const auto &c: temp_available) {
+                    auto &e = this->elements.get(c)->back();
+                    if (!e.layout.empty()) {
+                        Debug::message("Adding possibly unneeded thing: {}", c);
+                        needed(c, available, ordered, "other/");
                     }
-                }
-                else if (std::regex_search(current.content, std::regex(fmt::format(R"(\W+{}\W+)", es)))) {
-                    needed(es, available, ordered);
+                    else {
+//                        Debug::message("Tossing really unneeded thing: {}", c);
+                    }
                 }
             }
         }
 
+        void Shader::sort(Vector<std::string>* elements) {
+            std::stable_sort(elements->begin(), elements->end(), [&](const std::string& first, const std::string& second){
+                auto first_element_ptr = this->elements.get(first);
+                auto second_element_ptr = this->elements.get(second);
+
+                if (first_element_ptr == nullptr || second_element_ptr == nullptr) {
+                    return false;
+                }
+
+                auto first_element = first_element_ptr->back();
+                auto second_element = second_element_ptr->back();
+
+                if (first_element.type.contains("buffer")) {
+                    for (auto p : first_element.parameters) {
+                        if (boost::xpressive::regex_search(second_element.content, boost::xpressive::sregex::compile(fmt::format(R"(\W+{}\W+)", p)))) {
+                            Debug::message("[{}] contains [{}]", second, first);
+                            return true;
+                        }
+                    }
+                }
+                else if (boost::xpressive::regex_search(second_element.content, boost::xpressive::sregex::compile(fmt::format(R"(\W+{}\W+)", first)))) {
+                    Debug::message("[{}] contains [{}]", second, first);
+                    return true;
+                }
+
+                Debug::message("[{}] does not contain [{}]", second, first);
+                return false;
+            });
+        }
+
         std::string Shader::compile() {
+            Debug::message("Started compiling Shader: {}", name);
+
             std::string shader_code = fmt::format("#version {}\n", VERSION);
 
             auto elements = this->elements.get_all_paths();
@@ -289,7 +352,7 @@ namespace OddityEngine {
 //                if (e.type.contains("buffer")) {
 //                    offset = 0;
 //                    for (size_t i = ordered_names.size(); i > 0; i--) {
-//                        if (std::regex_search(e.content, std::regex("[\[^\w_]]" + ordered_names[i - 1] + "[\[^\w_]]"))) {
+//                        if (boost::xpressive::regex_search(e.content, boost::xpressive::sregex::compile("[\[^\w_]]" + ordered_names[i - 1] + "[\[^\w_]]"))) {
 //                            offset = i;
 //                            break;
 //                        }
@@ -298,7 +361,7 @@ namespace OddityEngine {
 //                else {
 //                    offset = ordered_names.size();
 //                    for (size_t i = 0; i < ordered_names.size(); i++) {
-//                        if (std::regex_search(this->elements.get(ordered_names[i])->back().content, std::regex("[\[^\w_]]" + e.name + "[\[^\w_]]"))) {
+//                        if (boost::xpressive::regex_search(this->elements.get(ordered_names[i])->back().content, boost::xpressive::sregex::compile("[\[^\w_]]" + e.name + "[\[^\w_]]"))) {
 //                            offset = i;
 //                            break;
 //                        }
@@ -313,7 +376,10 @@ namespace OddityEngine {
 
             needed("main", &elements, &ordered_names);
 
+//            sort(&elements);
+
             for (const auto& c : ordered_names) {
+                Debug::message("Adding Thing [{}] to [{}] code", c, name);
                 shader_code += fmt::format("{}\n", this->elements.get(c)->back().content);
             }
 
@@ -332,7 +398,6 @@ namespace OddityEngine {
 
                 std::vector<char> shaderError(info_length + 1);
                 glGetShaderInfoLog(ID, info_length, nullptr, &shaderError[0]);
-                fmt::print("Shader Error: {}\n", info_length, &shaderError[0]);
 
                 std::stringstream shader_stream(shader_code);
                 std::string line;
@@ -340,8 +405,10 @@ namespace OddityEngine {
                     fmt::print("{:3d} \t: {}\n", i, line);
                 }
 
-                Debug::error(&shaderError[0]);
+                Debug::error("Shader Error on Compilation of {}: {}\n", name, &shaderError[0]);
             }
+
+            Debug::message("Finished compiling Shader: {}\n\n", name);
 
             return shader_code;
         }
