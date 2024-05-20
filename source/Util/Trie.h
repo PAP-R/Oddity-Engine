@@ -21,13 +21,14 @@ namespace OddityEngine::Util {
 
         void _add(TrieNode<T>* current, const T& value) {
             current->values.push_back(value);
+            return current->values.size() - 1;
         }
 
         template<typename ... Args, std::enable_if_t<((std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...)) || sizeof...(Args) == 0, bool> = true>
         void _add(TrieNode<T>* current, const T& value, size_t path, Args ... rest) {
             current = &current->nodes[path];
 
-            this->_add(current, value, rest...);
+            return this->_add(current, value, rest...);
         }
 
         Vector<T>* _get(TrieNode<T>* current) {
@@ -71,7 +72,7 @@ namespace OddityEngine::Util {
             root.values.clear();
         }
 
-        void add(const std::string& path, const T& value) {
+        size_t add(const std::string& path, const T& value) {
             TrieNode<T>* current = &root;
 
             for (auto c : path) {
@@ -79,11 +80,13 @@ namespace OddityEngine::Util {
             }
 
             current->values.push_back(value);
+
+            return current->values.size() - 1;
         }
 
         template<typename ... Args, std::enable_if_t<(std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...), bool> = true>
-        void add(const T& value, Args ... path) {
-            this->_add(&root, value, path...);
+        size_t add(const T& value, Args ... path) {
+            return this->_add(&root, value, path...);
         }
 
         Vector<T>* get(const std::string& path) {

@@ -6,8 +6,14 @@
 #include "Graphics/Shader/Program.h"
 #include "Graphics/Shader/Shader.h"
 #include "Util/Vector.h"
+#include <Util/Operator.h>
 
 namespace OddityEngine::Physics {
+    struct alignas(8) Operation {
+        GLuint operation;
+        GLuint parameter_start;
+    };
+
     struct alignas(16) Physics {
         float time_delta;
     };
@@ -16,10 +22,10 @@ namespace OddityEngine::Physics {
     protected:
         Vector<Object*> objects;
 
-        Graphics::Program physics_self = Graphics::Program({Graphics::Shader(GL_COMPUTE_SHADER, "physics_self.comp")});
-        Graphics::Program physics_other = Graphics::Program({Graphics::Shader(GL_COMPUTE_SHADER, "physics_other.comp")});
-        Graphics::Program physics_combine = Graphics::Program({Graphics::Shader(GL_COMPUTE_SHADER, "physics_combine.comp")});
+        Util::Operator physics_operator;
 
+
+        Graphics::Buffer<float> value_buffer = Graphics::Buffer<float>();
         Graphics::Buffer<Object_struct> object_buffer = Graphics::Buffer<Object_struct>();
         Graphics::Buffer<Object_struct> temp_object_buffer = Graphics::Buffer<Object_struct>();
         Graphics::Buffer<Physics> physics_buffer = Graphics::Buffer<Physics>();

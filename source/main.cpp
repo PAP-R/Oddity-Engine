@@ -34,7 +34,6 @@ int main(int argc, char* args[]) {
 
     auto window = OddityEngine::Graphics::Window("Hallo", 800, 600, SDL_WINDOW_RESIZABLE);
 
-
     std::vector<std::string> files = {"test.frag"};
 
     OddityEngine::Graphics::Shader shader(GL_FRAGMENT_SHADER);
@@ -49,7 +48,10 @@ int main(int argc, char* args[]) {
     OddityEngine::Graphics::Scene scene;
     window.set_scene(&scene);
 
-    Player player;
+    OddityEngine::Graphics::Camera camera({0, 10, 10});
+
+    Player player(&camera);
+    scene.add_eventable(&player);
 
     auto renderer = new OddityEngine::Graphics::Render::Layered(player.camera);
     scene.add_renderer(renderer);
@@ -69,8 +71,8 @@ int main(int argc, char* args[]) {
 
     // player.state &= ~OddityEngine::Physics::SHOW;
 
-    // player.state &= ~OddityEngine::Physics::CLIP;
-    // player.state &= ~OddityEngine::Physics::MOVE;
+     player.state &= ~OddityEngine::Physics::CLIP;
+     player.state &= ~OddityEngine::Physics::MOVE;
 
     // player.angle_velocity.x = 10;
     // player.angle_velocity.y = 1;
@@ -246,13 +248,6 @@ int main(int argc, char* args[]) {
     input.add_mapping("GeneralCheck", SDL_CONTROLLERAXISMOTION);
     input.add_mapping("GeneralCheck", SDL_CONTROLLERBUTTONDOWN);
 
-    input.add_action("MoveForward", [&](const SDL_Event& event){player.add_acceleration_front(1);});
-    input.add_action("MoveBack", [&](const SDL_Event& event){player.add_acceleration_front(-1);});
-    input.add_action("MoveRight", [&](const SDL_Event& event){player.add_acceleration_right(1);});
-    input.add_action("MoveLeft", [&](const SDL_Event& event){player.add_acceleration_right(-1);});
-    input.add_action("MoveUp", [&](const SDL_Event& event){player.add_acceleration_up(1);});
-    input.add_action("MoveDown", [&](const SDL_Event& event){player.add_acceleration_up(-1);});
-
     input.add_action("MoveForwardAxis", [&](const SDL_Event& event){player.set_acceleration_front(-(event.jaxis.value + 0.5f) / CONTROLLER_AXIS_MAX);});
     input.add_mapping("MoveForwardAxis", SDL_JOYAXISMOTION, 1);
 
@@ -299,23 +294,6 @@ int main(int argc, char* args[]) {
         controllers.erase(std::remove(controllers.begin(), controllers.end(), SDL_GameControllerFromInstanceID(event.cdevice.which)), controllers.end());
     });
     input.add_mapping("ControllerRemove", SDL_CONTROLLERDEVICEREMOVED);
-
-
-//    SDL_JoystickRumbleTriggers();
-
-    input.add_mapping("MoveForward", SDL_KEYDOWN, SDL_GetKeyFromName("w"));
-    input.add_mapping("MoveBack", SDL_KEYDOWN, SDL_GetKeyFromName("s"));
-    input.add_mapping("MoveRight", SDL_KEYDOWN, SDL_GetKeyFromName("d"));
-    input.add_mapping("MoveLeft", SDL_KEYDOWN, SDL_GetKeyFromName("a"));
-    input.add_mapping("MoveUp", SDL_KEYDOWN, SDLK_SPACE);
-    input.add_mapping("MoveDown", SDL_KEYDOWN, SDLK_LCTRL);
-
-    input.add_mapping("MoveForward", SDL_KEYUP, SDL_GetKeyFromName("s"));
-    input.add_mapping("MoveBack", SDL_KEYUP, SDL_GetKeyFromName("w"));
-    input.add_mapping("MoveRight", SDL_KEYUP, SDL_GetKeyFromName("a"));
-    input.add_mapping("MoveLeft", SDL_KEYUP, SDL_GetKeyFromName("d"));
-    input.add_mapping("MoveUp", SDL_KEYUP, SDLK_LCTRL);
-    input.add_mapping("MoveDown", SDL_KEYUP, SDLK_SPACE);
 
 
 

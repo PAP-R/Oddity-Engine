@@ -8,7 +8,7 @@
 
 namespace OddityEngine {
     namespace Graphics {
-        Program::Program(std::initializer_list<Shader> shaders) : shaders{shaders} {
+        Program::Program(std::initializer_list<Shader> shaders) : shaders{shaders}, ID(glCreateProgram()) {
             compile();
         }
 
@@ -32,11 +32,10 @@ namespace OddityEngine {
         }
 
         GLuint Program::compile() {
-            ID = glCreateProgram();
-            for (auto s : shaders) {
-                s.compile();
-                glAttachShader(ID, s);
-            }
+            return compile(ID);
+        }
+
+        GLuint Program::compile(GLuint ID) {
             glLinkProgram(ID);
 
             GLint result = GL_FALSE;
@@ -55,6 +54,26 @@ namespace OddityEngine {
             }
 
             return ID;
+        }
+
+        GLuint Program::recompile() {
+            auto ID = glCreateProgram();
+
+            for (auto s : shaders) {
+                s.recompile();
+                glAttachShader(ID, s);
+            }
+
+            auto old_ID = this->ID;
+
+            this->ID = compile(ID);
+
+            glDeleteProgram(old_ID);
+
+            return this->ID;
+        }
+
+        void Program::compile_shaders() {
         }
     } // OddityEngine
 } // Graphics

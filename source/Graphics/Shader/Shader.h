@@ -66,10 +66,15 @@ namespace OddityEngine {
             Vector<std::string> add(const std::string& string);
 
             std::string compile();
+            std::string compile(GLuint ID);
+            std::string recompile();
 
             void needed(const std::string& name, Vector <std::string>* available, Vector <std::string>* ordered, const std::string& path = "");
 
             void sort(Vector <std::string> *elements);
+
+            GLuint selector_index(const std::string& selector, const std::string& function);
+            std::string selector_name(const std::string& selector, GLuint index);
         };
 
     } // OddityEngine

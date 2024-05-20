@@ -1,0 +1,21 @@
+#version 450 core
+
+#include <buffer.glsl>
+
+struct Operation {
+    uint operation;
+    uint parameter_start;
+    uint parameter_count;
+};
+
+layout(std130, std430, binding = OPERATION) buffer operations_buffer {
+    Operation operations[];
+};
+
+#selector(operation) void operation_selector(uint operation, uint parameter_start)
+
+void main() {
+    for (uint i = 0; i < operations.size(); i++) {
+        operation_selector(operations[i].operation, operations[i].parameter_start);
+    }
+}

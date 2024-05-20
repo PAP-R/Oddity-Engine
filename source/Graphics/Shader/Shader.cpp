@@ -100,7 +100,6 @@ namespace OddityEngine {
             return element.name;
         }
 
-
         Vector<std::string> Shader::add(const std::string& string) {
             Vector<std::string> name_list;
             size_t roundbracket = 0, swirlybracket = 0, squarebracket = 0, index = 0, next = 0;
@@ -305,6 +304,10 @@ namespace OddityEngine {
         }
 
         std::string Shader::compile() {
+            return compile(ID);
+        }
+
+        std::string Shader::compile(GLuint ID) {
             Debug::message("Started compiling Shader: {}", name);
 
             std::string shader_code = fmt::format("#version {}\n", VERSION);
@@ -411,6 +414,36 @@ namespace OddityEngine {
             Debug::message("Finished compiling Shader: {}\n\n", name);
 
             return shader_code;
+        }
+
+        std::string Shader::recompile() {
+            GLuint ID = glCreateShader(type);
+            auto result = compile(ID);
+            glDeleteShader(this->ID);
+            this->ID = ID;
+            return result;
+        }
+
+        GLuint Shader::selector_index(const std::string &selector, const std::string &function) {
+            auto selector_functions = selector_elements.get(selector);
+            if (selector_functions != nullptr) {
+                auto it = std::find(selector_functions->begin(), selector_functions->end(), function);
+                if (it != selector_functions->end()) {
+                    return it - selector_functions->begin();
+                }
+                return selector_functions->size();
+            }
+            return 0;
+        }
+
+        std::string Shader::selector_name(const std::string &selector, GLuint index) {
+            auto selector_functions = selector_elements.get(selector);
+            if (selector_functions != nullptr) {
+                if (index < selector_functions->size()) {
+                    return selector_functions[index];
+                }
+            }
+            return "";
         }
     } // OddityEngine
 } // Graphics

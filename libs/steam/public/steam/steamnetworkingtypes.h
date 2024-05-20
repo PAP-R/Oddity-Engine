@@ -1397,7 +1397,7 @@ enum ESteamNetworkingConfigValue
 	k_ESteamNetworkingConfig_FakePacketLag_Send = 4,
 	k_ESteamNetworkingConfig_FakePacketLag_Recv = 5,
 
-	/// [global float] 0-100 Percentage of packets we will add additional delay
+	/// [global float] 0-100 Percentage of packets we will add_operation additional delay
 	/// to (causing them to be reordered)
 	k_ESteamNetworkingConfig_FakePacketReorder_Send = 6,
 	k_ESteamNetworkingConfig_FakePacketReorder_Recv = 7,
@@ -1555,7 +1555,7 @@ enum ESteamNetworkingConfigValue
 	/// See k_nSteamNetworkingConfig_P2P_Transport_ICE_Enable_xxx values
 	k_ESteamNetworkingConfig_P2P_Transport_ICE_Enable = 104,
 
-	/// [connection int32] When selecting P2P transport, add various
+	/// [connection int32] When selecting P2P transport, add_operation various
 	/// penalties to the scores for selected transports.  (Route selection
 	/// scores are on a scale of milliseconds.  The score begins with the
 	/// route ping time and is then adjusted.)

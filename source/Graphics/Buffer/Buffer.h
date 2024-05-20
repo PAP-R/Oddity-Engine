@@ -22,7 +22,7 @@ namespace OddityEngine::Graphics {
         TIME,
         RENDER,
         TEMP,
-        CONSTRAINT,
+        OPERATION,
     };
 
     template<typename T>
@@ -173,6 +173,10 @@ namespace OddityEngine::Graphics {
 
         [[nodiscard]] GLuint get_type() const {
             return type;
+        }
+
+        GLuint get_count() const {
+            return count;
         }
 
         GLuint get_ID() const {

@@ -26,7 +26,10 @@ namespace OddityEngine {
             // Program(std::string vertex, std::string fragment);
             ~Program();
 
+            void compile_shaders();
             GLuint compile();
+            GLuint compile(GLuint ID);
+            GLuint recompile();
 
             /***
              * Finds uniform location in shader

@@ -531,7 +531,7 @@ public:
 	/// poll group without adding it to a new poll group.
 	///
 	/// If there are received messages currently pending on the connection, an attempt
-	/// is made to add them to the queue of messages for the poll group in approximately
+	/// is made to add_operation them to the queue of messages for the poll group in approximately
 	/// the order that would have applied if the connection was already part of the poll
 	/// group at the time that the messages were received.
 	///
