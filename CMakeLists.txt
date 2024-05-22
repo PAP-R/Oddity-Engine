@@ -62,4 +62,8 @@ target_link_libraries(${PROJECT_NAME}_test
         ${LIBS}
 )
 
+target_link_libraries(${PROJECT_NAME}_test_recompile
+        ${LIBS}
+)
+
 file(INSTALL ${RECOURSES} DESTINATION ${OUTPUT_DIR})

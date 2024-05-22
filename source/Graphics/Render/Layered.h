@@ -21,7 +21,7 @@ namespace OddityEngine::Graphics::Render {
 
         void set_screen_size(const glm::vec2& size) override;
 
-        Physics::World* world;
+        Physics::World* world = nullptr;
 
         Camera* camera = nullptr;
     };

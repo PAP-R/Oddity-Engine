@@ -1,12 +1,14 @@
 #include "Operator.h"
 
 namespace OddityEngine::Util {
-    Vector<GLuint> Operator::add_operation(const std::string &code) {
-        auto names = operation_shader.add(code);
+    Vector<std::pair<std::string, GLuint>> Operator::add_operation(const std::string &code) {
+        auto names = operation_program.shaders.front().add(code);
 
-        Vector<GLuint> indices;
-        for (auto n : names) {
-            indices.emplace_back(operation_shader.selector_index(OPERATOR_SELECTOR, n));
+        Vector<std::pair<std::string, GLuint>> indices;
+        for (const auto& n : names) {
+            auto index = operation_program.shaders.front().selector_index(OPERATOR_SELECTOR, n);
+            indices.emplace_back(n, index);
+            operation_indices.add(n, index);
         }
 
         operation_program.recompile();
@@ -22,7 +24,7 @@ namespace OddityEngine::Util {
         operation_buffers[step].insert_back(call);
     }
 
-    void Operator::add_buffer(GLuint binding, GLuint buffer) {
+    void Operator::add_buffer(GLuint* buffer, GLuint binding) {
         other_buffers.emplace_back(binding, buffer);
     }
 
@@ -36,8 +38,10 @@ namespace OddityEngine::Util {
 
         glUseProgram(operation_program);
 
+        parameter_buffer.bind_base(Graphics::PARAMETER);
+
         for (auto b : other_buffers) {
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, b.first, b.second);
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, b.first, *b.second);
         }
 
         for (size_t i = start; i < count; i++) {
@@ -46,5 +50,13 @@ namespace OddityEngine::Util {
             glMemoryBarrier(GL_ALL_BARRIER_BITS);
             glFinish();
         }
+    }
+
+    GLuint Operator::get_opertation(const std::string &name) {
+        auto indices = operation_indices.get(name);
+        if (indices != nullptr) {
+            return indices->back();
+        }
+        return 0;
     }
 }

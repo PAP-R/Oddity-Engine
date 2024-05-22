@@ -28,6 +28,22 @@ Player::Player(OddityEngine::Graphics::Camera* camera) : camera(camera) {
     add_mapping("MoveLeft", SDL_KEYUP, SDL_GetKeyFromName("d"));
     add_mapping("MoveUp", SDL_KEYUP, SDLK_LCTRL);
     add_mapping("MoveDown", SDL_KEYUP, SDLK_SPACE);
+
+    add_action("MouseMove", [&](const SDL_Event& event){this->turn(event.motion.xrel, event.motion.yrel);});
+    add_mapping("MouseMove", SDL_MOUSEMOTION);
+
+    add_action("MoveForwardAxis", [&](const SDL_Event& event){this->set_acceleration_front(-(event.jaxis.value + 0.5f) / CONTROLLER_AXIS_MAX);});
+    add_mapping("MoveForwardAxis", SDL_JOYAXISMOTION, 1);
+
+    add_action("MoveRightAxis", [&](const SDL_Event& event){this->set_acceleration_right((event.jaxis.value + 0.5f) / CONTROLLER_AXIS_MAX);});
+    add_mapping("MoveRightAxis", SDL_JOYAXISMOTION, 0);
+
+    add_action("Zoom", [&](const SDL_Event& event){this->camera->fov -= event.wheel.preciseY; OddityEngine::Debug::message("Zoom {}", this->camera->fov);});
+    add_mapping("Zoom", SDL_MOUSEWHEEL);
+
+
+    add_action("Shift", [&](const SDL_Event& event){this->camera_shift.z -= event.wheel.preciseX; OddityEngine::Debug::message("Shift {} {} {}", this->camera_shift.x, this->camera_shift.y, this->camera_shift.z);});
+    add_mapping("Shift", SDL_MOUSEWHEEL);
 }
 
 bool Player::update() {

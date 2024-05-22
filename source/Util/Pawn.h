@@ -10,6 +10,8 @@ namespace OddityEngine::Util {
     class Pawn : public OddityEngine::Physics::Object {
     protected:
         glm::vec3 delta_acceleration = {0, 0, 0};
+        glm::vec3 manual_acceleration = {40, 40, 40};
+        glm::vec3 mouse_sensitivity = {0.1, 0.1, 0.1};
 
     public:
         bool update() override;

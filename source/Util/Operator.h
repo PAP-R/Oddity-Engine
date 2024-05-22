@@ -21,17 +21,19 @@ namespace OddityEngine::Util {
 
     class Operator {
     protected:
-        Graphics::Shader operation_shader = Graphics::Shader(GL_COMPUTE_SHADER, "operator.comp");
-        Graphics::Program operation_program = Graphics::Program({operation_shader});
+        Graphics::Program operation_program = Graphics::Program({Graphics::Shader(GL_COMPUTE_SHADER, "operator.comp")});
         Util::Trie<GLuint> operation_indices;
         Vector<Graphics::Buffer<OperationCall>> operation_buffers;
-        Vector<std::pair<GLuint, GLuint>> other_buffers;
+        Graphics::Buffer<GLfloat> parameter_buffer = Graphics::Buffer<GLfloat>();
+        Vector<std::pair<GLuint, GLuint*>> other_buffers = Vector<std::pair<GLuint, GLuint*>>();
 
     public:
-        Vector<GLuint> add_operation(const std::string& code);
+        Vector<std::pair<std::string, GLuint>> add_operation(const std::string& code);
         void add_call(size_t step, const OperationCall& call);
 
-        void add_buffer(GLuint binding, GLuint buffer);
+        GLuint get_opertation(const std::string& name);
+
+        void add_buffer(GLuint* buffer, GLuint binding);
 
         void run(size_t start = 0, size_t count = 0);
     };

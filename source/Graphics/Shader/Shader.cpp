@@ -59,9 +59,11 @@ namespace OddityEngine {
             return shader_code;
         }
 
-        Shader::Shader(GLuint type) : type(type), ID(glCreateShader(type)) {}
+        Shader::Shader(GLuint type) : type(type) {}
 
-        Shader::Shader(GLuint type, const std::string &path) : type(type), ID(glCreateShader(type)) {
+        Shader::Shader(GLuint type, const std::string &path) : Shader(type) {
+            Debug::message("Started loading {}", path);
+
             paths.clear();
             uniforms.clear();
 
@@ -69,7 +71,7 @@ namespace OddityEngine {
 
             add(read_shader(path));
 
-            compile();
+            Debug::message("Finished loading {}", path);
 
             // fmt::print("\t{} :\n", path);
             // std::stringstream shader_stream(shader_code);
@@ -87,15 +89,20 @@ namespace OddityEngine {
             glDeleteShader(ID);
         }
 
-        Shader::operator GLuint() const {
+        GLuint Shader::get_ID() {
+            if (outdated) {
+                recompile();
+            }
+
             return ID;
         }
 
-        GLuint Shader::get_ID() const {
-            return ID;
+        Shader::operator GLuint() {
+            return get_ID();
         }
 
         std::string Shader::add_element(ShaderElement element) {
+            outdated = true;
             elements.add(element.name, element);
             return element.name;
         }
@@ -142,6 +149,7 @@ namespace OddityEngine {
                     }
 
                     current += cell;
+
                     if (cellindex < semicount) {
                         current += ";";
                     }
@@ -156,20 +164,40 @@ namespace OddityEngine {
                     squarebracket -= std::ranges::count(cell, ']');
 
                     if (roundbracket == 0 && swirlybracket == 0 && squarebracket == 0) {
+//                        Debug::print("{}", current);
+
+                        size_t debug_number = 0;
+                        Debug::print(" {} ", debug_number++);
+
                         if (!boost::xpressive::regex_search(current, match, boost::xpressive::sregex::compile(R"(^(?:\s*(layout\(.*?\))?\s*((?:\w+\s*)+)?|#define)\s+(?:(\w+):)?(\w+)\s*(?:\(\s*([\s\S]+?)\s*\)|\{\s*([\s\S]+?)\s*\})?)"))) {
                             Debug::message("Some shader type things couldn't be found at:\n{}", current);
                         }
 
+                        Debug::print(" {} ", debug_number++);
+
                         std::string layout = match[1];
+                        Debug::print(" {} ", debug_number++);
                         std::string type = match[2];
+                        Debug::print(" {} ", debug_number++);
                         std::string name = match[4];
+                        Debug::print(" {} ", debug_number++);
                         std::string parameter_string = match[5] + match[6];
+                        Debug::print(" {} ", debug_number++);
 
                         if (match[3]) {
-                            Debug::message("Found selector {}", match[3].str());
-                            selector_elements.add(match[3], name);
+                            Debug::message("Found selector [{}]", match[3].str());
+                            this->selector_elements.add(match[3].str(), name);
+                            auto all_selector = selector_elements.get_all();
+                            for (auto a : all_selector) {
+                                Debug::print("{}:\n", a.first);
+                                for (auto b : a.second) {
+                                    Debug::print("\t{}\n", b);
+                                }
+                            }
                             current = boost::xpressive::regex_replace(current, boost::xpressive::sregex::compile(fmt::format("{}:", match[3].str())), "");
                         }
+
+                        Debug::print(" {} ", debug_number++);
 
                         for (boost::xpressive::sregex_iterator cur(parameter_string.begin(), parameter_string.end(), boost::xpressive::sregex::compile(R"(([\w\s]+))")), end; cur != end; ++cur) {
                             auto single_parameter = boost::xpressive::regex_replace((*cur).str(), boost::xpressive::sregex::compile(R"(^\s*|\s+$|\s+(?=\s))"), "");
@@ -180,7 +208,11 @@ namespace OddityEngine {
                             }
                         }
 
+                        Debug::print(" {} ", debug_number++);
+
                         name_list.emplace_back(add_element({name, current, type, layout, selector, parameters, parameter_types, select_by}));
+
+                        Debug::message("\nCreated element {}", name);
 
                         current.clear();
                         selector = false;
@@ -253,7 +285,7 @@ namespace OddityEngine {
             }
 
 
-            Debug::message("Sorting {}{} to {}", path, name, offset);
+//            Debug::message("Sorting {}{} to {}", path, name, offset);
 
             ordered->emplace(offset, name);
 
@@ -263,7 +295,7 @@ namespace OddityEngine {
                 for (const auto &c: temp_available) {
                     auto &e = this->elements.get(c)->back();
                     if (!e.layout.empty()) {
-                        Debug::message("Adding possibly unneeded thing: {}", c);
+//                        Debug::message("Adding possibly unneeded thing: {}", c);
                         needed(c, available, ordered, "other/");
                     }
                     else {
@@ -303,13 +335,7 @@ namespace OddityEngine {
             });
         }
 
-        std::string Shader::compile() {
-            return compile(ID);
-        }
-
-        std::string Shader::compile(GLuint ID) {
-            Debug::message("Started compiling Shader: {}", name);
-
+        std::string Shader::create_code() {
             std::string shader_code = fmt::format("#version {}\n", VERSION);
 
             auto elements = this->elements.get_all_paths();
@@ -319,6 +345,16 @@ namespace OddityEngine {
             for (auto& ep : elements) {
                 auto& e = this->elements.get(ep)->back();
                 if (e.enum_selector) {
+                    auto all_selector = selector_elements.get_all();
+                    for (auto a : all_selector) {
+                        Debug::print("{}:\n", a.first);
+                        for (auto b : a.second) {
+                            Debug::print("\t{}\n", b);
+                        }
+                    }
+
+                    Debug::message("Selector {}", e.name);
+
                     e.content = fmt::format("{} {}(", e.type, e.name);
                     std::string parameters;
                     for (size_t p = 0; p < e.parameters.size(); p++) {
@@ -335,6 +371,13 @@ namespace OddityEngine {
 
                     auto funcs = selector_elements.get(e.name);
                     if (funcs != nullptr) {
+
+                        Debug::print("Funcs size {}", funcs->size());
+
+                        for (auto f : *funcs) {
+                            Debug::print("{} ", f);
+                        }
+
                         for (size_t i = 0; i < funcs->size(); i++) {
                             if (i == 0) {
                                 e.content += fmt::format("\t\tdefault:\n");
@@ -343,7 +386,7 @@ namespace OddityEngine {
                                 e.content += fmt::format("\t\tcase {}:\n", i);
                             }
 
-                            e.content += fmt::format("\t\t\treturn {}({});\n\t\t\tbreak;\n", (*funcs)[i], parameters);
+                            e.content += fmt::format("\t\t\t{}{}({});\n\t\t\tbreak;\n", e.type.contains("void") ? "" : "return ", (*funcs)[i], parameters);
                         }
                     }
 
@@ -382,9 +425,19 @@ namespace OddityEngine {
 //            sort(&elements);
 
             for (const auto& c : ordered_names) {
-                Debug::message("Adding Thing [{}] to [{}] code", c, name);
+//                Debug::message("Adding Thing [{}] to [{}] code", c, name);
                 shader_code += fmt::format("{}\n", this->elements.get(c)->back().content);
             }
+
+            return shader_code;
+        }
+
+        GLuint Shader::compile() {
+            auto shader_code = create_code();
+
+            Debug::message("Started compiling Shader: {}", name);
+
+            GLuint ID = glCreateShader(type);
 
             GLint result = GL_FALSE;
 
@@ -413,15 +466,27 @@ namespace OddityEngine {
 
             Debug::message("Finished compiling Shader: {}\n\n", name);
 
-            return shader_code;
+            Debug::message("1 {} is{} a shader", this->name, (glIsShader(this->ID) ? "" : "n't"));
+
+            return ID;
         }
 
-        std::string Shader::recompile() {
-            GLuint ID = glCreateShader(type);
-            auto result = compile(ID);
-            glDeleteShader(this->ID);
-            this->ID = ID;
-            return result;
+        GLuint Shader::recompile() {
+            Debug::message("2 {} is{} a shader", this->name, (glIsShader(this->ID) ? "" : "n't"));
+
+            auto old_ID = this->ID;
+
+            this->ID = compile();
+
+            outdated = false;
+
+            Debug::message("3 {} is{} a shader", this->name, (glIsShader(this->ID) ? "" : "n't"));
+
+            if (glIsShader(old_ID)) {
+                glDeleteShader(old_ID);
+            }
+
+            return this->ID;
         }
 
         GLuint Shader::selector_index(const std::string &selector, const std::string &function) {

@@ -10,10 +10,6 @@
 #include "Graphics/Camera.h"
 
 class Player : public OddityEngine::Util::Pawn, public OddityEngine::Input::Input {
-protected:
-    glm::vec3 manual_acceleration = {40, 40, 40};
-    glm::vec3 mouse_sensitivity = {0.1, 0.1, 0.1};
-
 public:
     explicit Player(OddityEngine::Graphics::Camera* camera = new OddityEngine::Graphics::Camera());
 

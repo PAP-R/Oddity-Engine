@@ -14,4 +14,5 @@ const uint PHYSICS = 13;
 const uint TIME = 14;
 const uint RENDER = 15;
 const uint TEMP = 16;
-const uint OPERATION = 18;
+const uint OPERATION = 17;
+const uint PARAMETER = 18;

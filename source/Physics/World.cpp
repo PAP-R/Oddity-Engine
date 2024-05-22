@@ -3,6 +3,16 @@
 #include "Util/Time.h"
 
 namespace OddityEngine::Physics {
+    World::World() {
+        physics_operator.add_operation(OddityEngine::Graphics::Shader::read_shader("physics_operations.glsl"));
+        physics_operator.add_buffer(object_buffer, Graphics::OBJECT);
+        physics_operator.add_buffer(temp_object_buffer, Graphics::TEMP);
+        physics_operator.add_buffer(physics_buffer, Graphics::PHYSICS);
+        physics_operator.add_call(0, {1, 0});
+        physics_operator.add_call(0, {1, 1});
+        physics_operator.add_call(0, {1, 2});
+    }
+
     void World::update() {
         for (auto o : objects) {
             if (!o->update(this)) {
@@ -20,7 +30,7 @@ namespace OddityEngine::Physics {
 
         temp_object_buffer.resize(object_count() * object_count());
 
-
+        physics_operator.run();
 
 
         auto result = object_buffer.get();

@@ -8,8 +8,8 @@
 
 namespace OddityEngine {
     namespace Graphics {
-        Program::Program(std::initializer_list<Shader> shaders) : shaders{shaders}, ID(glCreateProgram()) {
-            compile();
+        Program::Program(std::initializer_list<Shader> shaders) : shaders{shaders} {
+            this->ID = compile();
         }
 
         // Program::Program(std::string vertex, std::string fragment) : Program(Shader(GL_VERTEX_SHADER, vertex), Shader(GL_FRAGMENT_SHADER, fragment)) {
@@ -19,11 +19,15 @@ namespace OddityEngine {
             glDeleteProgram(ID);
         }
 
-        GLuint Program::get_ID() const {
+        GLuint Program::get_ID() {
+            if (outdated) {
+                recompile();
+            }
+
             return ID;
         }
 
-        Program::operator GLuint() const {
+        Program::operator GLuint() {
             return get_ID();
         }
 
@@ -32,10 +36,12 @@ namespace OddityEngine {
         }
 
         GLuint Program::compile() {
-            return compile(ID);
-        }
+            GLuint ID = glCreateProgram();
 
-        GLuint Program::compile(GLuint ID) {
+            for (auto& s : shaders) {
+                glAttachShader(ID, s);
+            }
+
             glLinkProgram(ID);
 
             GLint result = GL_FALSE;
@@ -53,22 +59,25 @@ namespace OddityEngine {
                 Debug::error("{} Shader Program Error : {}\n", info_length, &program_error[0]);
             }
 
+            for (auto& s : shaders) {
+                glDetachShader(ID, s);
+            }
+
             return ID;
         }
 
         GLuint Program::recompile() {
-            auto ID = glCreateProgram();
-
-            for (auto s : shaders) {
-                s.recompile();
-                glAttachShader(ID, s);
-            }
-
             auto old_ID = this->ID;
 
-            this->ID = compile(ID);
+            this->ID = compile();
 
-            glDeleteProgram(old_ID);
+            outdated = false;
+
+            if (glIsProgram(old_ID)) {
+                glDeleteProgram(old_ID);
+            }
+
+            Debug::message("Old ID {}\tNew ID {}", old_ID, this->ID);
 
             return this->ID;
         }

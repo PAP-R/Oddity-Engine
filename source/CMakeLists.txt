@@ -22,6 +22,7 @@ set(GRAPHICS
         Graphics/Object.h
         Graphics/Render/Layered.cpp
         Graphics/Render/Layered.h
+        Graphics/Buffer/BufferObject.h
 )
 
 set(INPUT
@@ -90,9 +91,15 @@ set(SOURCES
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 add_executable(${PROJECT_NAME}_test ${SOURCES} main.cpp)
+add_executable(${PROJECT_NAME}_test_recompile ${SOURCES} test/recompile.cpp)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)
-set_target_properties(${PROJECT_NAME}_test PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)
+set(TARGETS
+        ${PROJECT_NAME}
+        ${PROJECT_NAME}_test
+        ${PROJECT_NAME}_test_recompile
+)
+
+set_target_properties(${TARGETS} PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)
 
 add_custom_command(TARGET ${PROJECT_NAME}_test PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

@@ -14,6 +14,17 @@ void reset(uint index) {
     temp_objects[index] = default_object();
 }
 
+mat4 transform(uint obj) {
+    //    vec3 position = objects[obj].position.xyz;
+    vec3 position = vec3(0);
+    vec4 q = objects[obj].orientation;
+
+    return mat4(1 - 2 * (q.z * q.z + q.w * q.w), 2 * (q.y * q.z + q.w * q.x), 2 * (q.y * q.w - q.z * q.x), 0,
+    2 * (q.y * q.z - q.w * q.x), 1 - 2 * (q.y * q.y + q.w * q.w), 2 * (q.z * q.w + q.y * q.x), 0,
+    2 * (q.y * q.w + q.z * q.x), 2 * (q.z * q.w - q.y * q.x), 1 - 2 * (q.y * q.y + q.z * q.z), 0,
+    position.x, position.y, position.z, 1);
+}
+
 void gravity (uint first_read, uint first_write, uint second_read, uint second_write, float multiplier) {
     vec3 inner = objects[second_read].position.xyz - objects[first_read].position.xyz;
 

@@ -32,6 +32,7 @@ namespace OddityEngine::Physics {
         Graphics::Buffer<float> network_buffer = Graphics::Buffer<float>();
 
     public:
+        World();
         void update();
         void bind_buffers();
 

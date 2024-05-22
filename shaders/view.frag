@@ -1,5 +1,7 @@
 #version 450 core
 
+#include <buffer.glsl>
+
 in vec2 uv;
 
 uniform vec2 view_size;
@@ -14,7 +16,7 @@ struct Render_transform {
     vec2 pos;
 };
 
-layout(std140, std430, binding = 3) buffer texture_transform_buffer {
+layout(std140, std430, binding = TEXTURE_TRANSFORM) buffer texture_transform_buffer {
     Render_transform texture_transform[];
 };
 

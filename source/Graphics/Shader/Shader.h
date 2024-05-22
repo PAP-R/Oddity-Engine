@@ -35,6 +35,8 @@ namespace OddityEngine {
             Util::Trie<ShaderElement> elements;
             Util::Trie<std::string> selector_elements;
 
+            bool outdated = true;
+
         public:
             Shader() = default;
 
@@ -53,21 +55,21 @@ namespace OddityEngine {
 
             ~Shader();
 
-            GLuint get_ID() const;
+            GLuint get_ID();
+
             /**
              * Inserts ID for shader
              * @return shader ID
              */
-            operator GLuint() const;
+            operator GLuint();
 
             static std::string read_shader(const std::string& path);
 
             std::string add_element(ShaderElement element);
             Vector<std::string> add(const std::string& string);
 
-            std::string compile();
-            std::string compile(GLuint ID);
-            std::string recompile();
+            GLuint compile();
+            GLuint recompile();
 
             void needed(const std::string& name, Vector <std::string>* available, Vector <std::string>* ordered, const std::string& path = "");
 
@@ -75,6 +77,8 @@ namespace OddityEngine {
 
             GLuint selector_index(const std::string& selector, const std::string& function);
             std::string selector_name(const std::string& selector, GLuint index);
+
+            std::string create_code();
         };
 
     } // OddityEngine

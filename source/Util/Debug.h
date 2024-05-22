@@ -13,6 +13,12 @@ namespace OddityEngine {
 
         static size_t message_count;
 
+
+        template<typename ... T>
+        static void print(const std::string& fmt, T&& ... args) {
+            fmt::vprint(fmt, fmt::make_format_args(args...));
+        }
+
         template<typename ... T>
         static void message(const std::string& fmt, T&& ... args) {
             fmt::print("{:4d}\t", message_count++);

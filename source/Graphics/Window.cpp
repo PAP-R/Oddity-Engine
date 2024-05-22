@@ -21,7 +21,7 @@ namespace OddityEngine::Graphics {
     std::vector<Window*> window_list;
 
     void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
-        Debug::message(message);
+        Debug::message("Source: {}\n Type: {}\n Severity: {}\n Error: {}", source, type, severity, message);
     }
 
     auto create_window(const char* name, const int width, const int height, const unsigned int flags) {
@@ -126,7 +126,7 @@ namespace OddityEngine::Graphics {
 
             glUniform1ui(view_program.uniform_location("texture_count"), scene->layer_count());
 
-            glBindBufferBase(scene->get_texture_transform_buffer()->get_type(), 3, scene->get_texture_transform_buffer()->get_ID());
+            scene->get_texture_transform_buffer()->bind_base(TEXTURE_TRANSFORM);
 
             glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
             glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0.5, 0.5, -0.5), glm::vec3(0.5, 0.5, -1), glm::vec3(0, 1, 0));

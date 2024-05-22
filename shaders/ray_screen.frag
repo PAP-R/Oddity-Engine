@@ -20,7 +20,7 @@ vec3 hsv2rgb(float h, float s, float v) {
 void main() {
     trace_result result = multi_trace_hit(camera_pos, ray_dir, 10, 0, object_count() - 1);
 
-    color = vec4(hsv2rgb(float(result.obj) / object_count(), 1, 1), 1) * clamp(1 - result.distance, 0, 1);
+    color = vec4(hsv2rgb(result.distance, 1, 1), 1) * clamp(1 - result.distance, 0, 1);
 
 //    if (result.distance < 1) {
 //        color = vec4(hsv2rgb(float(result.obj) / object_count(), 1, 1), 1) * clamp(1 - result.distance, 0, 1);

@@ -19,13 +19,13 @@ namespace OddityEngine::Util {
     protected:
         TrieNode<T> root;
 
-        void _add(TrieNode<T>* current, const T& value) {
+        size_t _add(TrieNode<T>* current, const T& value) {
             current->values.push_back(value);
             return current->values.size() - 1;
         }
 
         template<typename ... Args, std::enable_if_t<((std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...)) || sizeof...(Args) == 0, bool> = true>
-        void _add(TrieNode<T>* current, const T& value, size_t path, Args ... rest) {
+        size_t _add(TrieNode<T>* current, const T& value, size_t path, Args ... rest) {
             current = &current->nodes[path];
 
             return this->_add(current, value, rest...);
@@ -100,7 +100,7 @@ namespace OddityEngine::Util {
                 current = &current->nodes[c];
             }
 
-            return &current->values;
+            return &(current->values);
         }
 
         template<typename ... Args, std::enable_if_t<(std::is_scalar_v<Args> && ...) && !(std::is_floating_point_v<Args> && ...), bool> = true>

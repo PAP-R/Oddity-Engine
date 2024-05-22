@@ -13,9 +13,12 @@ namespace OddityEngine {
         class Program {
         protected:
             GLuint ID;
-            std::vector<Shader> shaders;
+            bool outdated = true;
 
         public:
+            std::vector<Shader> shaders;
+
+
             Program() = default;
             /**
              * Creates an Opengl program from a vertex and a fragment shader
@@ -28,7 +31,6 @@ namespace OddityEngine {
 
             void compile_shaders();
             GLuint compile();
-            GLuint compile(GLuint ID);
             GLuint recompile();
 
             /***
@@ -40,13 +42,13 @@ namespace OddityEngine {
 
             void apply();
 
-            GLuint get_ID() const;
+            GLuint get_ID();
 
             /**
              * Inserts ID for program
              * @return program ID
              */
-            operator GLuint() const;
+            operator GLuint();
         };
 
     } // OddityEngine

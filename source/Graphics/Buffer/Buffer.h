@@ -23,18 +23,20 @@ namespace OddityEngine::Graphics {
         RENDER,
         TEMP,
         OPERATION,
+        PARAMETER,
     };
 
     template<typename T>
     class Buffer {
     protected:
-        GLuint ID = 0;
         GLuint type;
         GLuint usage;
         GLsizei count = 0;
         Vector<GLsizei*> indices;
 
     public:
+        GLuint ID = 0;
+
         Buffer(const GLuint type = GL_SHADER_STORAGE_BUFFER, const GLuint usage = GL_DYNAMIC_DRAW) : type(type), usage(usage) {
             glGenBuffers(1, &ID);
         }
@@ -179,12 +181,20 @@ namespace OddityEngine::Graphics {
             return count;
         }
 
-        GLuint get_ID() const {
+        GLuint& get_ID() {
             return ID;
         }
 
-        operator GLuint() const {
+        operator GLuint&() {
             return get_ID();
+        }
+
+        GLuint* get_ID_ptr() {
+            return &ID;
+        }
+
+        operator GLuint*() {
+            return get_ID_ptr();
         }
 
         void bind_base(GLuint index) {

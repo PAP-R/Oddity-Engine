@@ -2,20 +2,28 @@
 
 #include <buffer.glsl>
 
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
 struct Operation {
     uint operation;
     uint parameter_start;
     uint parameter_count;
 };
 
-layout(std130, std430, binding = OPERATION) buffer operations_buffer {
+layout(std140, std430, binding = OPERATION) buffer operations_buffer {
     Operation operations[];
 };
+
+layout(std140, std430, binding = PARAMETER) buffer parameter_buffer {
+    float parameters[];
+};
+
+void operation_selector:empty(uint operation, uint parameter_start) {}
 
 #selector(operation) void operation_selector(uint operation, uint parameter_start)
 
 void main() {
-    for (uint i = 0; i < operations.size(); i++) {
+    for (uint i = 0; i < operations.length(); i++) {
         operation_selector(operations[i].operation, operations[i].parameter_start);
     }
 }

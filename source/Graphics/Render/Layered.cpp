@@ -25,7 +25,9 @@ namespace OddityEngine::Graphics::Render {
 
         glUseProgram(screen_program);
 
-        world->bind_buffers();
+        if (world != nullptr) {
+            world->bind_buffers();
+        }
 
         glm::mat4 screen_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
         glm::mat4 screen_projection = screen_perspective * glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
