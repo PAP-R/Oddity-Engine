@@ -1,10 +1,10 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
-#include <GL/glew.h>
+#include "GL/glew.h"
 
-#include <Math/basics.h>
-#include <Util/Vector.h>
+#include "Math/basics.h"
+#include "Util/Vector.h"
 
 namespace OddityEngine::Graphics {
     enum BufferIndex {

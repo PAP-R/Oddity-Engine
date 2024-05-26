@@ -2,7 +2,7 @@
 
 #include <steam_api.h>
 
-#include <Graphics/Graphics.h>
+#include "Graphics/Graphics.h"
 #include <Input/Event_Poller.h>
 
 #include <Util/Debug.h>

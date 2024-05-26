@@ -2,13 +2,13 @@
 
 #include <SDL.h>
 
-#include <Util/Debug.h>
-#include <Graphics/Window.h>
+#include "Util/Debug.h"
+#include "Graphics/Window.h"
 
 namespace OddityEngine::Graphics {
     void init() {
         if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-            Debug::error("Failed to initialize SDL Video");
+            Debug::error("Failed to initialize SDL");
         }
     }
 

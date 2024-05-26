@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <fmt/core.h>
 
+#include <locale>
+
 namespace OddityEngine {
     class Debug {
     public:
@@ -21,15 +23,22 @@ namespace OddityEngine {
 
         template<typename ... T>
         static void message(const std::string& fmt, T&& ... args) {
-            fmt::print("{:4d}\t", message_count++);
-            fmt::vprint(fmt, fmt::make_format_args(args...));
-            fmt::print("\n");
+            print("{:>4}\t", message_count++);
+            print(fmt, args...);
+            print("\n");
         }
 
         template<typename ... T>
         static void error(const std::string& fmt, T&& ... args) {
             Debug::message(fmt, args...);
             throw std::runtime_error(fmt::vformat(fmt, fmt::make_format_args(args...)));
+        }
+
+        template<typename ... T>
+        static void assert_error(bool condition, const std::string& fmt, T&& ... args) {
+            if (condition) {
+                Debug::error(fmt, args...);
+            }
         }
 
         static void update();

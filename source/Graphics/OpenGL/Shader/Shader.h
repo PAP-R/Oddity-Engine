@@ -9,7 +9,7 @@
 #include <string>
 
 #include "Util/Vector.h"
-#include <Util/Trie.h>
+#include "Util/Trie.h"
 
 #define VERSION "450 core"
 #define SELECTOR "#selector"

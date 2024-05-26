@@ -1,6 +1,6 @@
 #include "ComputeRenderer.h"
 
-#include <glm/gtx/quaternion.hpp>
+#include "glm/gtx/quaternion.hpp"
 
 namespace OddityEngine::Graphics::Render {
     ComputeRenderer::ComputeRenderer(Camera* camera) : camera(camera) {}

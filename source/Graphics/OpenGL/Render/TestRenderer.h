@@ -2,8 +2,8 @@
 #define TESTRENDERER_H
 
 #include "Interface.h"
-#include <Graphics/Shader/Program.h>
-#include <Graphics/Camera.h>
+#include "Graphics/OpenGL/Shader/Program.h"
+#include "Graphics/OpenGL/Camera.h"
 
 namespace OddityEngine::Graphics::Render {
     class TestRenderer : public Interface {

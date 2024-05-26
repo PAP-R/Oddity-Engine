@@ -2,9 +2,9 @@
 #define WORLD_H
 
 #include "Object.h"
-#include "Graphics/Buffer/Buffer.h"
-#include "Graphics/Shader/Program.h"
-#include "Graphics/Shader/Shader.h"
+#include "Graphics/OpenGL/Buffer/Buffer.h"
+#include "Graphics/OpenGL/Shader/Program.h"
+#include "Graphics/OpenGL/Shader/Shader.h"
 #include "Util/Vector.h"
 #include <Util/Operator.h>
 

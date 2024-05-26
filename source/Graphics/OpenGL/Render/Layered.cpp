@@ -1,6 +1,6 @@
 #include "Layered.h"
 
-#include <glm/gtx/quaternion.hpp>
+#include "glm/gtx/quaternion.hpp"
 
 #include "Util/Time.h"
 

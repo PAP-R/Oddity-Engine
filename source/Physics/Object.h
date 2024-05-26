@@ -9,7 +9,7 @@
 
 #include <NeuralNetwork/Network.h>
 
-#include "Graphics/Buffer/Buffer.h"
+#include "Graphics/OpenGL/Buffer/Buffer.h"
 
 namespace OddityEngine::Physics {
     enum STATES {

@@ -12,12 +12,12 @@ using namespace std::chrono_literals;
 #include <OddityEngine.h>
 
 #include "Player.h"
-#include "Graphics/Camera.h"
+#include "Graphics/OpenGL/Camera.h"
 #include "Graphics/Graphics.h"
-#include "Graphics/Window.h"
-#include "Graphics/Render/ComputeRenderer.h"
-#include "Graphics/Render/TestRenderer.h"
-#include "Graphics/Render/Layered.h"
+#include "Graphics/OpenGL/Window.h"
+#include "Graphics/OpenGL/Render/ComputeRenderer.h"
+#include "Graphics/OpenGL/Render/TestRenderer.h"
+#include "Graphics/OpenGL/Render/Layered.h"
 #include "Math/random.h"
 #include "Physics/World.h"
 

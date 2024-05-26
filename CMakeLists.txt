@@ -3,12 +3,16 @@ project(OddityEngine)
 
 set(OUTPUT_DIR ${PROJECT_SOURCE_DIR}/[output])
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 
 find_package(OpenGL REQUIRED)
 
+#find_package(Boost REQUIRED)
+
+find_package(Vulkan REQUIRED)
+
 find_package(SDL2 REQUIRED)
+message("found sdl version ${SDL2_VERSION}")
 
 include_directories(
         source
@@ -19,6 +23,7 @@ include_directories(
         external/fmt/include
         ${SDL2_INCLUDE_DIRS}
         libs/steam/public/steam
+        ${Vulkan_INCLUDE_DIRS}
 )
 
 add_subdirectory(external)
@@ -34,6 +39,7 @@ set(LIBS
         ${SDL2_LIBRARIES}
         fmt::fmt
         ${STEAM_LIBRARY}
+        ${Vulkan_LIBRARIES}
 )
 
 #add_definitions(
@@ -63,6 +69,10 @@ target_link_libraries(${PROJECT_NAME}_test
 )
 
 target_link_libraries(${PROJECT_NAME}_test_recompile
+        ${LIBS}
+)
+
+target_link_libraries(${PROJECT_NAME}_test_vulkan
         ${LIBS}
 )
 

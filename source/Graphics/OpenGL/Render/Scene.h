@@ -1,13 +1,13 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <GL/glew.h>
-#include <glm/glm.hpp>
+#include "GL/glew.h"
+#include "glm/glm.hpp"
 
 #include "Interface.h"
-#include <Graphics/Buffer/Buffer.h>
+#include "Graphics/OpenGL/Buffer/Buffer.h"
 
-#include <Util/Vector.h>
+#include "Util/Vector.h"
 
 #include "Util/Eventable.h"
 

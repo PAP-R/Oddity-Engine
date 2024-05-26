@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <vector>
 
-#include <boost/xpressive/xpressive.hpp>
+#include "boost/xpressive/xpressive.hpp"
 
 #include "Util/Debug.h"
 

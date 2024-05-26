@@ -1,11 +1,11 @@
 #include "TestRenderer.h"
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtx/quaternion.hpp"
 
-#include <Math/random.h>
+#include "Math/random.h"
 
-#include <Graphics/Shader/Shader.h>
+#include "Graphics/OpenGL/Shader/Shader.h"
 
 OddityEngine::Graphics::Render::TestRenderer::TestRenderer(Camera* camera) : camera(camera), screenbuffer(GL_ARRAY_BUFFER), program({Shader(GL_VERTEX_SHADER, "test.vert"), Shader(GL_FRAGMENT_SHADER, "test.frag")}) {
     Vector screen = {

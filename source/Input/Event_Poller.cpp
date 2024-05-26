@@ -3,7 +3,7 @@
 #include <Util/Debug.h>
 #include <fmt/core.h>
 
-#include <Graphics/Window.h>
+#include "Graphics/OpenGL/Window.h"
 #include "Util/Eventable.h"
 
 namespace OddityEngine::Event {

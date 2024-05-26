@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <Physics/Object.h>
+#include "Physics/Object.h"
 
 namespace OddityEngine::Graphics {
     class Camera : public Physics::Object {

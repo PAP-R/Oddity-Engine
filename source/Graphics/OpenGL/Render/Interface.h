@@ -1,10 +1,10 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-#include <GL/glew.h>
-#include <glm/glm.hpp>
+#include "GL/glew.h"
+#include "glm/glm.hpp"
 
-#include "Graphics/Buffer/Buffer.h"
+#include "Graphics/OpenGL/Buffer/Buffer.h"
 
 namespace OddityEngine::Graphics::Render {
     struct alignas(16) render_transform {
