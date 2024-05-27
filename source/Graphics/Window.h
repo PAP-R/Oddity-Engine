@@ -19,7 +19,7 @@ namespace OddityEngine::Graphics {
         virtual void make_current() = 0;
         virtual void update() = 0;
 
-        void set_size(glm::vec2 size);
+        virtual void set_size(glm::vec2 size);
 
         static bool update_all();
         static void terminate_all();

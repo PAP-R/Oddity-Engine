@@ -117,5 +117,5 @@ set_target_properties(${TARGETS} PROPERTIES LINKER_LANGUAGE CXX CXX_STANDARD 23)
 
 add_custom_command(TARGET ${PROJECT_NAME}_test PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${PROJECT_SOURCE_DIR}/shaders ${OUTPUT_DIR}/shaders
+        ${PROJECT_SOURCE_DIR}/shadersOpenGL ${OUTPUT_DIR}/shaders
 )

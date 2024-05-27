@@ -7,13 +7,44 @@
 
 #include <string>
 #include <vector>
+#include <array>
 #include <optional>
 
 #include <Graphics/Window.h>
 
 #define minSeverity VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
 namespace OddityEngine::Graphics::Vulkan {
+    struct Vertex {
+        glm::vec2 pos;
+        glm::vec3 color;
+
+        static VkVertexInputBindingDescription get_binding_description() {
+            VkVertexInputBindingDescription bindingDescription{};
+            bindingDescription.binding = 0;
+            bindingDescription.stride = sizeof(Vertex);
+            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            return bindingDescription;
+        }
+
+        static std::array<VkVertexInputAttributeDescription, 2> get_attribute_descriptions() {
+            std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+            attributeDescriptions[0].binding = 0;
+            attributeDescriptions[0].location = 0;
+            attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+            attributeDescriptions[0].offset = offsetof(Vertex, pos);
+            attributeDescriptions[1].binding = 0;
+            attributeDescriptions[1].location = 1;
+            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+            return attributeDescriptions;
+        }
+    };
+
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
@@ -30,14 +61,6 @@ namespace OddityEngine::Graphics::Vulkan {
     };
 
     class Window : public Graphics::Window {
-        VkInstance instance;
-        VkDebugUtilsMessengerEXT debugMessenger;
-        VkSurfaceKHR surface;
-        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-        VkDevice device;
-        VkQueue graphicsQueue;
-        VkQueue presentQueue;
-
         std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"
         };
@@ -46,6 +69,45 @@ namespace OddityEngine::Graphics::Vulkan {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
 
+        uint32_t currentFrame = 0;
+
+        VkInstance instance;
+        VkDebugUtilsMessengerEXT debugMessenger;
+        VkSurfaceKHR surface;
+        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+        VkDevice device;
+        VkQueue graphicsQueue;
+        VkQueue presentQueue;
+        VkSwapchainKHR swapChain;
+
+        std::vector<VkImage> swapChainImages;
+        std::vector<VkImageView> swapChainImageViews;
+        VkFormat swapChainFormat;
+        VkExtent2D swapChainExtent;
+
+        std::vector<VkFramebuffer> swapChainFramebuffers;
+
+        VkRenderPass renderPass;
+        VkPipelineLayout pipelineLayout;
+        VkPipeline graphicsPipeline;
+
+        VkCommandPool commandPool;
+        std::vector<VkCommandBuffer> commandBuffers;
+
+        std::vector<VkSemaphore> imageAvailableSemaphores;
+        std::vector<VkSemaphore> renderFinishedSemaphores;
+        std::vector<VkFence> inFlightFences;
+
+        VkBuffer vertexBuffer; //TODO make Buffer class
+        VkDeviceMemory vertexBufferMemory;
+
+        bool framebufferResized = false;
+
+        const std::vector<Vertex> vertices = {
+            {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+        };
 
 
 #ifdef NDEBUG
@@ -54,20 +116,43 @@ namespace OddityEngine::Graphics::Vulkan {
         const bool enableValidataionLayers = true;
 #endif
 
+        std::vector<const char*> get_required_extensions();
+
         QueueFamilyIndices find_queue_families(VkPhysicalDevice device);
         bool check_device_extension_support(VkPhysicalDevice device);
         size_t rate_device_suitability(VkPhysicalDevice device);
 
-
         bool check_validation_layer_support();
         SwapChainSupportDetails query_swap_chain_support(VkPhysicalDevice device);
+        VkSurfaceFormatKHR choose_swap_surface_format(const std::vector<VkSurfaceFormatKHR>& availableFomrats);
+        VkPresentModeKHR choose_swap_present_mode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+        VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-        std::vector<const char*> get_required_extensions();
+        VkShaderModule create_shader_module(const std::string& path);
+
+        uint32_t find_memory_type(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+        void record_command_buffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
         void create_instance(const std::string& name);
         void setup_debug_messenger();
         void create_surface();
         void pick_physical_device();
         void create_logical_device();
+        void create_swap_chain();
+        void create_image_views();
+        void create_render_pass();
+        void create_graphics_pipeline();
+        void create_framebuffers();
+        void create_command_pool();
+        void create_vertex_buffer();
+        void create_command_buffer();
+        void create_sync_objects();
+
+        void draw_frame();
+
+        void cleanup_swap_chain();
+        void recreate_swap_chain();
 
     public:
         Window(const char* name, int width, int height, unsigned int flags);
@@ -75,6 +160,8 @@ namespace OddityEngine::Graphics::Vulkan {
 
         void update() override;
         void make_current() override;
+
+        void set_size(glm::vec2 size) override;
 
         static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
     };
