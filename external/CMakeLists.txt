@@ -1,8 +1,8 @@
-set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
-
-add_subdirectory(boost EXCLUDE_FROM_ALL)
+#set(Boost_USE_STATIC_LIBS OFF)
+#set(Boost_USE_MULTITHREADED ON)
+#set(Boost_USE_STATIC_RUNTIME OFF)
+#
+#add_subdirectory(boost EXCLUDE_FROM_ALL)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(OPENGL_LIBRARY

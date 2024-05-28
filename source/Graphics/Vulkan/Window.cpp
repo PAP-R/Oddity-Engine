@@ -10,9 +10,13 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <numbers>
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 #include <Util/Debug.h>
 #include <Util/File.h>
+#include <Util/Time.h>
 
 namespace OddityEngine::Graphics::Vulkan {
     VkResult create_debug_utils_messenger_EXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
@@ -223,12 +227,9 @@ namespace OddityEngine::Graphics::Vulkan {
             return capabilities.currentExtent;
         }
         else {
-            int width, height;
-            SDL_GetWindowSize(window, &width, &height);
-
             VkExtent2D actualExtent = {
-                static_cast<uint32_t>(width),
-                static_cast<uint32_t>(height)
+                static_cast<uint32_t>(size.x),
+                static_cast<uint32_t>(size.y)
             };
 
             actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
@@ -262,50 +263,6 @@ namespace OddityEngine::Graphics::Vulkan {
         }
 
         Debug::error("Failed to find memory type");
-    }
-
-    void Window::record_command_buffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = 0;
-        beginInfo.pInheritanceInfo = nullptr;
-
-        Debug::assert_error(vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS, "Failed to begin command buffer");
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = renderPass;
-        renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
-        renderPassInfo.renderArea.offset = {0, 0};
-        renderPassInfo.renderArea.extent = swapChainExtent;
-
-        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 0.0f}}};
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearColor;
-
-        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = swapChainExtent.width;
-        viewport.height = swapChainExtent.height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-        VkRect2D scissor{};
-        scissor.offset = {0, 0};
-        scissor.extent = swapChainExtent;
-        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-
-        vkCmdEndRenderPass(commandBuffer);
-
-        Debug::assert_error(vkEndCommandBuffer(commandBuffer) != VK_SUCCESS, "Failed to record command buffer");
     }
 
     std::vector<const char *> Window::get_required_extensions() {
@@ -579,6 +536,22 @@ namespace OddityEngine::Graphics::Vulkan {
 
     }
 
+    void Window::create_descriptor_set_layout() {
+        VkDescriptorSetLayoutBinding uboLayoutBinding{};
+        uboLayoutBinding.binding = 0;
+        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uboLayoutBinding.descriptorCount = 1;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uboLayoutBinding.pImmutableSamplers = nullptr;
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 1;
+        layoutInfo.pBindings = &uboLayoutBinding;
+
+        Debug::assert_error(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS, "Failed to create descriptor set layout");
+    }
+
     void Window::create_graphics_pipeline() {
         auto vertShaderModule = create_shader_module("shaders/vert.spv");
         auto fragShaderModule = create_shader_module("shaders/frag.spv");
@@ -648,7 +621,7 @@ namespace OddityEngine::Graphics::Vulkan {
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
 
-        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+        rasterizer.cullMode = VK_CULL_MODE_NONE;
         rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 
         rasterizer.depthBiasEnable = VK_FALSE;
@@ -684,8 +657,8 @@ namespace OddityEngine::Graphics::Vulkan {
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pSetLayouts = nullptr;
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
         pipelineLayoutInfo.pushConstantRangeCount = 0;
         pipelineLayoutInfo.pPushConstantRanges = nullptr;
 
@@ -748,25 +721,65 @@ namespace OddityEngine::Graphics::Vulkan {
     }
 
     void Window::create_vertex_buffer() {
-        VkBufferCreateInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        vertexBuffer.create(physicalDevice, device, vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, vertices.data());
+    }
 
-        Debug::assert_error(vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS, "Failed to create vertex buffer");
+    void Window::create_index_buffer() {
+        indexBuffer.create(physicalDevice, device, indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, indices.data());
+    }
 
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(device, vertexBuffer, &memRequirements);
+    void Window::create_uniform_buffers() {
+        uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = find_memory_type(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            uniformBuffers[i].create(physicalDevice, device, 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        }
+    }
 
-        Debug::assert_error(vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS, "Failed to allocate vertex buffer memory");
+    void Window::create_descriptor_pool() {
+        VkDescriptorPoolSize poolSize{};
+        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSize.descriptorCount = MAX_FRAMES_IN_FLIGHT;
 
-        vkBindBufferMemory(device, vertexBuffer, vertexBufferMemory, 0);
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = 1;
+        poolInfo.pPoolSizes = &poolSize;
+        poolInfo.maxSets = MAX_FRAMES_IN_FLIGHT;
+
+        Debug::assert_error(vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS, "Failed to create descriptor pool");
+    }
+
+    void Window::create_descriptor_sets() {
+        std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = descriptorPool;
+        allocInfo.descriptorSetCount = MAX_FRAMES_IN_FLIGHT;
+        allocInfo.pSetLayouts = layouts.data();
+
+        descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+        Debug::assert_error(vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS, "Failed to allocate descriptor sets");
+
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = uniformBuffers[i];
+            bufferInfo.offset = 0;
+            bufferInfo.range = sizeof(UniformBufferObject);
+
+            VkWriteDescriptorSet descriptorWrite{};
+            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrite.dstSet = descriptorSets[i];
+            descriptorWrite.dstBinding = 0;
+            descriptorWrite.dstArrayElement = 0;
+            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrite.descriptorCount = 1;
+            descriptorWrite.pBufferInfo = &bufferInfo;
+            descriptorWrite.pImageInfo = nullptr;
+            descriptorWrite.pTexelBufferView = nullptr;
+
+            vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+        }
     }
 
     void Window::create_command_buffer() {
@@ -800,8 +813,73 @@ namespace OddityEngine::Graphics::Vulkan {
         }
     }
 
+
+    void Window::update_uniform_buffer(uint32_t currentImage) {
+        uniformBuffers[currentImage][0].model = glm::rotate(glm::mat4(1), Util::Time::now<float>() * glm::radians(90.0f), glm::vec3(0, 0, 1));
+        uniformBuffers[currentImage][0].view = glm::lookAt(glm::vec3(3 * cos(Util::Time::now<float>()), 3 * sin(Util::Time::now<float>()), 2), glm::vec3(0), glm::vec3(0, 0, 1));
+        uniformBuffers[currentImage][0].proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
+        uniformBuffers[currentImage][0].proj[1][1] *= -1;
+        uniformBuffers[currentImage][0].screenSize = {swapChainExtent.width, swapChainExtent.height};
+        uniformBuffers[currentImage][0].time = Util::Time::now<float>();
+    }
+
+    void Window::record_command_buffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+        VkCommandBufferBeginInfo beginInfo{};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = 0;
+        beginInfo.pInheritanceInfo = nullptr;
+
+        Debug::assert_error(vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS, "Failed to begin command buffer");
+
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = renderPass;
+        renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];
+        renderPassInfo.renderArea.offset = {0, 0};
+        renderPassInfo.renderArea.extent = swapChainExtent;
+
+        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 0.0f}}};
+        renderPassInfo.clearValueCount = 1;
+        renderPassInfo.pClearValues = &clearColor;
+
+        vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+
+        VkBuffer vertexBuffers[] = {vertexBuffer};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+        vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = swapChainExtent.width;
+        viewport.height = swapChainExtent.height;
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = swapChainExtent;
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[currentFrame], 0, nullptr);
+        vkCmdDrawIndexed(commandBuffer, indexBuffer.count(), 1, 0, 0, 0);
+
+        vkCmdEndRenderPass(commandBuffer);
+
+        Debug::assert_error(vkEndCommandBuffer(commandBuffer) != VK_SUCCESS, "Failed to record command buffer");
+    }
+
     void Window::draw_frame() {
         vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+
+        if (minimized) {
+            return;
+        }
 
         uint32_t imageIndex;
         VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
@@ -816,6 +894,8 @@ namespace OddityEngine::Graphics::Vulkan {
 
         vkResetCommandBuffer(commandBuffers[currentFrame], 0);
         record_command_buffer(commandBuffers[currentFrame], imageIndex);
+
+        update_uniform_buffer(currentFrame);
 
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -858,6 +938,7 @@ namespace OddityEngine::Graphics::Vulkan {
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
+
     void Window::cleanup_swap_chain() {
         for (auto framebuffer : swapChainFramebuffers) {
             vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -883,16 +964,32 @@ namespace OddityEngine::Graphics::Vulkan {
 
     Window::Window(const char* name, const int width, const int height, const unsigned int flags) : Graphics::Window(name, width, height, flags | SDL_WINDOW_VULKAN) {
         create_instance(name);
+
         setup_debug_messenger();
+
         create_surface();
+
         pick_physical_device();
         create_logical_device();
+
         create_swap_chain();
+
         create_image_views();
         create_render_pass();
+        create_descriptor_set_layout();
         create_graphics_pipeline();
+
         create_framebuffers();
+
         create_command_pool();
+
+        create_vertex_buffer();
+        create_index_buffer();
+        create_uniform_buffers();
+
+        create_descriptor_pool();
+        create_descriptor_sets();
+
         create_command_buffer();
         create_sync_objects();
     }
@@ -900,8 +997,16 @@ namespace OddityEngine::Graphics::Vulkan {
     Window::~Window() {
         vkDeviceWaitIdle(device);
 
-        vkDestroyBuffer(device, vertexBuffer, nullptr);
-        vkFreeMemory(device, vertexBufferMemory, nullptr);
+        for (auto& buffer : uniformBuffers) {
+            buffer.destroy();
+        }
+
+        vertexBuffer.destroy();
+        indexBuffer.destroy();
+
+        vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
+        vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
@@ -942,6 +1047,12 @@ namespace OddityEngine::Graphics::Vulkan {
         Graphics::Window::set_size(size);
 
         framebufferResized = true;
+        if (size.x == 0 || size.y == 0) {
+            minimized = true;
+        }
+        else {
+            minimized = false;
+        }
     }
 
     VkBool32 Window::debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {

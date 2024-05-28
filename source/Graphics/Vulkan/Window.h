@@ -12,6 +12,8 @@
 
 #include <Graphics/Window.h>
 
+#include "Buffer.h"
+
 #define minSeverity VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -19,7 +21,7 @@ const int MAX_FRAMES_IN_FLIGHT = 2;
 namespace OddityEngine::Graphics::Vulkan {
     struct Vertex {
         glm::vec2 pos;
-        glm::vec3 color;
+        glm::vec3 dir;
 
         static VkVertexInputBindingDescription get_binding_description() {
             VkVertexInputBindingDescription bindingDescription{};
@@ -39,10 +41,18 @@ namespace OddityEngine::Graphics::Vulkan {
             attributeDescriptions[1].binding = 0;
             attributeDescriptions[1].location = 1;
             attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[1].offset = offsetof(Vertex, color);
+            attributeDescriptions[1].offset = offsetof(Vertex, dir);
 
             return attributeDescriptions;
         }
+    };
+
+    struct UniformBufferObject {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+        glm::vec2 screenSize;
+        float time;
     };
 
     struct QueueFamilyIndices {
@@ -88,7 +98,10 @@ namespace OddityEngine::Graphics::Vulkan {
         std::vector<VkFramebuffer> swapChainFramebuffers;
 
         VkRenderPass renderPass;
+
+        VkDescriptorSetLayout descriptorSetLayout;
         VkPipelineLayout pipelineLayout;
+
         VkPipeline graphicsPipeline;
 
         VkCommandPool commandPool;
@@ -98,15 +111,27 @@ namespace OddityEngine::Graphics::Vulkan {
         std::vector<VkSemaphore> renderFinishedSemaphores;
         std::vector<VkFence> inFlightFences;
 
-        VkBuffer vertexBuffer; //TODO make Buffer class
-        VkDeviceMemory vertexBufferMemory;
+        Buffer<Vertex> vertexBuffer;
+        Buffer<uint32_t> indexBuffer;
+
+        std::vector<Buffer<UniformBufferObject>> uniformBuffers;
+
+        VkDescriptorPool descriptorPool;
+        std::vector<VkDescriptorSet> descriptorSets;
 
         bool framebufferResized = false;
+        bool minimized = false;
 
         const std::vector<Vertex> vertices = {
-            {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-            {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+            {{-1, -1}, {-1, 1, 1}},
+            {{1, -1}, {1, 1, 1}},
+            {{1, 1}, {1, -1, 1}},
+            {{-1, 1}, {-1, -1, 1}}
+        };
+
+        const std::vector<uint32_t> indices = {
+            0, 1, 2,
+            2, 3, 0
         };
 
 
@@ -132,23 +157,35 @@ namespace OddityEngine::Graphics::Vulkan {
 
         uint32_t find_memory_type(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-        void record_command_buffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-
         void create_instance(const std::string& name);
         void setup_debug_messenger();
         void create_surface();
+
         void pick_physical_device();
         void create_logical_device();
+
         void create_swap_chain();
+
         void create_image_views();
         void create_render_pass();
+        void create_descriptor_set_layout();
         void create_graphics_pipeline();
         void create_framebuffers();
+
         void create_command_pool();
+
         void create_vertex_buffer();
+        void create_index_buffer();
+        void create_uniform_buffers();
+
+        void create_descriptor_pool();
+        void create_descriptor_sets();
+
         void create_command_buffer();
         void create_sync_objects();
 
+        void update_uniform_buffer(uint32_t currentImage);
+        void record_command_buffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
         void draw_frame();
 
         void cleanup_swap_chain();

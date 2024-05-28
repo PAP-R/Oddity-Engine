@@ -26,6 +26,7 @@ set(GRAPHICS_OPENGL
 set(GRAPHICS_VULKAN
         Graphics/Vulkan/Window.cpp
         Graphics/Vulkan/Window.h
+        Graphics/Vulkan/Buffer.h
 )
 
 set(GRAPHICS

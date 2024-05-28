@@ -7,7 +7,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 
 find_package(OpenGL REQUIRED)
 
-#find_package(Boost REQUIRED)
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+set(Boost_DEBUG ON)
+find_package(Boost 1.84.0 REQUIRED)
+
+message("Found boost components ${Boost_INCLUDE_DIRS}")
 
 find_package(Vulkan REQUIRED)
 
@@ -16,7 +22,7 @@ message("found sdl version ${SDL2_VERSION}")
 
 include_directories(
         source
-        ${BOOST_INCLUDE_DIRS}
+        ${Boost_INCLUDE_DIRS}
         external/glew/include
         external/glm
         external/imgui
@@ -32,7 +38,7 @@ add_subdirectory(libs/steam)
 
 set(LIBS
         ${OPENGL_LIBRARY}
-        Boost::xpressive
+#        Boost::xpressive
         glm
         libglew_static
         IMGUI
