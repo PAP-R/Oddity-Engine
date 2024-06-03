@@ -10,7 +10,7 @@ namespace OddityEngine::Graphics {
         SDL_Window *window = nullptr;
         SDL_Surface *surface = nullptr;
 
-        glm::vec2 size;
+        glm::ivec2 size;
 
     public:
         Window(const char *name, int width, int height, unsigned int flags);
@@ -19,7 +19,8 @@ namespace OddityEngine::Graphics {
         virtual void make_current() = 0;
         virtual void update() = 0;
 
-        virtual void set_size(glm::vec2 size);
+        virtual void set_size(glm::ivec2 size);
+        virtual glm::ivec2 get_size();
 
         static bool update_all();
         static void terminate_all();

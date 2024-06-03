@@ -52,7 +52,9 @@ namespace OddityEngine::Graphics::Vulkan {
         glm::mat4 view;
         glm::mat4 proj;
         glm::vec2 screenSize;
-        float time;
+        glm::vec2 mousePos;
+        glm::vec4 cameraPos;
+        alignas(16) float time;
     };
 
     struct QueueFamilyIndices {
@@ -198,7 +200,7 @@ namespace OddityEngine::Graphics::Vulkan {
         void update() override;
         void make_current() override;
 
-        void set_size(glm::vec2 size) override;
+        void set_size(glm::ivec2 size) override;
 
         static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
     };

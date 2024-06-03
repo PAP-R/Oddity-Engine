@@ -25,8 +25,13 @@ namespace OddityEngine::Graphics {
         SDL_DestroyWindow(window);
     }
 
-    void Window::set_size(glm::vec2 size) {
+    void Window::set_size(glm::ivec2 size) {
         this->size = size;
+    }
+
+    glm::ivec2 Window::get_size() {
+        SDL_GetWindowSize(this->window, &size.x, &size.y);
+        return size;
     }
 
     bool Window::update_all() {
@@ -60,6 +65,14 @@ namespace OddityEngine::Graphics {
                     case SDL_WINDOWEVENT_SIZE_CHANGED:
                         window->set_size({event.window.data1, event.window.data2});
                         Debug::message(fmt::format("Window {} resized to [{} / {}]", event.window.windowID, event.window.data1, event.window.data2));
+                        break;
+                    case SDL_WINDOWEVENT_RESTORED:
+                        window->set_size(window->get_size());
+                        Debug::message(fmt::format("Window {} restored", event.window.windowID));
+                        break;
+                    case SDL_WINDOWEVENT_MINIMIZED:
+                        window->set_size({0, 0});
+                        Debug::message(fmt::format("Window {} minimized", event.window.windowID));
                         break;
                     case SDL_WINDOWEVENT_CLOSE:
                         window_list.erase(std::remove(window_list.begin(), window_list.end(), window), window_list.end());

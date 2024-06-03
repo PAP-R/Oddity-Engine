@@ -541,7 +541,7 @@ namespace OddityEngine::Graphics::Vulkan {
         uboLayoutBinding.binding = 0;
         uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         uboLayoutBinding.pImmutableSamplers = nullptr;
 
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -820,6 +820,12 @@ namespace OddityEngine::Graphics::Vulkan {
         uniformBuffers[currentImage][0].proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
         uniformBuffers[currentImage][0].proj[1][1] *= -1;
         uniformBuffers[currentImage][0].screenSize = {swapChainExtent.width, swapChainExtent.height};
+
+        int mx = 0, my = 0;
+        SDL_GetMouseState(&mx, &my);
+
+        uniformBuffers[currentImage][0].mousePos = {mx, my};
+
         uniformBuffers[currentImage][0].time = Util::Time::now<float>();
     }
 
@@ -954,11 +960,13 @@ namespace OddityEngine::Graphics::Vulkan {
     void Window::recreate_swap_chain() {
         vkDeviceWaitIdle(device);
 
-        cleanup_swap_chain();
+        if (!minimized) {
+            cleanup_swap_chain();
 
-        create_swap_chain();
-        create_image_views();
-        create_framebuffers();
+            create_swap_chain();
+            create_image_views();
+            create_framebuffers();
+        }
     }
 
 
@@ -1043,7 +1051,7 @@ namespace OddityEngine::Graphics::Vulkan {
 
     }
 
-    void Window::set_size(glm::vec2 size) {
+    void Window::set_size(glm::ivec2 size) {
         Graphics::Window::set_size(size);
 
         framebufferResized = true;
