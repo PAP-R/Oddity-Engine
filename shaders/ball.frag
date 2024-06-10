@@ -82,7 +82,36 @@ Ray ray_sphere_closest(vec3 p, vec3 d, vec3 o, float r) {
     return Ray(p, d * t, d * t + res.xyz, res.z <= 0);
 }
 
+float outer_clamp(float x, float minVal, float maxVal) {
+    return x - clamp(x, minVal, maxVal) - sign(negative_only(x - minVal)) * minVal + sign(positive_only(x - maxVal)) * maxVal;
+}
+
+vec3 outer_clamp(vec3 x, vec3 minVal, vec3 maxVal) {
+    return vec3(outer_clamp(x.x, minVal.x, maxVal.x), outer_clamp(x.y, minVal.y, maxVal.y), outer_clamp(x.z, minVal.z, maxVal.z));
+}
+
+float jump(float x, float minVal, float maxVal) {
+    return (sign(abs(x - minVal) - abs(x - maxVal)) + 1) / 2 * minVal + (sign(abs(x - maxVal) - abs(x - minVal)) + 1) / 2 * minVal;
+}
+
+vec3 jump(vec3 x, vec3 minVal, vec3 maxVal) {
+    return vec3(jump(x.x, minVal.x, maxVal.x), jump(x.y, minVal.y, maxVal.y), jump(x.z, minVal.z, maxVal.z));
+}
+
+vec4 cube_closest(vec3 p, vec3 o, vec3 s) {
+    vec3 d = p - o;
+
+    vec3 q = clamp(d, -s, s) - d;
+
+    if (abs(d).x < s.x && abs(d).y < s.y && abs(d).z < s.z) {
+        return vec4(q, -length(q));
+    }
+
+    return vec4(q, length(q));
+}
+
 void main() {
+    float intensityMultiplier = 5;
     vec3 actualMouse = vec3(ubo.mousePos - ubo.screenSize / 2, 0);
     outColor = vec4(1);
 
@@ -91,17 +120,19 @@ void main() {
 
     vec3 intensity = vec3(0);
 
-    for (float i = 0; i < 2 * PI; i += PI / 8) {
+    for (float i = 0; i < 2 * PI && false; i += PI / 8) {
         Ray ray = ray_sphere_closest(actualMouse, vec3(cos(i + ubo.time / 10), sin(i + ubo.time / 10), 0), vec3(0), radius);
-        intensity.x += positive_only(1 - positive_only(line_closest(vec3(fragScreenPos, 0), actualMouse, (ray.origin + ray.dir) * vec3(1, 1, 0), thickness).w));
+        intensity.x += positive_only(intensityMultiplier - positive_only(line_closest(vec3(fragScreenPos, 0), actualMouse, (ray.origin + ray.dir) * vec3(1, 1, 0), thickness).w)) / intensityMultiplier;
         if (length(ray.dir) != 0) {
-            intensity.y += positive_only(1 - positive_only(line_closest(vec3(fragScreenPos, 0), (ray.origin + ray.dir) * vec3(1, 1, 0), (ray.origin + ray.hitDir) * vec3(1, 1, 0), thickness).w));
-            intensity.z += positive_only(1 - positive_only(line_closest(vec3(fragScreenPos, 0), actualMouse, (ray.origin + ray.hitDir) * vec3(1, 1, 0), thickness).w));
+            intensity.y += positive_only(intensityMultiplier - positive_only(line_closest(vec3(fragScreenPos, 0), (ray.origin + ray.dir) * vec3(1, 1, 0), (ray.origin + ray.hitDir) * vec3(1, 1, 0), thickness).w)) / intensityMultiplier;
+            intensity.z += positive_only(intensityMultiplier - positive_only(line_closest(vec3(fragScreenPos, 0), actualMouse, (ray.origin + ray.hitDir) * vec3(1, 1, 0), thickness).w)) / intensityMultiplier;
         }
     }
 
+
+    intensity.z += positive_only(intensityMultiplier - positive_only(line_closest(vec3(fragScreenPos, 0), actualMouse, actualMouse + cube_closest(actualMouse, vec3(0), vec3(radius)).xyz, thickness).w)) / intensityMultiplier;
 //    intensity.z += positive_only(1 - positive_only(line_closest(vec3(fragScreenPos, 0), actualMouse, actualMouse + sphere_closest(actualMouse, vec3(0), radius).xyz, thickness).w));
-//    intensity += positive_only(1 - positive_only(sphere_closest(vec3(fragScreenPos, 0), vec3(0), radius).w)) / 2;
+    intensity.x += positive_only(intensityMultiplier - positive_only(cube_closest(vec3(fragScreenPos, 0), vec3(0), vec3(radius)).w)) / 2 / intensityMultiplier;
 
 //    outColor.xyz *= 0.5 * clamp(intensity, 0, 1) + 0.5 * step(0.5, mod(intensity / 20, 1));
     outColor.xyz *= intensity;
