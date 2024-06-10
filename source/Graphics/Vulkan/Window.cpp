@@ -554,7 +554,7 @@ namespace OddityEngine::Graphics::Vulkan {
 
     void Window::create_graphics_pipeline() {
         auto vertShaderModule = create_shader_module("shaders/vert.spv");
-        auto fragShaderModule = create_shader_module("shaders/frag.spv");
+        auto fragShaderModule = create_shader_module("shaders/ball.spv");
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
