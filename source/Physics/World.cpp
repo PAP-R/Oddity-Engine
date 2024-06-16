@@ -50,26 +50,15 @@ namespace OddityEngine::Physics {
     void World::add_object(Object* object) {
         object->buffer_indices.insert(std::make_pair(this, objects.size()));
         objects.push_back(object);
-        update_networks();
     }
 
     void World::remove_object(Object* object) {
         object->buffer_indices.erase(this);
         objects.erase(std::remove(objects.begin(), objects.end(), object));
-        update_networks();
     }
 
     Vector<Object*> World::get_objects() {
         return objects;
-    }
-
-    void World::update_networks() {
-        network_buffer.clear();
-
-        for (auto o : objects) {
-            auto net = o->net.front().to_csv();
-            o->network_index = *network_buffer.insert_back(net.size(), net.data())[0];
-        }
     }
 
     size_t World::object_count() {

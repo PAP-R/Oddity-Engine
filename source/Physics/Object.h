@@ -9,8 +9,6 @@
 
 #include <NeuralNetwork/Network.h>
 
-#include "Graphics/OpenGL/Buffer/Buffer.h"
-
 namespace OddityEngine::Physics {
     enum STATES {
         TO_DELETE = 1,
@@ -68,9 +66,6 @@ namespace OddityEngine::Physics {
         Object* next = nullptr;
 
         std::map<void*, GLuint> buffer_indices;
-
-        Vector<NeuralNetwork::Network> net = Vector<NeuralNetwork::Network>(10, NeuralNetwork::Network(9, 4));
-        Vector<Object*> conections;
 
         virtual ~Object() = default;
 

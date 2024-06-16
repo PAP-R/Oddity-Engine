@@ -20,6 +20,6 @@ void main() {
 //    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 0.0, 1.0);
 //    gl_Position = ubo.proj * ubo.view * mat4(1) * vec4(inPosition, 0.0, 1.0);
     gl_Position = vec4(inPosition, 0.0, 1.0);
-    fragDirection = normalize(ubo.proj * ubo.view * mat4(1) * vec4(inDirection, 1)).xyz;
+    fragDirection = normalize(ubo.view * ubo.proj * vec4(inDirection, 1)).xyz;
     fragScreenPos = inPosition * ubo.screenSize / 2;
 }

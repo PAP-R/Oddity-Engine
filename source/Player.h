@@ -7,7 +7,7 @@
 #include <Util/Pawn.h>
 #include <Input/Input.h>
 
-#include "Graphics/OpenGL/Camera.h"
+#include "Graphics/Camera.h"
 
 class Player : public OddityEngine::Util::Pawn, public OddityEngine::Input::Input {
 public:

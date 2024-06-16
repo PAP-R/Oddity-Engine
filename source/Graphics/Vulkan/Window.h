@@ -11,6 +11,7 @@
 #include <optional>
 
 #include <Graphics/Window.h>
+#include <Graphics/Camera.h>
 
 #include "Buffer.h"
 
@@ -136,6 +137,7 @@ namespace OddityEngine::Graphics::Vulkan {
             2, 3, 0
         };
 
+        Camera camera = Camera();
 
 #ifdef NDEBUG
         const bool enableValidataionLayers = false;

@@ -4,7 +4,7 @@
 #include "Util/Eventable.h"
 #include <Physics/Object.h>
 
-#include "Graphics/OpenGL/Camera.h"
+#include "Graphics/Camera.h"
 
 namespace OddityEngine::Util {
     class Pawn : public OddityEngine::Physics::Object {

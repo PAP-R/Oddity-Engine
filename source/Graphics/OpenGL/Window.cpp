@@ -15,7 +15,7 @@
 #include "Math/random.h"
 #include "Graphics/OpenGL/Shader/Shader.h"
 
-#include "Camera.h"
+#include <Graphics/Camera.h>
 
 namespace OddityEngine::Graphics::OpenGL {
     void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {

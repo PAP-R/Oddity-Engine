@@ -14,8 +14,6 @@ set(GRAPHICS_OPENGL
         Graphics/OpenGL/Render/Scene.h
         Graphics/OpenGL/Render/TestRenderer.cpp
         Graphics/OpenGL/Render/TestRenderer.h
-        Graphics/OpenGL/Camera.cpp
-        Graphics/OpenGL/Camera.h
         Graphics/OpenGL/Render/ComputeRenderer.cpp
         Graphics/OpenGL/Render/ComputeRenderer.h
         Graphics/OpenGL/Render/Layered.cpp
@@ -36,6 +34,8 @@ set(GRAPHICS
         Graphics/Window.h
         Graphics/Scene.cpp
         Graphics/Scene.h
+        Graphics/Camera.cpp
+        Graphics/Camera.h
 )
 
 set(INPUT
@@ -93,7 +93,7 @@ set(SOURCES
         ${GRAPHICS}
         ${INPUT}
         ${MATH}
-        ${NEURAL_NETWORK}
+#        ${NEURAL_NETWORK}
         ${PHYSICS}
         ${UTIL}
         OddityEngine.cpp
