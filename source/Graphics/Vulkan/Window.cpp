@@ -13,6 +13,7 @@
 #include <numbers>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <Util/Debug.h>
 #include <Util/File.h>
@@ -844,10 +845,18 @@ namespace OddityEngine::Graphics::Vulkan {
 
 
     void Window::update_uniform_buffer(uint32_t currentImage) {
-        uniformBuffers[currentImage][0].model = glm::rotate(glm::mat4(1), Util::Time::now<float>() * glm::radians(90.0f), glm::vec3(0, 0, 1));
-        uniformBuffers[currentImage][0].view = glm::lookAt(glm::vec3(3 * cos(Util::Time::now<float>()), 3 * sin(Util::Time::now<float>()), 2), glm::vec3(0), glm::vec3(0, 0, 1));
-        uniformBuffers[currentImage][0].proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / static_cast<float>(swapChainExtent.height), 0.1f, 10.0f);
+        float fov = 45.0f / 90.0f;
+        float aspect = swapChainExtent.height / static_cast<float>(swapChainExtent.width);
+
+        uniformBuffers[currentImage][0].model = glm::mat4(1);
+        // uniformBuffers[currentImage][0].view = glm::lookAt(glm::vec3(0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 1));
+        uniformBuffers[currentImage][0].view = glm::toMat4(camera.orientation);
+
+        uniformBuffers[currentImage][0].proj = glm::mat4(1);
+        uniformBuffers[currentImage][0].proj[0][0] = fov / aspect;
+        uniformBuffers[currentImage][0].proj[1][1] = fov;
         uniformBuffers[currentImage][0].proj[1][1] *= -1;
+
         uniformBuffers[currentImage][0].screenSize = {swapChainExtent.width, swapChainExtent.height};
 
         int mx = 0, my = 0;

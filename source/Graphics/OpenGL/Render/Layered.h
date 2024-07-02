@@ -2,7 +2,7 @@
 #define LAYERED_H
 
 #include "Interface.h"
-#include "Graphics/OpenGL/Camera.h"
+#include "Graphics/Camera.h"
 #include "Graphics/OpenGL/Shader/Shader.h"
 #include "Graphics/OpenGL/Shader/Program.h"
 

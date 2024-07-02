@@ -3,7 +3,7 @@
 
 #include "Interface.h"
 #include "Graphics/OpenGL/Shader/Program.h"
-#include "Graphics/OpenGL/Camera.h"
+#include "Graphics/Camera.h"
 
 namespace OddityEngine::Graphics::Render {
     class TestRenderer : public Interface {

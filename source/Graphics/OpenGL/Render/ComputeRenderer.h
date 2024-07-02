@@ -2,7 +2,7 @@
 #define COMPUTERENDERER_H
 
 #include "Interface.h"
-#include "Graphics/OpenGL/Camera.h"
+#include "Graphics/Camera.h"
 #include "Physics/World.h"
 
 namespace OddityEngine::Graphics::Render {

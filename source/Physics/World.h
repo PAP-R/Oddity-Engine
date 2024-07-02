@@ -40,8 +40,6 @@ namespace OddityEngine::Physics {
         void remove_object(Object* object);
         Vector<Object*> get_objects();
 
-        void update_networks();
-
         size_t object_count();
     };
 }
