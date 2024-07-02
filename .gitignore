@@ -25,3 +25,4 @@ gen
 external
 /cmake-build-release/
 /\[output\]/
+*.spv
