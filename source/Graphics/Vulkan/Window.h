@@ -58,11 +58,11 @@ namespace OddityEngine::Graphics::Vulkan {
     };
 
     struct QueueFamilyIndices {
-        std::optional<uint32_t> graphicsFamily;
+        std::optional<uint32_t> graphicsAndComputeFamily;
         std::optional<uint32_t> presentFamily;
 
         bool is_complete() {
-            return graphicsFamily.has_value() && presentFamily.has_value();
+            return graphicsAndComputeFamily.has_value() && presentFamily.has_value();
         }
     };
 
@@ -70,6 +70,13 @@ namespace OddityEngine::Graphics::Vulkan {
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;
         std::vector<VkPresentModeKHR> presentModes;
+    };
+
+    struct Object {
+        glm::vec4 pos;
+        glm::vec4 size;
+        glm::vec4 color;
+        uint32_t type;
     };
 
     class Window : public Graphics::Window {
@@ -89,6 +96,7 @@ namespace OddityEngine::Graphics::Vulkan {
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice device;
         VkQueue graphicsQueue;
+        VkQueue computeQueue;
         VkQueue presentQueue;
         VkSwapchainKHR swapChain;
 
@@ -102,6 +110,7 @@ namespace OddityEngine::Graphics::Vulkan {
         VkRenderPass renderPass;
 
         VkDescriptorSetLayout descriptorSetLayout;
+        VkDescriptorSetLayout computeDescriptorSetLayout;
         VkPipelineLayout pipelineLayout;
 
         VkPipeline graphicsPipeline;
@@ -117,6 +126,7 @@ namespace OddityEngine::Graphics::Vulkan {
         Buffer<uint32_t> indexBuffer;
 
         std::vector<Buffer<UniformBufferObject>> uniformBuffers;
+        std::vector<Buffer<Object>> shaderStorageBuffers;
 
         VkDescriptorPool descriptorPool;
         std::vector<VkDescriptorSet> descriptorSets;
@@ -156,6 +166,7 @@ namespace OddityEngine::Graphics::Vulkan {
         VkExtent2D choose_swap_extent(const VkSurfaceCapabilitiesKHR& capabilities);
 
         VkShaderModule create_shader_module(const std::string& path);
+        VkPipelineShaderStageCreateInfo create_shader_create_info(const std::string &path, VkShaderStageFlagBits stage);
 
         uint32_t find_memory_type(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
@@ -179,6 +190,7 @@ namespace OddityEngine::Graphics::Vulkan {
         void create_vertex_buffer();
         void create_index_buffer();
         void create_uniform_buffers();
+        void create_shader_storage_buffers();
 
         void create_descriptor_pool();
         void create_descriptor_sets();

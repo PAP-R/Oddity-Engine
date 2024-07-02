@@ -55,8 +55,8 @@ namespace OddityEngine::Graphics::Vulkan {
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
         for (int i = 0; i < queueFamilyCount; i++) {
-            if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                indices.graphicsFamily = i;
+            if (queueFamilies[i].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)) {
+                indices.graphicsAndComputeFamily = i;
             }
 
             VkBool32 presentSupport = false;
@@ -252,6 +252,18 @@ namespace OddityEngine::Graphics::Vulkan {
         return shaderModule;
     }
 
+    VkPipelineShaderStageCreateInfo Window::create_shader_create_info(const std::string &path, VkShaderStageFlagBits stage) {
+        auto shaderModule = create_shader_module(path);
+
+        VkPipelineShaderStageCreateInfo shaderStageInfo{};
+        shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shaderStageInfo.stage = stage;
+        shaderStageInfo.module = shaderModule;
+        shaderStageInfo.pName = "main";
+
+        return shaderStageInfo;
+    }
+
     uint32_t Window::find_memory_type(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
         VkPhysicalDeviceMemoryProperties memProperties;
         vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
@@ -378,7 +390,7 @@ namespace OddityEngine::Graphics::Vulkan {
         auto indices = find_queue_families(physicalDevice);
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+        std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsAndComputeFamily.value(), indices.presentFamily.value()};
 
         float queuePriority = 1.0f;
         for (auto queueFamily : uniqueQueueFamilies) {
@@ -412,7 +424,8 @@ namespace OddityEngine::Graphics::Vulkan {
 
         Debug::assert_error(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS, "Failed to create logical device");
 
-        vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+        vkGetDeviceQueue(device, indices.graphicsAndComputeFamily.value(), 0, &graphicsQueue);
+        vkGetDeviceQueue(device, indices.graphicsAndComputeFamily.value(), 0, &computeQueue);
         vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
     }
 
@@ -440,9 +453,9 @@ namespace OddityEngine::Graphics::Vulkan {
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
         auto indices = find_queue_families(physicalDevice);
-        uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+        uint32_t queueFamilyIndices[] = {indices.graphicsAndComputeFamily.value(), indices.presentFamily.value()};
 
-        if (indices.graphicsFamily != indices.presentFamily) {
+        if (indices.graphicsAndComputeFamily != indices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = 2;
             createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -553,20 +566,9 @@ namespace OddityEngine::Graphics::Vulkan {
     }
 
     void Window::create_graphics_pipeline() {
-        auto vertShaderModule = create_shader_module("shaders/vert.spv");
-        auto fragShaderModule = create_shader_module("shaders/ball.spv");
-
-        VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertShaderStageInfo.module = vertShaderModule;
-        vertShaderStageInfo.pName = "main";
-
-        VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragShaderStageInfo.module = fragShaderModule;
-        fragShaderStageInfo.pName = "main";
+        auto vertShaderStageInfo = create_shader_create_info("shaders/vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+        auto fragShaderStageInfo = create_shader_create_info("shaders/ball.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+        auto computeShaderStageInfo = create_shader_create_info("shaders/compute.spv", VK_SHADER_STAGE_COMPUTE_BIT);
 
         VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
@@ -715,7 +717,7 @@ namespace OddityEngine::Graphics::Vulkan {
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-        poolInfo.queueFamilyIndex = indices.graphicsFamily.value();
+        poolInfo.queueFamilyIndex = indices.graphicsAndComputeFamily.value();
 
         Debug::assert_error(vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS, "Failed to create command pool");
     }
@@ -733,6 +735,16 @@ namespace OddityEngine::Graphics::Vulkan {
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             uniformBuffers[i].create(physicalDevice, device, 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        }
+    }
+
+    void Window::create_shader_storage_buffers() {
+        shaderStorageBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            shaderStorageBuffers[i].create(physicalDevice, device, 1024,
+                        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         }
     }
 
@@ -780,6 +792,23 @@ namespace OddityEngine::Graphics::Vulkan {
 
             vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
         }
+
+        std::array<VkDescriptorSetLayoutBinding, 3> layoutBindings{};
+        for (size_t i = 0; i < layoutBindings.size(); i++) {
+            layoutBindings[i].binding = i;
+            layoutBindings[i].descriptorCount = 1;
+            layoutBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            layoutBindings[i].pImmutableSamplers = nullptr;
+            layoutBindings[i].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
+        }
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = layoutBindings.size();
+        layoutInfo.pBindings = layoutBindings.data();
+
+        Debug::assert_error(vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &computeDescriptorSetLayout) != VK_SUCCESS, "Failed to create compute descriptor set layout");
+
     }
 
     void Window::create_command_buffer() {

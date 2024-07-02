@@ -15,6 +15,7 @@ layout(binding = 0) uniform UniformBufferObject {
     vec2 mousePos;
     vec4 cameraPos;
     float time;
+    float deltaTime;
 } ubo;
 
 struct Ray {
