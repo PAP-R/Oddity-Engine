@@ -7,6 +7,12 @@ set(WINDOW
         Window/Event.h
 )
 
+set(VULKAN
+        Vulkan/Vulkan.cpp
+        Vulkan/Vulkan.h
+
+)
+
 set(INPUT
 
 )
@@ -35,6 +41,7 @@ set(SOURCES
         OddityEngine.cpp
         OddityEngine.h
         ${WINDOW}
+        ${VULKAN}
         ${INPUT}
         ${MATH}
         ${PHYSICS}

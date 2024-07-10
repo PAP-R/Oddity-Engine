@@ -88,6 +88,10 @@ namespace OddityEngine {
 		return _size;
 	}
 
+	SDL_Window* Window::get_window() {
+		return _window;
+	}
+
 	void Window::set_fullscreen() const {
 		Debug::assert_error(SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN) != 0, "Fullscreen failed");
 	}

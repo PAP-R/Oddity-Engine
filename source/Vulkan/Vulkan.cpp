@@ -1,0 +1,125 @@
+#include "Vulkan.h"
+
+#include <Vulkan/Vulkan.h>
+#include <SDL_vulkan.h>
+
+#include <Util/Debug.h>
+
+namespace OddityEngine {
+	std::vector<const char *> Vulkan::get_required_extensions() {
+		uint32_t availableExtensionCount = 0;
+		vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, nullptr);
+
+		std::vector<VkExtensionProperties> availableExtensions(availableExtensionCount);
+		vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, availableExtensions.data());
+
+		availableExtensionCount = availableExtensions.size();
+		Debug::message("Found {} available Vulkan extensions:", availableExtensionCount);
+		for (size_t i = 0; i < availableExtensionCount; i++) {
+			Debug::print("\t{}\t{}\n", i, availableExtensions[i].extensionName);
+		}
+
+		unsigned int extensionCount = 0;
+		Debug::assert_error(SDL_Vulkan_GetInstanceExtensions(*_window, &extensionCount, nullptr) != SDL_TRUE, "Failed to get required extensions");
+
+		std::vector<const char*> extensions(extensionCount);
+		Debug::assert_error(SDL_Vulkan_GetInstanceExtensions(*_window, &extensionCount, extensions.data()) != SDL_TRUE, "Failed to get required extensions");
+
+		if (enableValidataionLayers) {
+			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		}
+
+		extensionCount = extensions.size();
+		Debug::message("Found {} required extensions:", extensionCount);
+		for (size_t i = 0; i < extensionCount; i++) {
+			Debug::print("\t{}\t{}\n", i, extensions[i]);
+		}
+
+		return extensions;
+	}
+
+	bool Vulkan::check_validation_layer_support() const {
+		uint32_t layerCount = 0;
+		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+		std::vector<VkLayerProperties> availableLayers(layerCount);
+		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+		for (auto layerName : _validationLayers) {
+			bool layerFound = false;
+
+			for (auto layerProperties : availableLayers) {
+				if (strcmp(layerName, layerProperties.layerName) == 0) {
+					layerFound = true;
+					break;
+				}
+			}
+
+			if (!layerFound) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	void Vulkan::create_instance() {
+		auto title = SDL_GetWindowTitle(*_window);
+		VkApplicationInfo appInfo{};
+		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+		appInfo.pApplicationName = title;
+		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.pEngineName = "OddityEngine";
+		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+		appInfo.apiVersion = VK_API_VERSION_1_3;
+
+		VkInstanceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+		createInfo.pApplicationInfo = &appInfo;
+
+		auto extensions = get_required_extensions();
+
+		Debug::assert_error(enableValidataionLayers && !check_validation_layer_support(), "Validation Layers not available");
+
+		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+		if (enableValidataionLayers) {
+			createInfo.enabledLayerCount = _validationLayers.size();
+			createInfo.ppEnabledLayerNames = _validationLayers.data();
+
+			populate_debug_messenger_create_info(debugCreateInfo);
+			createInfo.pNext = &debugCreateInfo;
+		}
+		else {
+			createInfo.enabledLayerCount = 0;
+			createInfo.pNext = nullptr;
+		}
+
+		Debug::assert_error(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS, "Failed to create vulkan Instance");
+	}
+
+	void Vulkan::setup_debug_messenger() {
+		if (!enableValidataionLayers) return;
+
+		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+
+
+		Debug::assert_error(create_debug_utils_messenger_EXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS, "Failed to set up debug messenger");
+	}
+
+	Vulkan::Vulkan(Window *window) : _window(window) {
+
+	}
+
+	VkBool32 Vulkan::debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
+		//        if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+		//            Debug::error("Vulkan error:\n{}", pCallbackData->pMessage);
+		//        }
+		//        else if (messageSeverity >= minSeverity) {
+		//            Debug::message("Vulkan info:\n{}", pCallbackData->pMessage);
+		//        }
+
+		Debug::message("{}", pCallbackData->pMessage);
+
+		return VK_FALSE;
+	}
+}

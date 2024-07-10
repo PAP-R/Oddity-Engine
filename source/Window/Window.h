@@ -12,7 +12,6 @@ namespace OddityEngine {
 	protected:
 		SDL_Window *_window = nullptr;
 		Uint32 _windowID = 0;
-		SDL_Surface *_surface = nullptr;
 
 		glm::ivec2 _size = {};
 
@@ -61,6 +60,12 @@ namespace OddityEngine {
 		 * @return current size
 		 */
 		glm::ivec2 get_size();
+
+		SDL_Window* get_window();
+
+		operator SDL_Window*() const {
+			return _window;
+		}
 
 		void set_fullscreen() const;
 
