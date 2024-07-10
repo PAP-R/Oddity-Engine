@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.29.3)
 project(OddityEngine)
 
 
-set(OUTPUT_DIR ${PROJECT_SOURCE_DIR}/[output])
+#set(OUTPUT_DIR ${PROJECT_SOURCE_DIR}/[output])
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 
 
 find_package(Vulkan REQUIRED)
