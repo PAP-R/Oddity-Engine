@@ -27,6 +27,8 @@ set(UTIL
         Util/Trie.h
         Util/Updateable.h
         Util/Updateable.cpp
+        Util/Syncable.cpp
+        Util/Syncable.h
 )
 
 set(SOURCES
