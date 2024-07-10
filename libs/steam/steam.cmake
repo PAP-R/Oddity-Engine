@@ -1,4 +1,4 @@
-set(STEAM_DIRECTORY ${PROJECT_SOURCE_DIR}/libs/steam)
+set(STEAM_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
 include_directories(
         public/steam
