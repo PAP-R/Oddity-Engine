@@ -4,7 +4,7 @@ project(OddityEngine)
 
 #set(OUTPUT_DIR ${PROJECT_SOURCE_DIR}/[output])
 
-#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 
 find_package(Vulkan REQUIRED)
