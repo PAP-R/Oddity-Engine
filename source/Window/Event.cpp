@@ -4,7 +4,7 @@
 
 namespace OddityEngine {
 	std::set<Event*> eventSet;
-	std::set<Event*> activeSet;
+	std::set<Event*> eventSetActive;
 
 	Event::Event() {
 		init();
@@ -16,20 +16,20 @@ namespace OddityEngine {
 
 	void Event::set_active(bool active) {
 		if (active) {
-			activeSet.emplace(this);
+			eventSetActive.emplace(this);
 		}
 		else {
-			activeSet.erase(this);
+			eventSetActive.erase(this);
 		}
 	}
 
 	void Event::init() {
 		eventSet.emplace(this);
-		activeSet.emplace(this);
+		eventSetActive.emplace(this);
 	}
 
 	void Event::terminate() {
-		activeSet.erase(this);
+		eventSetActive.erase(this);
 		eventSet.erase(this);
 	}
 
@@ -37,7 +37,7 @@ namespace OddityEngine {
 		SDL_Event event;
 
 		while (SDL_PollEvent(&event)) {
-			for (auto e = activeSet.begin(); e != activeSet.end();) {
+			for (auto e = eventSetActive.begin(); e != eventSetActive.end();) {
 				(*e++)->event(event);
 			}
 		}

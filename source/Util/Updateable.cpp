@@ -4,9 +4,9 @@
 
 namespace OddityEngine {
 	std::set<Updateable*> updateableSet;
-	std::set<Updateable*> activeSet;
+	std::set<Updateable*> updateableSetActive;
 
-	Updateable::Updateable(bool global) {
+	Updateable::Updateable(const bool global) {
 		init(global);
 	}
 
@@ -14,15 +14,15 @@ namespace OddityEngine {
 		terminate();
 	}
 
-	void Updateable::init(bool global) {
+	void Updateable::init(const bool global) {
 		updateableSet.emplace(this);
 		if (global) {
-			activeSet.emplace(this);
+			updateableSetActive.emplace(this);
 		}
 	}
 
 	void Updateable::terminate() {
-		activeSet.erase(this);
+		updateableSetActive.erase(this);
 		updateableSet.erase(this);
 	}
 
@@ -35,18 +35,18 @@ namespace OddityEngine {
 
 	void Updateable::set_active(const bool active) {
 		if (active) {
-			activeSet.emplace(this);
+			updateableSetActive.emplace(this);
 		}
 		else {
-			activeSet.erase(this);
+			updateableSetActive.erase(this);
 		}
 	}
 
 	bool Updateable::update_all() {
-		for (auto u = activeSet.begin(); u != activeSet.end();) {
+		for (auto u = updateableSetActive.begin(); u != updateableSetActive.end();) {
 			(*u++)->_update();
 		}
 
-		return !activeSet.empty();
+		return !updateableSetActive.empty();
 	}
 }

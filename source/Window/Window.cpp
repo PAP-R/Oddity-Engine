@@ -1,7 +1,6 @@
 #include "Window.h"
 
 #include <Util/Debug.h>
-#include <vector>
 #include <set>
 
 namespace OddityEngine {
@@ -112,7 +111,7 @@ namespace OddityEngine {
 	}
 
 	Window *Window::get(SDL_Window *window) {
-		const auto windowIterator = std::ranges::find_if(windowSet, [&window](Window *w) { return window == w->_window; });
+		const auto windowIterator = std::find_if(windowSet.begin(), windowSet.end(), [&window](Window *w) { return window == w->_window; });
 
 		if (windowIterator == windowSet.end()) {
 			return nullptr;
