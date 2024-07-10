@@ -10,6 +10,9 @@
 #include <Util/Debug.h>
 #include <Util/Time.h>
 
+#include <Window/Event.h>
+#include <Util/Updateable.h>
+
 namespace OddityEngine {
     bool initilized = false;
     bool steam = false;
@@ -54,6 +57,8 @@ namespace OddityEngine {
     bool update() {
         if (!initilized) return false;
         Time::update();
+        Event::update();
+        Updateable::update_all();
         return Graphics::update();
     }
 }

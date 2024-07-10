@@ -18,20 +18,6 @@ namespace OddityEngine::Graphics {
     }
 
     bool update() {
-        SDL_Event event;
-
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_WINDOWEVENT) {
-                if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
-                    Debug::message("Closing Window {}", event.window.windowID);
-                    if (const auto window = Window::get(event.window.windowID); window != nullptr) {
-                        window->~Window();
-                    }
-                    Debug::message("Closed Window {}", event.window.windowID);
-                }
-            }
-        }
-
-        return Window::update_all();
+        return Window::count() != 0;
     }
 }

@@ -19,33 +19,54 @@ protected:
 public:
     Time() = delete;
 
+    /**
+     * Gets current time point
+     * @return current time point
+     */
     static auto get_time() {
-        return std::chrono::high_resolution_clock::now();
+        return clock::now();
     }
 
+    /**
+     * Gets time point of current frame
+     * @return time point of current frame
+     */
     static auto now() {
         return _now.time_since_epoch().count();
     }
 
+    /**
+     * Gets time point of program start
+     * @return time point of program start
+     */
     static auto start() {
         return _start.time_since_epoch().count();
     }
 
-    static auto last() {
-        return _last.time_since_epoch().count();
-    }
-
+    /**
+     * Gets duration of last frame
+     * @return frame duration
+     */
     static auto delta() {
         return _delta.count();
     }
 
+    /**
+     * Gets duration of the program
+     * @return program runtime
+     */
     static auto runtime() {
         return _runtime.count();
     }
 
+    /**
+     * Gets the count of the current frame
+     * @return current frame count
+     */
     static auto frame() {
         return _frame;
     }
+
 
     static void update() {
         _now = get_time();

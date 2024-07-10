@@ -12,8 +12,10 @@ using namespace OddityEngine;
 
 #include <Util/Trie.h>
 
+long double runtime = 0;
+
 void print_time() {
-    Debug::message("Time[{}]: {}", Time::frame(), Time::runtime());
+    Debug::message("Time[{}]: {} | {}", Time::frame(), Time::runtime(), runtime);
 }
 
 int main(int argc, char* argv[]) {
@@ -21,24 +23,12 @@ int main(int argc, char* argv[]) {
 
     OddityEngine::init();
 
-    Trie<int> trie;
-
-    trie.add("Hallo", 2);
-
-    trie.add("CA", trie["Hallo"].front());
-
-    trie.add("Ciao", trie('C', 'A').front());
-
-    Debug::message("Trie test : ", trie('C', 'i', 'a', 'o').front());
-
-    for (auto t : trie) {
-        Debug::message("Trie: {} : {}", t.first, t.second.front());
-    }
-
     auto window = Window("Hallo", 100, 100, SDL_WINDOW_RESIZABLE);
+    auto window2 = Window("Hallo2", 100, 100, SDL_WINDOW_RESIZABLE);
+    // window.set_windowed_fullscreen();
 
     while (OddityEngine::update()) {
-
+        runtime += Time::delta();
     }
 
     OddityEngine::terminate();

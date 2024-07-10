@@ -3,8 +3,8 @@ set(WINDOW
         Window/Graphics.h
         Window/Window.cpp
         Window/Window.h
-        Window/EventPoller.cpp
-        Window/EventPoller.h
+        Window/Event.cpp
+        Window/Event.h
 )
 
 set(INPUT
@@ -25,6 +25,8 @@ set(UTIL
         Util/Time.cpp
         Util/Time.h
         Util/Trie.h
+        Util/Updateable.h
+        Util/Updateable.cpp
 )
 
 set(SOURCES
