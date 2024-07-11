@@ -2,13 +2,17 @@
 #define VULKAN_H
 
 #include <Window/Window.h>
-#include <Vulkan/Vulkan.h>
+#include <vulkan/vulkan.h>
 
 namespace OddityEngine {
 	class Vulkan {
 	protected:
+        VkDebugUtilsMessengerEXT debugMessenger;
+
 		Window* _window;
+
 		VkInstance instance;
+
 
 
 
@@ -22,9 +26,11 @@ namespace OddityEngine {
 		const bool enableValidataionLayers = true;
 #endif
 
+		/// Helpers
 		std::vector<const char *> get_required_extensions();
 		bool check_validation_layer_support() const;
 
+		/// Setups
 		void create_instance();
         void setup_debug_messenger();
 

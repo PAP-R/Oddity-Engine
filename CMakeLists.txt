@@ -10,7 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build_output)
 
 
 find_package(Vulkan REQUIRED)
-message("Found Vulkan version ${Vulkan_VERSION}")
+message("Found Vulkan version ${Vulkan_VERSION} : include dir ${Vulkan_INCLUDE_DIRS}")
 
 find_package(SDL2 REQUIRED)
 message("Found SDL2 version ${SDL2_VERSION}")

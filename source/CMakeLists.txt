@@ -1,6 +1,4 @@
 set(WINDOW
-        Window/Graphics.cpp
-        Window/Graphics.h
         Window/Window.cpp
         Window/Window.h
         Window/Event.cpp
@@ -8,8 +6,8 @@ set(WINDOW
 )
 
 set(VULKAN
-        Vulkan/Vulkan.cpp
-        Vulkan/Vulkan.h
+        Graphics/Vulkan.cpp
+        Graphics/Vulkan.h
 
 )
 

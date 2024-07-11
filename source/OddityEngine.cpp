@@ -6,7 +6,6 @@
 #include <steam_api.h>
 #endif
 
-#include <Window/Graphics.h>
 #include <Util/Debug.h>
 #include <Util/Time.h>
 
@@ -34,7 +33,7 @@ namespace OddityEngine {
         }
 #endif
 
-        Graphics::init();
+        Debug::assert_error(SDL_Init(SDL_INIT_EVERYTHING) < 0, "Failed to initialize SDL");
         initilized = true;
 
         Debug::message("Engine initilized");
@@ -42,7 +41,7 @@ namespace OddityEngine {
 
     void terminate() {
         if (!initilized) return;
-        Graphics::terminate();
+        SDL_Quit();
 
 #ifdef ODDITY_ENGINE_STEAM
         if (steam) {
@@ -58,7 +57,6 @@ namespace OddityEngine {
         if (!initilized) return false;
         Time::update();
         Event::update();
-        Updateable::update_all();
-        return Graphics::update();
+        return Updateable::update_all();
     }
 }
