@@ -3,6 +3,8 @@
 #include <steam_api.h>
 
 #include <OddityEngine.h>
+
+#include "Graphics/Vulkan.h"
 using namespace OddityEngine;
 
 #include <Util/Debug.h>
@@ -39,14 +41,15 @@ int main(int argc, char* argv[]) {
     OddityEngine::init();
 
     auto window = Window("Hallo", 100, 100, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
+    auto vulkan = Vulkan(&window);
     // auto window2 = Window("Hallo2", 100, 100, SDL_WINDOW_RESIZABLE);
     // window.set_windowed_fullscreen();
 
     // SteamNetworkingMessages()->SendMessageToUser()
 
-    auto networking = Networking();
-    networking.create_lobby();
-    networking.get_lobby_list();
+    // auto networking = Networking();
+    // networking.create_lobby();
+    // networking.get_lobby_list();
 
     while (OddityEngine::update()) {
         runtime += Time::delta();

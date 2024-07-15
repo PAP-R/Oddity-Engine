@@ -105,6 +105,9 @@ namespace OddityEngine {
 
 		auto extensions = get_required_extensions();
 
+		createInfo.enabledExtensionCount = extensions.size();
+		createInfo.ppEnabledExtensionNames = extensions.data();
+
 		Debug::assert_error(enableValidataionLayers && !check_validation_layer_support(), "Validation Layers not available");
 
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
@@ -120,7 +123,7 @@ namespace OddityEngine {
 			createInfo.pNext = nullptr;
 		}
 
-		Debug::assert_error(vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS, "Failed to create vulkan Instance");
+		Debug::assert_error(vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS, "Failed to create vulkan Instance");
 	}
 
 	void Vulkan::setup_debug_messenger() {
@@ -130,10 +133,34 @@ namespace OddityEngine {
         populate_debug_messenger_create_info(createInfo);
 
 
-		Debug::assert_error(create_debug_utils_messenger_EXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS, "Failed to set up debug messenger");
+		Debug::assert_error(create_debug_utils_messenger_EXT(_instance, &createInfo, nullptr, &_debugMessenger) != VK_SUCCESS, "Failed to set up debug messenger");
+	}
+
+	void Vulkan::create_surface() {
+		Debug::assert_error(SDL_Vulkan_CreateSurface(*_window, _instance, &_surface) != SDL_TRUE, "Failed to create sdl vulkan surface");
 	}
 
 	Vulkan::Vulkan(Window *window) : _window(window) {
+		_window->add_subdateable(this);
+
+		set_active(false);
+		create_instance();
+		setup_debug_messenger();
+		create_surface();
+
+		Debug::message("Vulkan initilized");
+	}
+
+	Vulkan::~Vulkan() {
+		if (enableValidataionLayers) {
+			destroy_debug_utils_messenger_EXT(_instance, _debugMessenger, nullptr);
+		}
+
+		vkDestroySurfaceKHR(_instance, _surface, nullptr);
+		vkDestroyInstance(_instance, nullptr);
+	}
+
+	void Vulkan::update() {
 
 	}
 

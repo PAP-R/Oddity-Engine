@@ -36,6 +36,18 @@ namespace OddityEngine {
 		virtual void set_active(bool active);
 
 		/**
+		 * Adds ubdateable to update on own update()
+		 * @param subdateable updateable
+		 */
+		void add_subdateable(Updateable* subdateable);
+
+		/**
+		 * Removes updateable from its subdateables
+		 * @param subdateable updateable
+		 */
+		void remove_subdateable(Updateable* subdateable);
+
+		/**
 		 * Updates all updateables
 		 * @return true while there are updateables
 		 */

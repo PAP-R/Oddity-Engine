@@ -42,6 +42,14 @@ namespace OddityEngine {
 		}
 	}
 
+	void Updateable::add_subdateable(Updateable *subdateable) {
+		_subdateables.emplace(subdateable);
+	}
+
+	void Updateable::remove_subdateable(Updateable *subdateable) {
+		_subdateables.erase(subdateable);
+	}
+
 	bool Updateable::update_all() {
 		for (auto u = updateableSetActive.begin(); u != updateableSetActive.end();) {
 			(*u++)->_update();

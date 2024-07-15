@@ -25,7 +25,9 @@ namespace OddityEngine {
         }
 
         if(!SteamAPI_Init()) {
-            Debug::error("Failed to initialize Steam API");
+            // Debug::error("Failed to initialize Steam API");
+            steam = false;
+            Debug::message("Steam not initilized");
         }
         else {
             steam = true;

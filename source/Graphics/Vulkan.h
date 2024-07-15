@@ -5,13 +5,15 @@
 #include <vulkan/vulkan.h>
 
 namespace OddityEngine {
-	class Vulkan {
+	class Vulkan : public Updateable {
 	protected:
-        VkDebugUtilsMessengerEXT debugMessenger;
+        VkDebugUtilsMessengerEXT _debugMessenger;
 
 		Window* _window;
 
-		VkInstance instance;
+		VkInstance _instance;
+
+		VkSurfaceKHR _surface;
 
 
 
@@ -34,8 +36,13 @@ namespace OddityEngine {
 		void create_instance();
         void setup_debug_messenger();
 
-	public:
+        void create_surface();
+
+    public:
 		Vulkan(Window* window);
+		~Vulkan();
+
+		void update() override;
 
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 	};

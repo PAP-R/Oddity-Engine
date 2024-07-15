@@ -8,6 +8,8 @@ set(WINDOW
 set(VULKAN
         Graphics/Vulkan.cpp
         Graphics/Vulkan.h
+        Graphics/Components/PhysicalDevice.cpp
+        Graphics/Components/PhysicalDevice.h
 
 )
 
