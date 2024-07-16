@@ -8,8 +8,14 @@ set(WINDOW
 set(VULKAN
         Graphics/Vulkan.cpp
         Graphics/Vulkan.h
-        Graphics/Components/PhysicalDevice.cpp
-        Graphics/Components/PhysicalDevice.h
+        Graphics/Components/Device.cpp
+        Graphics/Components/Device.h
+        Graphics/Components/SwapChain.cpp
+        Graphics/Components/SwapChain.h
+        Graphics/Components/ValidationLayers.cpp
+        Graphics/Components/ValidationLayers.h
+        Graphics/Components/QueueFamilies.cpp
+        Graphics/Components/QueueFamilies.h
 
 )
 

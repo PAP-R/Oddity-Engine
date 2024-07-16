@@ -22,10 +22,10 @@ namespace OddityEngine {
 		unsigned int extensionCount = 0;
 		Debug::assert_error(SDL_Vulkan_GetInstanceExtensions(*_window, &extensionCount, nullptr) != SDL_TRUE, "Failed to get required extensions");
 
-		std::vector<const char*> extensions(extensionCount);
+		std::vector<const char *> extensions(extensionCount);
 		Debug::assert_error(SDL_Vulkan_GetInstanceExtensions(*_window, &extensionCount, extensions.data()) != SDL_TRUE, "Failed to get required extensions");
 
-		if (enableValidataionLayers) {
+		if (enableValidationLayers) {
 			extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		}
 
@@ -45,10 +45,10 @@ namespace OddityEngine {
 		std::vector<VkLayerProperties> availableLayers(layerCount);
 		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-		for (auto layerName : _validationLayers) {
+		for (const auto layerName: validationLayers) {
 			bool layerFound = false;
 
-			for (auto layerProperties : availableLayers) {
+			for (const auto layerProperties: availableLayers) {
 				if (strcmp(layerName, layerProperties.layerName) == 0) {
 					layerFound = true;
 					break;
@@ -63,7 +63,7 @@ namespace OddityEngine {
 		return true;
 	}
 
-	void populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+	void populate_debug_messenger_create_info(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
 		createInfo = {};
 		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -72,22 +72,21 @@ namespace OddityEngine {
 		createInfo.pUserData = nullptr;
 	}
 
-    VkResult create_debug_utils_messenger_EXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
-        auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-        if (func != nullptr) {
-            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-        }
-        else {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        }
-    }
+	VkResult create_debug_utils_messenger_EXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger) {
+		auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+		if (func != nullptr) {
+			return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+		} else {
+			return VK_ERROR_EXTENSION_NOT_PRESENT;
+		}
+	}
 
-    void destroy_debug_utils_messenger_EXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-        if (func != nullptr) {
-            func(instance, debugMessenger, pAllocator);
-        }
-    }
+	void destroy_debug_utils_messenger_EXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks *pAllocator) {
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+		if (func != nullptr) {
+			func(instance, debugMessenger, pAllocator);
+		}
+	}
 
 	void Vulkan::create_instance() {
 		auto title = SDL_GetWindowTitle(*_window);
@@ -108,32 +107,32 @@ namespace OddityEngine {
 		createInfo.enabledExtensionCount = extensions.size();
 		createInfo.ppEnabledExtensionNames = extensions.data();
 
-		Debug::assert_error(enableValidataionLayers && !check_validation_layer_support(), "Validation Layers not available");
-
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-		if (enableValidataionLayers) {
-			createInfo.enabledLayerCount = _validationLayers.size();
-			createInfo.ppEnabledLayerNames = _validationLayers.data();
+
+		if (enableValidationLayers) {
+			Debug::assert_error(!check_validation_layer_support(), "Validation Layers not available");
+			createInfo.enabledLayerCount = validationLayers.size();
+			createInfo.ppEnabledLayerNames = validationLayers.data();
 
 			populate_debug_messenger_create_info(debugCreateInfo);
 			createInfo.pNext = &debugCreateInfo;
-		}
-		else {
+		} else {
 			createInfo.enabledLayerCount = 0;
 			createInfo.pNext = nullptr;
 		}
+
 
 		Debug::assert_error(vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS, "Failed to create vulkan Instance");
 	}
 
 	void Vulkan::setup_debug_messenger() {
-		if (!enableValidataionLayers) return;
+		if (enableValidationLayers) {
+			VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+			populate_debug_messenger_create_info(createInfo);
 
-		VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-        populate_debug_messenger_create_info(createInfo);
 
-
-		Debug::assert_error(create_debug_utils_messenger_EXT(_instance, &createInfo, nullptr, &_debugMessenger) != VK_SUCCESS, "Failed to set up debug messenger");
+			Debug::assert_error(create_debug_utils_messenger_EXT(_instance, &createInfo, nullptr, &_debugMessenger) != VK_SUCCESS, "Failed to set up debug messenger");
+		}
 	}
 
 	void Vulkan::create_surface() {
@@ -148,11 +147,17 @@ namespace OddityEngine {
 		setup_debug_messenger();
 		create_surface();
 
+		_device = Device(_instance, _surface, _deviceExtensions);
+		_swapChain = SwapChain(_device.physicalDevice, _device.device, _surface, _window->get_size());
+
 		Debug::message("Vulkan initilized");
 	}
 
 	Vulkan::~Vulkan() {
-		if (enableValidataionLayers) {
+		_swapChain = SwapChain();
+		_device = Device();
+
+		if (enableValidationLayers) {
 			destroy_debug_utils_messenger_EXT(_instance, _debugMessenger, nullptr);
 		}
 
@@ -161,7 +166,6 @@ namespace OddityEngine {
 	}
 
 	void Vulkan::update() {
-
 	}
 
 	VkBool32 Vulkan::debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {

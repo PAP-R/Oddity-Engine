@@ -4,6 +4,10 @@
 #include <Window/Window.h>
 #include <vulkan/vulkan.h>
 
+#include "Components/ValidationLayers.h"
+#include "Components/Device.h"
+#include "Components/SwapChain.h"
+
 namespace OddityEngine {
 	class Vulkan : public Updateable {
 	protected:
@@ -15,18 +19,14 @@ namespace OddityEngine {
 
 		VkSurfaceKHR _surface;
 
+		Device _device;
+
+		SwapChain _swapChain;
 
 
-
-		std::vector<const char*> _validationLayers = {
-			"VK_LAYER_KHRONOS_validation"
+		std::vector<const char*> _deviceExtensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
-
-#ifdef NDEBUG
-		const bool enableValidataionLayers = false;
-#else
-		const bool enableValidataionLayers = true;
-#endif
 
 		/// Helpers
 		std::vector<const char *> get_required_extensions();
