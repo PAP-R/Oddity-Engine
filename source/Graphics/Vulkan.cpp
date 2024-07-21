@@ -147,8 +147,9 @@ namespace OddityEngine {
 		setup_debug_messenger();
 		create_surface();
 
-		_device = Device(_instance, _surface, _deviceExtensions);
-		_swapChain = SwapChain(_device.physicalDevice, _device.device, _surface, _window->get_size());
+		_device.init(_instance, _surface, _deviceExtensions);
+
+		_swapChain = SwapChain(_device.physicalDevice, _device.logicalDevice, _surface, _window->get_size());
 
 		Debug::message("Vulkan initilized");
 	}

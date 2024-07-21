@@ -13,12 +13,18 @@ struct SwapChainSupportDetails {
 	std::vector<VkPresentModeKHR> presentModes;
 };
 
-SwapChainSupportDetails query_swap_chain_support(const VkPhysicalDevice& device, const VkSurfaceKHR& surface);
+SwapChainSupportDetails query_swap_chain_support(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
 
 class SwapChain {
 protected:
 	VkSwapchainKHR _swapChain = VK_NULL_HANDLE;
 	VkDevice _device = VK_NULL_HANDLE;
+
+	void create_swapchain(VkPhysicalDevice physicalDevice, VkDevice device, const VkSurfaceKHR &surface, const glm::ivec2 &size);
+
+	void create_image_views();
+
+	void create_framebuffers();
 
 public:
 	std::vector<VkImage> swapChainImages;
@@ -26,15 +32,16 @@ public:
 	VkFormat swapChainFormat;
 	VkExtent2D swapChainExtent{};
 
-    std::vector<VkFramebuffer> swapChainFramebuffers;
+	std::vector<VkFramebuffer> swapChainFramebuffers;
 
 	SwapChain() = default;
-	SwapChain(VkPhysicalDevice physicalDevice, VkDevice device, const VkSurfaceKHR& surface, const glm::ivec2& size);
+
+	SwapChain(const VkPhysicalDevice &physicalDevice, const VkDevice &device, const VkSurfaceKHR &surface, const glm::ivec2 &size);
+
 	~SwapChain();
 
-	operator VkSwapchainKHR () const;
+	operator VkSwapchainKHR() const;
 };
-
 
 
 #endif //SWAPCHAIN_H

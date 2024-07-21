@@ -80,7 +80,9 @@ size_t rate_device_suitability(const VkPhysicalDevice& device, const VkSurfaceKH
         return score;
     }
 
-void Device::create_physical_device(const VkInstance& instance, const VkSurfaceKHR &surface, const std::vector<const char *> &deviceExtensions) {
+VkPhysicalDevice Device::create_physical_device(const VkInstance &instance, const VkSurfaceKHR &surface, const std::vector<const char *> &deviceExtensions) {
+	VkPhysicalDevice physicalDevice;
+
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
@@ -95,8 +97,8 @@ void Device::create_physical_device(const VkInstance& instance, const VkSurfaceK
 		candidates.insert(std::make_pair(rate_device_suitability(device, surface, deviceExtensions), device));
 	}
 
-	for (auto it = candidates.begin(); it != candidates.end(); ++it) {
-		Debug::print("\t{:L}\t", it->first);
+	for (auto & candidate : candidates) {
+		Debug::print("\t{:L}\t", candidate.first);
 	}
 
 	if (candidates.rbegin()->first > 0) {
@@ -106,9 +108,13 @@ void Device::create_physical_device(const VkInstance& instance, const VkSurfaceK
 	else {
 		Debug::error("Failed to find a suitable GPU");
 	}
+
+	return physicalDevice;
 }
 
-void Device::create_logical_device(const VkInstance& instance, const VkSurfaceKHR &surface, const std::vector<const char *> &deviceExtensions) {
+VkDevice Device::create_logical_device(const VkInstance &instance, const VkSurfaceKHR &surface, const std::vector<const char *> &deviceExtensions, const VkPhysicalDevice& physicalDevice) {
+	VkDevice logicalDevice;
+
 	auto indices = find_queue_families(physicalDevice, surface);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -144,21 +150,41 @@ void Device::create_logical_device(const VkInstance& instance, const VkSurfaceKH
 		createInfo.enabledLayerCount = 0;
 	}
 
-	Debug::assert_error(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS, "Failed to create logical device");
+	Debug::assert_error(vkCreateDevice(physicalDevice, &createInfo, nullptr, &logicalDevice) != VK_SUCCESS, "Failed to create logical device");
 
-	vkGetDeviceQueue(device, indices.graphicsAndComputeFamily.value(), 0, &graphicsQueue);
-	vkGetDeviceQueue(device, indices.graphicsAndComputeFamily.value(), 0, &computeQueue);
-	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+	VkPhysicalDeviceProperties properties;
+	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+
+	Debug::message("Created device {} on {}", fmt::ptr(logicalDevice), properties.deviceName);
+
+	return logicalDevice;
 }
 
-Device::Device(const VkInstance& instance, const VkSurfaceKHR &surface, const std::vector<const char *> &deviceExtensions) {
-	create_physical_device(instance, surface, deviceExtensions);
-	create_logical_device(instance, surface, deviceExtensions);
+void Device::init(const VkInstance &instance, const VkSurfaceKHR &surface, const std::vector<const char *> &deviceExtensions) {
+	physicalDevice = create_physical_device(instance, surface, deviceExtensions);
+	logicalDevice = create_logical_device(instance, surface, deviceExtensions, physicalDevice);
+
+	auto indices = find_queue_families(physicalDevice, surface);
+
+	vkGetDeviceQueue(logicalDevice, indices.graphicsAndComputeFamily.value(), 0, &graphicsQueue);
+	vkGetDeviceQueue(logicalDevice, indices.graphicsAndComputeFamily.value(), 0, &computeQueue);
+	vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
+}
+
+Device::Device(const VkInstance &instance, const VkSurfaceKHR &surface, const std::vector<const char *> &deviceExtensions)
+: physicalDevice(create_physical_device(instance, surface, deviceExtensions)), logicalDevice(create_logical_device(instance, surface, deviceExtensions, physicalDevice)) {
+	// physicalDevice = create_physical_device(instance, surface, deviceExtensions);
+	// logicalDevice = create_logical_device(instance, surface, deviceExtensions, physicalDevice);
+
+	auto indices = find_queue_families(physicalDevice, surface);
+
+	vkGetDeviceQueue(logicalDevice, indices.graphicsAndComputeFamily.value(), 0, &graphicsQueue);
+	vkGetDeviceQueue(logicalDevice, indices.graphicsAndComputeFamily.value(), 0, &computeQueue);
+	vkGetDeviceQueue(logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
 }
 
 Device::~Device() {
-	vkDestroyDevice(device, nullptr);
-
+	if (logicalDevice != VK_NULL_HANDLE) vkDestroyDevice(logicalDevice, nullptr);
 }
 
 Device::operator VkPhysicalDevice() const {
@@ -166,6 +192,6 @@ Device::operator VkPhysicalDevice() const {
 }
 
 Device::operator VkDevice() const {
-	return device;
+	return logicalDevice;
 }
 

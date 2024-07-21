@@ -1,9 +1,9 @@
 #include "ValidationLayers.h"
 
 #ifdef NDEBUG
-bool enableValidationLayers = true;
-#else
 bool enableValidationLayers = false;
+#else
+bool enableValidationLayers = true;
 #endif
 
 std::vector<const char*> validationLayers = {
